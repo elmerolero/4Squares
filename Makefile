@@ -1,6 +1,7 @@
 CC=g++
-LINKER_FLAGS= -lSDL2 -lSDL2_image -lSDL2_ttf
+LINKER_FLAGS= -lmingw32 -mwindows -lSDL2main -lSDL2 -lSDL2_image -lSDL2_ttf
+CFLAGS= -IC:/msys64/mingw64/include/SDL2
 
 Tetroblock: game.o temporizador.o texture.o tetroblock.o object.o
-	$(CC) $(LINKER_FLAGS) gamestate.h main.cpp -o Tetroblock game.o object.o texture.o temporizador.o tetroblock.o
+	$(CC) gamestate.h main.cpp $(CFLAGS) -o Tetroblock game.o object.o texture.o temporizador.o tetroblock.o $(LINKER_FLAGS)
 
