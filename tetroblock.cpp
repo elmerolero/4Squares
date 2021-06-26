@@ -187,10 +187,6 @@ void Tetroblock::gameStateRender()
 	tetroTexBlock.setColorMod( shapeColor[ pieceID ] );
 	drawPiece( piecePosX, piecePosY );
 	
-	SDL_Color color = { 255, 200, 59 };
-	tetroTexQueueCont.setColorMod( color );
-	tetroTexQueueCont.renderTexture( tetroQueueCont.getSrcRect(), tetroQueueCont.getDestRect() );
-	
 	tetroQueueDraw();
 	
 	// Updates screen
@@ -206,7 +202,7 @@ void initObjects()
 	SDL_Rect auxRect;
 	
 	// Board surface
-	if( !tetroBoardSurface.loadCoordinatesFromFile( "Recursos/Coords/board.crd" ) )
+	if( !tetroBoardSurface.loadCoordinatesFromFile( "recursos/coord/board.crd" ) )
 		setState( GAME_STATE_EXIT );
 	else{
 		tetroBoardSurface.setRelativeX( ( gameViewport.w - tetroBoardSurface.getRelativeW() ) / 2 );
@@ -214,16 +210,16 @@ void initObjects()
 	}
 	
 	// Margin
-	if( tetroTexMargin.loadFileTexture( "Recursos/Margen.png" ) < 0 )
+	if( !tetroTexMargin.loadFileTexture( "recursos/img/bloques/margen.png" ) < 0 )
 		setState( GAME_STATE_EXIT );
 	else{
-		tetroMargin.loadCoordinatesFromFile( "Recursos/Coords/margin.crd" );
+		tetroMargin.loadCoordinatesFromFile( "recursos/coord/margin.crd" );
 		tetroMargin.setRelativeX( tetroBoardSurface.getRelativeX() - 0.204545 );
 		tetroMargin.updateAbsCoords();
 	}
 	
 	// Background
-	if( tetroTexBackground.loadFileTexture( "Recursos/Backgrounds/Stonehenge.png" ) < 0 )
+	if( !tetroTexBackground.loadFileTexture( "recursos/img/fondos/stonehenge.png" ) < 0 )
 		setState( GAME_STATE_EXIT );
 	else{
 		auxRect.w = ( ( (float)gDisplayWidth / (float)gDisplayHeight) / ASPECT_RATIO ) * (float)tetroTexBackground.getWidth();
@@ -237,19 +233,19 @@ void initObjects()
 	}
 	
 	// Blocks
-	if( tetroTexBlock.loadFileTexture( "Recursos/Bloques/block.png" ) < 0 ){
+	if( !tetroTexBlock.loadFileTexture( "recursos/img/bloques/bloque.png" ) < 0 ){
 		setState( GAME_STATE_EXIT );
 	}
 	else{
-		tetroBlock.loadCoordinatesFromFile( "Recursos/Coords/block.crd" );
+		tetroBlock.loadCoordinatesFromFile( "recursos/coord/block.crd" );
 		tetroBlock.updateAbsCoords();
 	}	
 	
 	// Queue container
-	if( tetroTexQueueCont.loadFileTexture( "Recursos/queue.png" ) < 0 )
+	if( !tetroTexQueueCont.loadFileTexture( "recursos/img/bloques/queue.png" ) < 0 )
 		setState( GAME_STATE_EXIT );
 	else{
-		tetroQueueCont.loadCoordinatesFromFile("Recursos/Coords/queue.crd" );
+		tetroQueueCont.loadCoordinatesFromFile( "recursos/coord/queue.crd" );
 		tetroQueueCont.setRelativeX( tetroBoardSurface.getRelativeX() + tetroBoardSurface.getRelativeW() + 0.18 );
 		tetroQueueCont.updateAbsCoords();
 	}
@@ -263,7 +259,7 @@ void initObjects()
 	
 	
 	// Queue shapes
-	if( tetroTexShapes.loadFileTexture( "Recursos/Bloques/shapes.png" ) < 0 ){
+	if( !tetroTexShapes.loadFileTexture( "recursos/img/bloques/shapes.png" ) < 0 ){
 		setState( GAME_STATE_EXIT );
 	}
 	else{
@@ -420,7 +416,7 @@ void tetroShapeDraw( int shape, int position )
 {	
 	if( shape < 7 && shape >= 0 ){
 		tetroShapes[ shape ].setRelativeX( tetroQueueRects[ position ].getRelativeX() + ( ( tetroQueueRects[ position ].getRelativeW() - tetroShapes[ shape ].getRelativeW() ) / 2 ) ) ;
-		tetroShapes[ shape ].setRelativeY( tetroQueueRects[ position ].getRelativeY() + ( ( tetroQueueRects[ position ].getRelativeH() - tetroShapes[ shape ].getRelativeH() ) / 2 ) );
+		tetroShapes[ shape ].setRelativeY( tetroQueueRects[ position ].getRelativeY() + ( ( tetroQueueRects[ position ].getRelativeH() - tetroShapes[ shape ].getRelativeH() ) / 2 ) + ( 0.94 * position ) );
 		tetroShapes[ shape ].updateAbsCoords();
 		tetroTexShapes.setColorMod( shapeColor[ shape ] );
 		tetroTexShapes.renderTexture( tetroShapes[ shape ].getSrcRect(), tetroShapes[ shape ].getDestRect() ); 

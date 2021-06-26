@@ -5,3 +5,6 @@ CFLAGS= -IC:/msys64/mingw64/include/SDL2
 Tetroblock: game.o temporizador.o texture.o tetroblock.o object.o
 	$(CC) gamestate.h main.cpp $(CFLAGS) -o Tetroblock game.o object.o texture.o temporizador.o tetroblock.o $(LINKER_FLAGS)
 
+tetroblock.o: tetroblock.h tetroblock.cpp
+	$(CC) tetroblock.h tetroblock.cpp $(CFLAGS) -c
+	

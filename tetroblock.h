@@ -17,12 +17,13 @@ class Tetroblock : public GameState
 		void gameStateRender();
 };
 
-// Shape colors
-const SDL_Color shapeColor[ 7 ] = { { 255, 120,   5 }, {   0, 101, 255 }, {  92,  72, 255 }, { 198,   0,   0 },
-									{  63, 158,  82 }, {   0, 170, 240 }, { 255, 216,   0 } };
+// Shape colors (orange, blue, purple, green, red )
+const SDL_Color shapeColor[ 7 ] = { { 255, 120,   5 }, {   0,  84, 247 }, {  92,  72, 255 }, { 198,   0,   0 },
+									{  63, 158,  82 }, {  60, 143, 255 }, { 255, 216,   0 } };
+						
 // Shape shadows							
-const SDL_Color shadowColor[ 7 ] = { { 185,  80,   5 }, {  0,  31, 185 }, {  60,  10, 185 }, { 128,   0,   0 },
-									 {   3,  88,  12 }, {  0, 100, 170 }, { 185, 146,   0 } };
+const SDL_Color shadowColor[ 7 ] = { { 185,  80,   5 }, {   0,  51, 150 }, {  60,  10, 185 }, { 128,   0,   0 },
+									 { 40,   90,  50 }, {  58, 119, 244 }, { 255, 221,  60 } };
 									 
 
 /* CONSTANTES */

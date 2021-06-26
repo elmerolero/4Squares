@@ -38,76 +38,70 @@ GameStates gActualState;
 
 bool init( void )
 {
-	bool sucess = true;
-	
 	// Initializes SDL lib
 	cout << "======================= Four Squares =======================";
 	cout << "\nInitializing SDL lib. ";
 	if( SDL_Init( SDL_INIT_VIDEO ) < 0 || (IMG_Init( IMG_INIT_PNG ) & IMG_INIT_PNG) != IMG_INIT_PNG ){
 		cout << "Error initilizing SDL. Details SDL: " << SDL_GetError() << " IMG: " << IMG_GetError() << endl; 
-		sucess = false;
-	}
-	else{
-		// Intializes medisplay Options
-		cout << "Intilializing video. " << endl;
-		
-		// Gets display options and check display was not too small
-		if( SDL_GetCurrentDisplayMode( 0, &gDisplayInfo ) != 0 && ( gDisplayInfo.w < MIN_WIDTH || gDisplayInfo.h < MIN_HEIGHT ) ){
-			if( gDisplayInfo.w < MIN_WIDTH || gDisplayInfo.h < MIN_HEIGHT )
-				cout << "Error, display's resolution is lower than the minimum resolution. :(" << endl;
-			else
-				cout << "\nError getting current display mode. Error: " << SDL_GetError() << endl;
-			sucess = false;
-		}
-		else{
-			cout << "\nVideo initialized with current display properties:\n"
-				  << "Width: " << gDisplayInfo.w << endl
-				  << "Height: " << gDisplayInfo.h << endl
-				  << "Refresh: " << gDisplayInfo.refresh_rate << endl;
-			
-			// Creates window
-			cout << "Creating Window. ";
-			gPtrWindow = SDL_CreateWindow( "Four Squares", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, gDisplayInfo.w, gDisplayInfo.h, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE );
-			if( gPtrWindow == NULL ){
-				cout << "There was an error creating window. Details: " << SDL_GetError() << endl;
-				sucess = false;
-			}
-			else{
-				cout << "\nCreating renderer context. " << endl;
-				gPtrRenderer = SDL_CreateRenderer( gPtrWindow, -1, SDL_RENDERER_ACCELERATED );
-				if( gPtrRenderer == NULL ){
-					cout << "Renderer could not be created! Details: " << SDL_GetError() << endl;
-					sucess = false;
-				}
-				else{
-					// Enables  blend mode
-					SDL_SetRenderDrawBlendMode( gPtrRenderer, SDL_BLENDMODE_BLEND );
-					
-					//Initializes renderer color
-					SDL_SetRenderDrawColor( gPtrRenderer, 0xFF, 0xFF, 0xFF, 0xFF );
-					
-					//Carga el ícono
-					SDL_Surface * icono = IMG_Load("Recursos/Icono.bmp");
-					if( icono != NULL )
-					{
-						SDL_SetWindowIcon( gPtrWindow, icono );
-						SDL_FreeSurface(icono);
-					}
-					
-					// Loads user's preferences or initializes the game options
-					loadPreferences();
-			
-					// Sets preferences loaded
-					setPreferences();
-				
-					setState( GAME_STATE_GAME );
-					changeState();
-				}
-			}
-		}
+		return false;
 	}
 	
-	return sucess;
+	// Intializes display Options
+	cout << "Intilializing video. " << endl;
+
+	//Carga el ícono
+	SDL_Surface * icono = IMG_Load("recursos/img/icono.bmp");
+	if( icono != NULL ){
+		SDL_SetWindowIcon( gPtrWindow, icono );
+		SDL_FreeSurface(icono);
+	}
+		
+	// Gets display options and check display was not too small
+	if( SDL_GetCurrentDisplayMode( 0, &gDisplayInfo ) != 0 && ( gDisplayInfo.w < MIN_WIDTH || gDisplayInfo.h < MIN_HEIGHT ) ){
+		if( gDisplayInfo.w < MIN_WIDTH || gDisplayInfo.h < MIN_HEIGHT )
+			cout << "Error, display's resolution is lower than the minimum resolution. :(" << endl;
+		else
+			cout << "\nError getting current display mode. Error: " << SDL_GetError() << endl;
+		
+		return false;
+	}
+	
+	cout << "\nVideo initialized with current display properties:\n"
+		 << "Width: " << gDisplayInfo.w << endl
+		 << "Height: " << gDisplayInfo.h << endl
+		 << "Refresh: " << gDisplayInfo.refresh_rate << endl;
+			
+	// Creates a window
+	cout << "Creating Window. ";
+	gPtrWindow = SDL_CreateWindow( "Four Squares", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, gDisplayInfo.w, gDisplayInfo.h, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE );
+	if( gPtrWindow == NULL ){
+		cout << "There was an error creating window. Details: " << SDL_GetError() << endl;
+		return false;
+	}
+
+	cout << "\nCreating renderer context. " << endl;
+	gPtrRenderer = SDL_CreateRenderer( gPtrWindow, -1, SDL_RENDERER_ACCELERATED );
+	if( gPtrRenderer == NULL ){
+		cout << "Renderer could not be created! Details: " << SDL_GetError() << endl;
+		return false;
+	}
+					
+	// Enables  blend mode
+	SDL_SetRenderDrawBlendMode( gPtrRenderer, SDL_BLENDMODE_BLEND );
+					
+	//Initializes renderer color
+	SDL_SetRenderDrawColor( gPtrRenderer, 0xFF, 0xFF, 0xFF, 0xFF );
+					
+	// Loads user's preferences or initializes the game options
+	loadPreferences();
+
+	// Sets preferences loaded
+	setPreferences();
+
+	setState( GAME_STATE_GAME );
+	changeState();
+
+	return true;
 }
 
 void loadPreferences()
@@ -238,6 +232,7 @@ void close( void )
 	// Deletes everything of the game
 	SDL_DestroyRenderer( gPtrRenderer );
 	SDL_DestroyWindow( gPtrWindow );
+	SDL_Quit();
 	gPtrWindow = NULL;
 	gPtrRenderer = NULL;
 }

@@ -15,9 +15,6 @@ Texture::~Texture()
 
 bool Texture::loadFileTexture( const char* path )
 {
-	// Status flag
-	bool success = true;
-	
 	// Frees texture if exists another
 	if( ptrTexture != NULL ){
 		destroyTexture();
@@ -28,23 +25,22 @@ bool Texture::loadFileTexture( const char* path )
 	ptrAuxSurface = IMG_Load( path );
 	if( ptrAuxSurface == NULL ){
 		cout << "Error loading image. Details: " << IMG_GetError() << endl;
-		success = false;
+		return false;
 	}
-	else{
-		ptrTexture = SDL_CreateTextureFromSurface( gPtrRenderer, ptrAuxSurface );
-		if( ptrTexture == NULL ){
-			cout << "We could not create the texture. Details: " << SDL_GetError() << endl;
-			success = false;
-		}
-		else{
-			textureWidth = ptrAuxSurface -> w;
-			textureHeight = ptrAuxSurface -> h;
-			
-			SDL_FreeSurface( ptrAuxSurface );
-		}
+
+	ptrTexture = SDL_CreateTextureFromSurface( gPtrRenderer, ptrAuxSurface );
+	if( ptrTexture == NULL ){
+		cout << "We could not create the texture. Details: " << SDL_GetError() << endl;
+		SDL_FreeSurface( ptrAuxSurface );
+		return false;
 	}
 	
-	return success;
+	textureWidth = ptrAuxSurface -> w;
+	textureHeight = ptrAuxSurface -> h;
+			
+	SDL_FreeSurface( ptrAuxSurface );
+	
+	return true;
 }
 
 void Texture::setBlendMode( SDL_BlendMode blend )

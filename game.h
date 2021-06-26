@@ -11,8 +11,8 @@ extern bool quit;
 // Display constants
 #define DISPLAY_UNIT	6.13
 #define ASPECT_RATIO    1.77
-#define MIN_WIDTH		600
-#define MIN_HEIGHT		480
+#define MIN_WIDTH		480
+#define MIN_HEIGHT		320
 
 // For floating point operations
 struct SDL_DRect
