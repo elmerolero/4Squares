@@ -41,20 +41,13 @@ bool init( void )
 	// Initializes SDL lib
 	cout << "======================= Four Squares =======================";
 	cout << "\nInitializing SDL lib. ";
-	if( SDL_Init( SDL_INIT_VIDEO ) < 0 || (IMG_Init( IMG_INIT_PNG ) & IMG_INIT_PNG) != IMG_INIT_PNG ){
+	if( SDL_Init( SDL_INIT_VIDEO ) < 0 || (IMG_Init( IMG_INIT_PNG ) & IMG_INIT_PNG) != IMG_INIT_PNG || TTF_Init() < 0 ){
 		cout << "Error initilizing SDL. Details SDL: " << SDL_GetError() << " IMG: " << IMG_GetError() << endl; 
 		return false;
 	}
 	
 	// Intializes display Options
 	cout << "Intilializing video. " << endl;
-
-	//Carga el ícono
-	SDL_Surface * icono = IMG_Load("recursos/img/icono.bmp");
-	if( icono != NULL ){
-		SDL_SetWindowIcon( gPtrWindow, icono );
-		SDL_FreeSurface(icono);
-	}
 		
 	// Gets display options and check display was not too small
 	if( SDL_GetCurrentDisplayMode( 0, &gDisplayInfo ) != 0 && ( gDisplayInfo.w < MIN_WIDTH || gDisplayInfo.h < MIN_HEIGHT ) ){
@@ -73,7 +66,7 @@ bool init( void )
 			
 	// Creates a window
 	cout << "Creating Window. ";
-	gPtrWindow = SDL_CreateWindow( "Four Squares", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, gDisplayInfo.w, gDisplayInfo.h, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE );
+	gPtrWindow = SDL_CreateWindow( "Four Squares", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 480, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE );
 	if( gPtrWindow == NULL ){
 		cout << "There was an error creating window. Details: " << SDL_GetError() << endl;
 		return false;
@@ -84,6 +77,13 @@ bool init( void )
 	if( gPtrRenderer == NULL ){
 		cout << "Renderer could not be created! Details: " << SDL_GetError() << endl;
 		return false;
+	}
+
+	//Carga el ícono
+	SDL_Surface * icono = IMG_Load("recursos/img/icono.bmp");
+	if( icono != NULL ){
+		SDL_SetWindowIcon( gPtrWindow, icono );
+		SDL_FreeSurface(icono);
 	}
 					
 	// Enables  blend mode

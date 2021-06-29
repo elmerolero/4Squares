@@ -1,6 +1,7 @@
 #ifndef TEXTURE_H
 #define TEXTURE_H
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
 #include "game.h"
 
 class Texture
@@ -15,6 +16,9 @@ class Texture
 		// Loads texture from a file
 		bool loadFileTexture( const char* path );
 		
+		// Crea una textura dado un texto
+		bool crearTexturaDesdeTexto( const char *texto, SDL_Color color, TTF_Font *fuente );
+
 		// Sets blend mode 
 		void setBlendMode( SDL_BlendMode blend );
 		

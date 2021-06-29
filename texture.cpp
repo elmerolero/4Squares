@@ -43,6 +43,39 @@ bool Texture::loadFileTexture( const char* path )
 	return true;
 }
 
+bool Texture::crearTexturaDesdeTexto( const char *texto, SDL_Color color, TTF_Font *fuente )
+{
+	// Libera la textura que exista anteriormente
+	if( ptrTexture != NULL ){
+		destroyTexture();
+	}
+
+	// Rasteriza el texto
+	SDL_Surface *superficie = TTF_RenderText_Solid( fuente, texto, color );
+	if( superficie == nullptr ){
+		cout << "Ocurrió un error al crear la textura. Error: " << TTF_GetError() << endl;
+		return false;
+	}
+
+	// Convierte la superficie en una textura
+	ptrTexture = SDL_CreateTextureFromSurface( gPtrRenderer, superficie );
+	if( ptrTexture == nullptr ){
+		cout << "No pudo crearse la textura de texto. Error: " << TTF_GetError() << endl;
+		SDL_FreeSurface( superficie );
+		return false;
+	}
+
+	// Convierte la superficie en una textura
+	textureWidth = superficie -> w;
+	textureHeight = superficie -> h;
+
+	// Elimina el residuo
+	SDL_FreeSurface( superficie );
+
+	// Returna true
+	return true;
+}
+
 void Texture::setBlendMode( SDL_BlendMode blend )
 {
 	if( SDL_SetTextureBlendMode( ptrTexture, blend ) < 0 )

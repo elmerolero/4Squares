@@ -1,0 +1,9 @@
+{
+    "files.associations": {
+        "iostream": "cpp"
+    },
+
+    "C_Cpp.default.includePath":[
+        "C:/msys64/mingw64/include/"
+    ]
+}

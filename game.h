@@ -2,6 +2,7 @@
 #define GAME_H
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include <SDL2/SDL_TTF.h>
 #include "gamestate.h"
 #include "temporizador.h"
 

@@ -189,6 +189,11 @@ void Tetroblock::gameStateRender()
 	
 	tetroQueueDraw();
 	
+	FS_DibujarFigura( pieceSaved - 1, ( tetroBoardSurface.getRelativeX() - tetroQueueCont.getRelativeW() ) + 0.2, 0.8f );
+
+	SDL_Rect rect{ 500, 300, puntajeTextura.getWidth(), puntajeTextura.getHeight() };
+	puntajeTextura.renderTexture( NULL, &rect );
+
 	// Updates screen
 	SDL_RenderPresent( gPtrRenderer );
 	fps++;
@@ -210,16 +215,17 @@ void initObjects()
 	}
 	
 	// Margin
-	if( !tetroTexMargin.loadFileTexture( "recursos/img/bloques/margen.png" ) < 0 )
+	if( !tetroTexMargin.loadFileTexture( "recursos/img/bloques/margen.png" ) )
 		setState( GAME_STATE_EXIT );
 	else{
 		tetroMargin.loadCoordinatesFromFile( "recursos/coord/margin.crd" );
-		tetroMargin.setRelativeX( tetroBoardSurface.getRelativeX() - 0.204545 );
+		//tetroMargin.setRelativeX( tetroBoardSurface.getRelativeX() - 0.204545 );
+		tetroMargin.setRelativeX( ( gameViewport.w - tetroMargin.getRelativeW() ) / 2 );
 		tetroMargin.updateAbsCoords();
 	}
 	
 	// Background
-	if( !tetroTexBackground.loadFileTexture( "recursos/img/fondos/stonehenge.png" ) < 0 )
+	if( !tetroTexBackground.loadFileTexture( "recursos/img/fondos/stonehenge.png" ) )
 		setState( GAME_STATE_EXIT );
 	else{
 		auxRect.w = ( ( (float)gDisplayWidth / (float)gDisplayHeight) / ASPECT_RATIO ) * (float)tetroTexBackground.getWidth();
@@ -233,7 +239,7 @@ void initObjects()
 	}
 	
 	// Blocks
-	if( !tetroTexBlock.loadFileTexture( "recursos/img/bloques/bloque.png" ) < 0 ){
+	if( !tetroTexBlock.loadFileTexture( "recursos/img/bloques/bloque.png" ) ){
 		setState( GAME_STATE_EXIT );
 	}
 	else{
@@ -242,7 +248,7 @@ void initObjects()
 	}	
 	
 	// Queue container
-	if( !tetroTexQueueCont.loadFileTexture( "recursos/img/bloques/queue.png" ) < 0 )
+	if( !tetroTexQueueCont.loadFileTexture( "recursos/img/bloques/queue.png" ) )
 		setState( GAME_STATE_EXIT );
 	else{
 		tetroQueueCont.loadCoordinatesFromFile( "recursos/coord/queue.crd" );
@@ -259,7 +265,7 @@ void initObjects()
 	
 	
 	// Queue shapes
-	if( !tetroTexShapes.loadFileTexture( "recursos/img/bloques/shapes.png" ) < 0 ){
+	if( !tetroTexShapes.loadFileTexture( "recursos/img/bloques/shapes.png" ) ){
 		setState( GAME_STATE_EXIT );
 	}
 	else{
@@ -288,6 +294,21 @@ void initObjects()
 			tetroShapes[ i ].updateAbsCoords();
 		}
 	}
+
+	// Fuentes
+	fuenteArg = TTF_OpenFont("recursos/fuentes/Aaargh.ttf", 50 );
+	if( fuenteArg == nullptr ){
+		cout << "Error al cargar la fuente. Error: " << endl;
+		setState( GAME_STATE_EXIT );
+	}
+
+	SDL_Color color = { 255, 255, 255 };
+
+	if( !puntajeTextura.crearTexturaDesdeTexto( "1200", color, fuenteArg ) ){
+		setState( GAME_STATE_EXIT );
+	}
+
+	cout << "Width " << puntajeTextura.getWidth() << " Height " << puntajeTextura.getHeight() << endl; 
 	
 }
 
@@ -307,7 +328,7 @@ void updateViewport()
 	tetroBackground.setTextureCoords( auxRect );
 	tetroBackground.updateAbsCoords();
 	
-	tetroMargin.setRelativeX( tetroBoardSurface.getRelativeX() - 0.204545 );
+	tetroMargin.setRelativeX( ( gameViewport.w - tetroMargin.getRelativeW() ) / 2 );
 	tetroMargin.updateAbsCoords();
 	
 	tetroBlock.updateAbsCoords();
@@ -325,18 +346,15 @@ void updateViewport()
 		cout << tetroQueueRects[ i ].getRelativeX() << endl;
 	}
 	
-	//shapeSpaces[ 4 ].x = shapeSpaces[ 3 ].w - 0.3;
-	//shapeSpaces[ 4 ].y = 0.5;
-	//shapeSpaces[ 4 ].w = 1.3;
-	//shapeSpaces[ 4 ].h = 0.82;
-
+	/*shapeSpaces[ 4 ].x = shapeSpaces[ 3 ].w - 0.3;
+	shapeSpaces[ 4 ].y = 0.5;
+	shapeSpaces[ 4 ].w = 1.3;
+	shapeSpaces[ 4 ].h = 0.82;*/
 	
 	piecesRect.x = 0.19;
 	piecesRect.y = 0.0;
 	piecesRect.w = tetroBlock.getRelativeW() * 5 + 0.25;
 	piecesRect.h = 4.5; 
-			
-	cout << "Pieces rect: " << piecesRect.x * gameUnitSize << " " << piecesRect.y * gameUnitSize << " " << piecesRect.w * gameUnitSize << " " << piecesRect.h * gameUnitSize << endl;
 }
 
 // Initializes the game
@@ -412,15 +430,12 @@ void tetroShadowDraw( int x, int y )
 	drawPiece( x, y );
 }
 
-void tetroShapeDraw( int shape, int position )
-{	
-	if( shape < 7 && shape >= 0 ){
-		tetroShapes[ shape ].setRelativeX( tetroQueueRects[ position ].getRelativeX() + ( ( tetroQueueRects[ position ].getRelativeW() - tetroShapes[ shape ].getRelativeW() ) / 2 ) ) ;
-		tetroShapes[ shape ].setRelativeY( tetroQueueRects[ position ].getRelativeY() + ( ( tetroQueueRects[ position ].getRelativeH() - tetroShapes[ shape ].getRelativeH() ) / 2 ) + ( 0.94 * position ) );
-		tetroShapes[ shape ].updateAbsCoords();
-		tetroTexShapes.setColorMod( shapeColor[ shape ] );
-		tetroTexShapes.renderTexture( tetroShapes[ shape ].getSrcRect(), tetroShapes[ shape ].getDestRect() ); 
-	}
+void FS_DibujarFigura( int figura, double x, double y ){
+	tetroShapes[ figura ].setRelativeX( x );
+	tetroShapes[ figura ].setRelativeY( y );
+	tetroShapes[ figura ].updateAbsCoords();
+	tetroTexShapes.setColorMod( shapeColor[ figura ] );
+	tetroTexShapes.renderTexture( tetroShapes[ figura ].getSrcRect(), tetroShapes[ figura ].getDestRect() ); 
 }
 
 // Sets the piece positions
@@ -566,7 +581,8 @@ int queueGetNextShape()
 void tetroQueueDraw()
 {
 	for( int i = 0; i < 4; i++ ){
-		tetroShapeDraw( queueShapes[ queueIndex ], i );
+		int figura = queueShapes[ queueIndex ];
+		FS_DibujarFigura( figura, tetroQueueRects[ i ].getRelativeX() + ( ( tetroQueueRects[ i ].getRelativeW() - tetroShapes[ figura ].getRelativeW() ) / 2 ), tetroQueueRects[ i ].getRelativeY() + ( ( tetroQueueRects[ i ].getRelativeH() - tetroShapes[ figura ].getRelativeH() ) / 2 ) + ( 0.94 * i ) );
 		queueIndex++;
 		if( queueIndex >= 4 ){
 			queueIndex = 0;
@@ -627,10 +643,16 @@ int queueShapes[ 4 ];
 bool allowedChange;
 int pieceSaved;
 
-// Score
+// Puntaje
 int countLines;
 int countLevel;
 int countScore;
 
 // Pieces rect
 SDL_DRect piecesRect;
+
+// Fuentes
+TTF_Font *fuenteArg;
+TTF_Font *fuenteAllStar;
+
+Texture puntajeTextura;

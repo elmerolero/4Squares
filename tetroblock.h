@@ -123,6 +123,13 @@ extern int countScore;
 // Pieces rect
 extern SDL_DRect piecesRect;
 
+// Fuentes
+extern TTF_Font *fuenteArg;
+extern TTF_Font *fuenteAllStar;
+
+// Puntaje
+extern Texture puntajeTextura;
+
 // Funtions
 void initObjects();
 void updateViewport();
@@ -140,5 +147,6 @@ void savePiece( int x, int y );
 void eraseLines();
 int queueGetNextShape();
 void tetroQueueDraw();
+void FS_DibujarFigura( int figura, double x, double y );
 
 #endif
