@@ -1,7 +1,9 @@
 #include "tetroblock.h"
 #include "game.h"
 #include <iostream>
+#include <sstream>
 #include <cstdlib>
+#include <iomanip>
 #include <ctime>
 using namespace std; 
 
@@ -15,15 +17,14 @@ Tetroblock::Tetroblock()
 		queueShapes[ i ] = rand() % 7;
 	}
 	queueIndex = 0;
-		
-	
-	// Updates viewport
-	updateViewport();
 
 	initObjects();
 
 	// Initializes board
 	tetroBlocksInit();
+
+	// Updates viewport
+	updateViewport();
 	
 	// Initializes the timer
 	tempFPS.iniciar();
@@ -56,11 +57,16 @@ void Tetroblock::gameStateEvents()
 				gameUpdateViewport();
 				updateViewport();
 			}
-			if( gGameEvent.key.keysym.sym == SDLK_UP){
+			if( gGameEvent.key.keysym.sym == SDLK_UP ){
 				while( !pieceColisionDetected( piecePosX, piecePosY ) ){
 					piecePosY++;
 				}
 				piecePosY--;
+			}
+			else if( gGameEvent.key.keysym.sym == SDLK_DOWN ){
+				piecePosY++;
+				if( pieceColisionDetected( piecePosX, piecePosY ) )
+					piecePosY--;
 			}
 			if( gGameEvent.key.keysym.sym == SDLK_x){
 				rotatePiece( 1 );
@@ -101,12 +107,7 @@ void Tetroblock::gameStateEvents()
 	}
 			
 	keyboardState = SDL_GetKeyboardState( NULL );
-	if( keyboardState[ SDL_SCANCODE_DOWN ] ){
-		piecePosY++;
-		if( pieceColisionDetected( piecePosX, piecePosY ) )
-			piecePosY--;
-	}
-	
+
 	// Left and right
 	if( keyboardState[ SDL_SCANCODE_LEFT ] ){
 		if( inputTime.obtenerTicks() >= moveResponseTime[ responseLevel ] ){
@@ -191,8 +192,9 @@ void Tetroblock::gameStateRender()
 	
 	FS_DibujarFigura( pieceSaved - 1, ( tetroBoardSurface.getRelativeX() - tetroQueueCont.getRelativeW() ) + 0.2, 0.8f );
 
-	SDL_Rect rect{ 500, 300, puntajeTextura.getWidth(), puntajeTextura.getHeight() };
-	puntajeTextura.renderTexture( NULL, &rect );
+	//SDL_Rect rect{ 500, 300, puntajeTextura.getWidth(), puntajeTextura.getHeight() };
+	SDL_Rect *rect = puntaje.getDestRect();  
+	puntajeTextura.renderTexture( puntaje.getSrcRect(), puntaje.getDestRect() );
 
 	// Updates screen
 	SDL_RenderPresent( gPtrRenderer );
@@ -225,7 +227,7 @@ void initObjects()
 	}
 	
 	// Background
-	if( !tetroTexBackground.loadFileTexture( "recursos/img/fondos/stonehenge.png" ) )
+	if( !tetroTexBackground.loadFileTexture( "recursos/img/fondos/space.png" ) )
 		setState( GAME_STATE_EXIT );
 	else{
 		auxRect.w = ( ( (float)gDisplayWidth / (float)gDisplayHeight) / ASPECT_RATIO ) * (float)tetroTexBackground.getWidth();
@@ -294,22 +296,6 @@ void initObjects()
 			tetroShapes[ i ].updateAbsCoords();
 		}
 	}
-
-	// Fuentes
-	fuenteArg = TTF_OpenFont("recursos/fuentes/Aaargh.ttf", 50 );
-	if( fuenteArg == nullptr ){
-		cout << "Error al cargar la fuente. Error: " << endl;
-		setState( GAME_STATE_EXIT );
-	}
-
-	SDL_Color color = { 255, 255, 255 };
-
-	if( !puntajeTextura.crearTexturaDesdeTexto( "1200", color, fuenteArg ) ){
-		setState( GAME_STATE_EXIT );
-	}
-
-	cout << "Width " << puntajeTextura.getWidth() << " Height " << puntajeTextura.getHeight() << endl; 
-	
 }
 
 // Updates game's viewport if window is resized
@@ -346,15 +332,12 @@ void updateViewport()
 		cout << tetroQueueRects[ i ].getRelativeX() << endl;
 	}
 	
-	/*shapeSpaces[ 4 ].x = shapeSpaces[ 3 ].w - 0.3;
-	shapeSpaces[ 4 ].y = 0.5;
-	shapeSpaces[ 4 ].w = 1.3;
-	shapeSpaces[ 4 ].h = 0.82;*/
-	
 	piecesRect.x = 0.19;
 	piecesRect.y = 0.0;
 	piecesRect.w = tetroBlock.getRelativeW() * 5 + 0.25;
-	piecesRect.h = 4.5; 
+	piecesRect.h = 4.5;
+
+	FS_ActualizarPuntaje();
 }
 
 // Initializes the game
@@ -540,7 +523,8 @@ void eraseLines()
 		case 4: linesRealized = 1200; break;
 	}
 	countScore += linesRealized * countLevel;
-	
+	FS_ActualizarPuntaje();
+
 	if( startLine >= 0 ){
 		for( int col = 0; col < BOARD_WIDTH; col++ ){
 			line = startLine;
@@ -588,6 +572,32 @@ void tetroQueueDraw()
 			queueIndex = 0;
 		}
 	}
+}
+
+void FS_ActualizarPuntaje( void )
+{
+	stringstream puntajeStr;
+	puntajeStr << setfill( '0' ) << setw( 7 ) << countScore;
+
+	// Fuente
+	TTF_CloseFont( fuenteArg );
+	fuenteArg = TTF_OpenFont( "recursos/fuentes/Aaargh.ttf", (int)( ( (float)gDisplayHeight / 1080.f ) * 47.f ) );
+	if( fuenteArg == nullptr ){
+		cout << "Error al cargar la fuente. Error: " << endl;
+		setState( GAME_STATE_EXIT );
+		return;
+	}
+	SDL_Color color = { 255, 255, 255 };
+	if( !puntajeTextura.crearTexturaDesdeTexto( puntajeStr.str().c_str(), color, fuenteArg ) ){
+		setState( GAME_STATE_EXIT );
+		return;
+	}
+
+	SDL_Rect acoords = { 0, 0, puntajeTextura.getWidth(), puntajeTextura.getHeight() };
+	SDL_DRect rcoords = { tetroMargin.getRelativeX() + 0.227, 2.33, (float)puntajeTextura.getWidth() / gameUnitSize, (float)puntajeTextura.getHeight() / gameUnitSize };
+	puntaje.setRelativeCoords( rcoords );
+	puntaje.setTextureCoords( acoords );
+	puntaje.updateAbsCoords();
 }
 
 /* VARIABLES */
@@ -655,4 +665,5 @@ SDL_DRect piecesRect;
 TTF_Font *fuenteArg;
 TTF_Font *fuenteAllStar;
 
+Object puntaje;
 Texture puntajeTextura;

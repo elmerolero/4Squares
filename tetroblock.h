@@ -128,6 +128,7 @@ extern TTF_Font *fuenteArg;
 extern TTF_Font *fuenteAllStar;
 
 // Puntaje
+extern Object puntaje;
 extern Texture puntajeTextura;
 
 // Funtions
@@ -145,6 +146,7 @@ bool boxIsUsed( int x, int y );
 bool pieceColisionDetected( int x, int y );
 void savePiece( int x, int y );
 void eraseLines();
+void FS_ActualizarPuntaje( void );
 int queueGetNextShape();
 void tetroQueueDraw();
 void FS_DibujarFigura( int figura, double x, double y );

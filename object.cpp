@@ -96,6 +96,16 @@ int Object::getAbsoluteY()
 	return absoluteRect.y;
 }
 
+int Object::getAbsoluteW()
+{
+	return absoluteRect.w;
+}
+
+int Object::getAbsoluteH()
+{
+	return absoluteRect.h;
+}
+
 void Object::setAbsoluteX( int x )
 {
 	absoluteRect.x = x;

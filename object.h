@@ -1,5 +1,6 @@
 #ifndef OBJECT_H
 #define OBJECT_H
+#include <string>
 #include <SDL2/SDL.h>
 #include "game.h"
 
@@ -34,6 +35,8 @@ class Object
 		// Gets
 		int getAbsoluteX();
 		int getAbsoluteY();
+		int getAbsoluteW();
+		int getAbsoluteH();
 		
 		void setAbsoluteX( int x );
 		void setAbsoluteY( int y );
@@ -48,6 +51,7 @@ class Object
 		SDL_Rect  textureRect;
 		SDL_DRect relativeRect;
 		SDL_Rect  absoluteRect;
+		int fontSize;
 };
 
 #endif
