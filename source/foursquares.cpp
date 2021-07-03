@@ -54,9 +54,7 @@ void FourSquares::estadoEntrada()
 				updateViewport();
 			}
 			else if( gGameEvent.key.keysym.sym == SDLK_x && pieceID != FIGURA_CUADRADO ){
-				rotatePiece( 1 );
-				if( pieceColisionDetected( piecePosX, piecePosY ) )
-					rotatePiece( -1 );
+				FS_AlternarPieza( 1 );
 				FS_ActualizarPosicionSombra();
 				if( gameTimer.obtenerTicks() >= downSpeed[ contadorNivel - 1 ] ){
 					pasosRealizados++;
@@ -64,9 +62,8 @@ void FourSquares::estadoEntrada()
 				}
 			}
 			else if( gGameEvent.key.keysym.sym == SDLK_z && pieceID != FIGURA_CUADRADO ){
-				rotatePiece( -1 );
-				if( pieceColisionDetected( piecePosX, piecePosY ) )
-					rotatePiece( 1 );
+				FS_AlternarPieza( -1 );
+
 				FS_ActualizarPosicionSombra();
 				if( gameTimer.obtenerTicks() >= downSpeed[ contadorNivel - 1 ] ){
 					pasosRealizados++;
@@ -191,7 +188,7 @@ void FourSquares::estadoLogica()
 			return;
 		}
 
-		if( piecePosY == 1 ){
+		if( piecePosY == 0 ){
 			jSalir = true;
 		}
 		savePiece( piecePosX, piecePosY );
@@ -372,7 +369,7 @@ void tetroBlocksInit()
 	FS_ActualizarPosicionSombra();
 	
 	// Noc
-	contadorNivel = 10;
+	contadorNivel = 1;
 	contadorLineas = 0;
 	contadorPuntaje = 0;
 
@@ -656,6 +653,62 @@ void FS_ActualizarPosicionSombra( void )
 		sombraPosY++;
 	}
 	sombraPosY--;
+}
+
+void FS_AlternarPieza( int direccion )
+{
+	// Rota la figura
+	rotatePiece( direccion );
+
+	if( pieceID != FIGURA_LINEA ){
+		if( !pieceColisionDetected( piecePosX, piecePosY ) ){
+			return;
+		}
+		// Puede moverse si se mueve a la derecha
+		else if( !pieceColisionDetected( piecePosX + 1, piecePosY ) ){
+			piecePosX++;
+		}
+		// Puede moverse si se mueve hacia la izquierda
+		else if( !pieceColisionDetected( piecePosX - 1, piecePosY ) ){
+			piecePosX--;
+		}
+		// Puede moverse si se sube
+		else if( !pieceColisionDetected( piecePosX, piecePosY - 1 ) ){
+			piecePosY--;
+		}
+		else{
+			rotatePiece( direccion * -1 );
+		}
+	}
+	else{
+		if( !pieceColisionDetected( piecePosX, piecePosY ) ){
+			return;
+		}
+		// Puede moverse si se mueve a la derecha
+		else if( !pieceColisionDetected( piecePosX + 1, piecePosY ) ){
+			piecePosX++;
+		}
+		else if( !pieceColisionDetected( piecePosX + 2, piecePosY ) ){
+			piecePosX += 2;
+		}
+		// Puede moverse si se mueve hacia la izquierda
+		else if( !pieceColisionDetected( piecePosX - 1, piecePosY ) ){
+			piecePosX--;
+		}
+		else if( !pieceColisionDetected( piecePosX - 2, piecePosY ) ){
+			piecePosX -= 2;
+		}
+		// Puede moverse si se sube
+		else if( !pieceColisionDetected( piecePosX, piecePosY - 1 ) ){
+			piecePosY--;
+		}
+		else if( !pieceColisionDetected( piecePosX, piecePosY - 2 ) ){
+			piecePosY -= 2;
+		}
+		else{
+			rotatePiece( direccion * -1 );
+		}
+	}
 }
 
 void FS_Pausar()

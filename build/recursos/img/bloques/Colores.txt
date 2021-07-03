@@ -1,8 +1,0 @@
-Morado    92,  72, 255
-Azul       0, 101, 255
-Amarillo 255, 216,   0
-Celeste    0, 170, 240
-Rojo     198,   0,   0
-Verde     63, 158,  82
-Verde 2    0, 127,  70
-Naranja  255, 120,   5

@@ -170,6 +170,7 @@ void FS_DibujarFigura( int figura, double x, double y );
 void FS_ActualizarTamanioFuente( TTF_Font *fuente, std::string archivo, double tamanioBase );
 void FS_ActualizarLineas( void );
 void FS_ActualizarPosicionSombra( void );
+void FS_AlternarPieza( int direccion );
 void FS_Pausar( void );
 void FS_DibujarTiempo( Uint32 tiempo, Texture &textura, Object &objeto, TTF_Font *fuente, double x, double y );
 void FS_ActualizarDatos( int dato, Texture &textura, Object &objeto, int relleno, TTF_Font *fuente, double x, double y );
