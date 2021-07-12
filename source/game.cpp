@@ -1,6 +1,8 @@
 #include "game.h"
 #include "foursquares.h"
+#include "preparacion.h"
 #include <iostream>
+#include <vector>
 using namespace std;
 
 /* Notas importantes */
@@ -14,19 +16,24 @@ using namespace std;
 //     p = t * u
 // Donde 't' es el tamaño o posición relativo y 'u' es el tamaño de la unidad en pixeles. 
 
-// For rendering
+// Para el dibujao
 SDL_Window * gPtrWindow;
 SDL_Renderer * gPtrRenderer;
 SDL_DisplayMode gDisplayInfo;
 SDL_Event gGameEvent;
 
-// Variables for viewport and unit size
+// Variables para viewport y tamaño de unidad
 SDL_DRect gameViewport;
 double gameUnitSize;
 
 // Temporizador
 Temporizador tempFPS;
 int fps;
+
+// Para el estado del juego
+bool estadoSalir;
+EstadoJuego *estadoJuego;
+vector< EstadoJuego * > estadosJuego;
 
 // Keyboard state
 const Uint8 * keyboardState;
@@ -39,7 +46,6 @@ string jCalidadJuego;
 bool jMostrarTasaCuadros;
 int  jAnchoPantalla;
 int  jAltoPantalla;
-EstadoJuego *estadoJuego;
 
 bool Juego_Iniciar( std::string nombre )
 {
@@ -93,7 +99,14 @@ bool Juego_Iniciar( std::string nombre )
 	// Sets preferences loaded
 	Juego_EstablecerPreferencias();
 
-	estadoJuego = new FourSquares();
+	// Inicializa el temporizador de imagenes por segundo
+	tempFPS.iniciar();
+
+	// Establece el juego
+	EstadoJuego_EstablecerEstado( estadosJuego, new FourSquares() );
+
+	// Redirige al estado preparación
+	EstadoJuego_ApilarEstado( estadosJuego, new Preparacion() );
 
 	return true;
 }
@@ -105,23 +118,59 @@ void Juego_CargarPreferencias( void )
 	jHabilitarSincV = "0";
 	jMostrarTasaCuadros = false;
 	jCalidadJuego = "1";
-	jAnchoPantalla = 800;
-	jAltoPantalla = 480;
+	jAnchoPantalla = gDisplayInfo.w;
+	jAltoPantalla = gDisplayInfo.h;
 }
 
 void Juego_EstablecerPreferencias( void )
 {
-	// Pantalla completa deshabilitada
-	SDL_SetWindowFullscreen( gPtrWindow, jPantallaCompleta );
+	// Pantalla completa
+	Juego_EstablecerPantallaCompleta( jPantallaCompleta );
+
+	// Tamaño de la ventana
+	Juego_ActualizarVentana();
 
 	// Sincronización vertical
 	SDL_SetHint( SDL_HINT_RENDER_VSYNC, jHabilitarSincV.c_str() );
 
 	// Calidad del juegos
 	SDL_SetHint( SDL_HINT_RENDER_SCALE_QUALITY, jCalidadJuego.c_str() );
+}
 
-	// Tamaño de la ventana
-	Juego_ActualizarVentana();
+void Juego_EstablecerPantallaCompleta( bool pantallaCompleta )
+{
+	// Establece pantalla completa
+	jPantallaCompleta = pantallaCompleta;
+
+	// Si se desea pantalla completa
+	if( jPantallaCompleta ){
+		// Establece las dimensiones del juego
+		jAnchoPantalla = gDisplayInfo.w;
+		jAltoPantalla = gDisplayInfo.h;
+	}
+	else{
+		jAnchoPantalla = 800;
+		jAltoPantalla = 480;
+	}
+
+	// Establece el tamaño de la ventana
+	SDL_SetWindowSize( gPtrWindow, jAnchoPantalla, jAltoPantalla );
+	SDL_RenderSetLogicalSize( gPtrRenderer, jAnchoPantalla, jAltoPantalla );
+
+	// Establece a pantalla completa
+	SDL_SetWindowFullscreen( gPtrWindow, jPantallaCompleta );
+
+	// Actualiza el tamaño de la unidad y las dimensiones del viewport
+	gameUnitSize = jAltoPantalla / DISPLAY_UNIT;
+	gameViewport.h = DISPLAY_UNIT;
+	gameViewport.w = jAnchoPantalla / gameUnitSize;
+	gameViewport.x = 0.0;
+	gameViewport.y = 0.0;
+
+	// Si hay un estado de juego establecido
+	for( EstadoJuego *estadoJuego : estadosJuego ){
+		estadoJuego -> actualizarViewport();
+	}
 }
 
 // Actualiza el tamaño de la ventana
@@ -142,10 +191,14 @@ void Juego_ActualizarVentana( void )
 	gameViewport.w = jAnchoPantalla / gameUnitSize;
 	gameViewport.x = 0.0;
 	gameViewport.y = 0.0;
+
+	// Si hay un estado de juego establecido
+	for( EstadoJuego *estadoJuego : estadosJuego ){
+		estadoJuego -> actualizarViewport();
+	}
 };
 
-void Juego_Finalizar( void )
-{
+void Juego_Finalizar( void ){
 	delete estadoJuego;
 	
 	// Deletes everything of the game
@@ -154,4 +207,90 @@ void Juego_Finalizar( void )
 	SDL_Quit();
 	gPtrWindow = NULL;
 	gPtrRenderer = NULL;
+}
+
+void EstadoJuego_EstablecerEstado( vector< EstadoJuego * > &estadosJuego, EstadoJuego *estado ){
+	// Limpia los estados del juego que se encuentren
+	EstadoJuego_LimpiarEstados( estadosJuego );
+
+	// Apila el estado del juego
+	EstadoJuego_ApilarEstado( estadosJuego, estado );
+}
+
+// Elimina todos los estados de juego que existan en una pila
+void EstadoJuego_LimpiarEstados( vector< EstadoJuego * > &estadosJuego ){
+	// Mientras haya estados de juego apilados
+	while( !estadosJuego.empty() ){
+		// Obtiene el estado de juego a eliminar
+		EstadoJuego *estado = estadosJuego.back();
+
+		// Elimina ese elemento
+		delete estado;
+		
+		// Lo elimina de la pila
+		estadosJuego.pop_back();
+	}
+}
+
+void EstadoJuego_ApilarEstado( vector< EstadoJuego * > &estadosJuego, EstadoJuego *estado ){
+	// Apila el estado de juego solicitado
+	estadosJuego.push_back( estado );
+	
+	// Lo establece como el actual
+	estadoJuego = estadosJuego.back();
+}
+
+void EstadoJuego_Salir( void ){
+	estadoSalir = true;
+}
+
+void EstadoJuego_Salir( vector< EstadoJuego * > &estadosJuego ){
+	if( !estadoSalir ){
+		return;
+	}
+
+	if( estadosJuego.size() > 1 ){
+		// Retira el estado de juego actual
+		estadosJuego.pop_back();
+
+		// Regresa al estado de juego anterior
+		estadoJuego = estadosJuego.back();
+	}
+
+	estadoSalir = false;
+}
+
+void EstadoJuego_Logica( void ){
+	// Reinica la tasa de fotogramas
+	if( tempFPS.obtenerTicks() >= 1000 ){
+		FS_ActualizarDatos( fps, fpsTextura, fpsObjeto, 2, fuenteArg, 0.f, 0.f );
+		tempFPS.reiniciar();
+		fps = 0;
+	}
+
+	// Solo ejecuta la lógica del estado actual
+	estadoJuego -> estadoLogica();
+}
+
+void EstadoJuego_Renderizar( void ){
+	// Limpia la pantalla
+	SDL_SetRenderDrawColor( gPtrRenderer, 0xFF, 0xFF, 0xFF, 0xFF );
+	SDL_RenderClear( gPtrRenderer );
+		
+	// Dibuja los estados del juego
+	for( EstadoJuego *estado : estadosJuego ){
+		estado -> estadoRenderizado();
+	}
+
+	// Dibuja la tasa de fotogramas por segundo
+	if( jMostrarTasaCuadros ){
+		fpsTextura.renderTexture( fpsObjeto.getSrcRect(), fpsObjeto.getDestRect() );
+	}
+
+	// Actualiza la pantalla
+	SDL_RenderPresent( gPtrRenderer );
+	EstadoJuego_Salir( estadosJuego );
+
+	// Incrementa el numero de fps
+	fps++;
 }

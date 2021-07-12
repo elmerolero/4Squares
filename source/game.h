@@ -4,6 +4,7 @@
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_TTF.h>
 #include <string>
+#include <vector>
 #include "gamestate.h"
 #include "texture.h"
 #include "temporizador.h"
@@ -36,6 +37,10 @@ extern double gameUnitSize;
 extern Temporizador tempFPS;
 extern int fps;
 
+// Para el estado del juego
+extern EstadoJuego *estadoJuego;
+extern std::vector< EstadoJuego * > estadosJuego;
+
 // Opciones del juego
 extern bool jSalir;
 extern Uint32 jPantallaCompleta;
@@ -44,16 +49,28 @@ extern std::string jCalidadJuego;
 extern bool jMostrarTasaCuadros;
 extern int  jAnchoPantalla;
 extern int 	jAltoPantalla;
-extern EstadoJuego *estadoJuego;
-
 
 // Funciones del juego
 bool Juego_Iniciar( std::string nombre );
 void Juego_CargarPreferencias( void );
 void Juego_EstablecerPreferencias( void );
+void Juego_EstablecerPantallaCompleta( bool pantallaCompleta );
 void Juego_ActualizarVentana( void );
 void Juego_Finalizar( void );
 
+// Establece el estado de juegos dado
+void EstadoJuego_EstablecerEstado( std::vector< EstadoJuego * > &estadosJuego, EstadoJuego *estado );
+
+// Elimina todos los estados de juego que existan en una pila
+void EstadoJuego_LimpiarEstados( std::vector< EstadoJuego * > &estadosJuego );
+
+// Apila un estado de juego dado
+void EstadoJuego_ApilarEstado( std::vector< EstadoJuego * > &estadosJuego, EstadoJuego *estado );
+void EstadoJuego_Salir( void );
+void EstadoJuego_Salir( std::vector< EstadoJuego * > &estadosJuego );
+
+void EstadoJuego_Logica( void );
+void EstadoJuego_Renderizar( void );
 
 /* GAMESTATES OPTIONS */
 // Game states
