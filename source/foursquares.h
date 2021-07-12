@@ -3,6 +3,7 @@
 #include "gamestate.h"
 #include "object.h"
 #include "texture.h"
+#include <vector>
 
 // World game state
 class FourSquares : public EstadoJuego
@@ -15,16 +16,17 @@ class FourSquares : public EstadoJuego
 		void estadoEntrada();
 		void estadoLogica();
 		void estadoRenderizado();
+		void actualizarViewport();
 };
 
 /* CONSTANTES */
 #define BOARD_SIZE		5.7
 #define BOARD_WIDTH 	10
-#define BOARD_HEIGHT	21
+#define BOARD_HEIGHT	22
 
 // Initial piece's position
 #define INITIAL_POS_X	4
-#define INITIAL_POS_Y	0
+#define INITIAL_POS_Y	1
 
 // Shapes
 #define FIGURA_LI	    0
@@ -36,15 +38,15 @@ class FourSquares : public EstadoJuego
 #define FIGURA_CUADRADO 6
 
 // Numero de movimientos máximos permitidos cuando la pieza llegó a tope
-#define PASOS_MAXIMOS	10
+#define PASOS_MAXIMOS	13
 
 // Colores de las figuras (naranja, azul, morado, verde, rojo )
 const SDL_Color shapeColor[ 7 ] = { { 255, 120,   5 }, {   0,  84, 247 }, {  92,  72, 255 }, { 198,   0,   0 },
-									{  63, 158,  82 }, {  60, 143, 255 }, { 255, 216,   0 } };
+									{  63, 158,  82 }, {  60, 143, 255 }, { 255, 221,  60 } };
 						
 // Colores de la sombra de cada figura							
 const SDL_Color shadowColor[ 7 ] = { { 185,  80,   5 }, {   0,  51, 150 }, {  60,  10, 185 }, { 128,   0,   0 },
-									 { 40,   90,  50 }, {  58, 119, 244 }, { 255, 221,  60 } };
+									 { 40,   90,  50 }, {  58, 119, 244 }, { 192, 157, 39 } };
 
 // Velocidad de bajada por nivel
 const Uint32 downSpeed[] = { 1000, 900, 800, 700, 500, 400, 300, 200, 100, 80, 60, 40, 30, 20, 10 };
@@ -89,6 +91,7 @@ extern Object gFigura;
 
 // Variables del jugador
 extern Temporizador tiempoPartida;	// Tiempo transcurrido en el juego
+extern int contadorCombo;			// Combo realizado por el jugador
 extern int contadorLineas;			// Número de líneas
 extern int contadorNivel;			// Nivel actual
 extern int contadorPuntaje;			// Puntaje
@@ -97,9 +100,10 @@ extern int contadorPuntaje;			// Puntaje
 extern Temporizador tiempoAdicional;
 extern Temporizador gameTimer;
 
-// Input timer
-extern int responseLevel;
-extern Temporizador inputTime;
+// 
+extern int nivelRespuestaLaterales;
+extern Temporizador tiempoEntradaBajada;
+extern Temporizador tiempoEntradaLaterales;
 
 // Board
 extern int tetroBoard[ BOARD_HEIGHT ][ BOARD_WIDTH ];
@@ -107,15 +111,15 @@ extern int tetroBoard[ BOARD_HEIGHT ][ BOARD_WIDTH ];
 // For erasing line animation
 extern Temporizador animationTimer;
 
-// Pieza
-extern int pieceID;
-extern int piecePositions[ 4 ][ 2 ];
-extern int piecePosX;
-extern int piecePosY;
+struct Pieza{
+	int tipo;					// Indica si es un cuadrado, una línea, una t, etc.
+	SDL_Point bloques[ 4 ];		// Posición relativa de cada uno de los bloques que componen la figura
+	SDL_Point figura;			// Posición de la figura en el tablero
+	SDL_Point sombra;			// Posición de la sombra en el tablero
+};
 
-// Sombra
-extern int sombraPosX;
-extern int sombraPosY;
+// Pieza
+extern Pieza piezaJugador;
 
 // Cola
 extern int queueIndex;
@@ -147,32 +151,45 @@ extern Texture lineasTextura;
 extern Object tiempo;
 extern Texture tiempoTextura;
 
+// Fotogramas por segundo
+extern Object fpsObjeto;
+extern Texture fpsTextura;
+
+// Textura con el texto ya
+extern Texture ya;
+extern Object yaObjeto;
+
+extern std::vector< int > lineasJugador;
+
 void FS_CargarElementos( void );
 
 // Funtions
-void updateViewport();
-void tetroBlocksInit();
-void tetroPieceInit();
-void tetroBoardDraw();
-void FS_DibujarPieza( int x, int y, SDL_Color color );
-void tetroShapeDraw( int shape, int position );
-void setPieceShape();
-void rotatePiece( int );
-bool boxIsUsed( int x, int y );
-bool pieceColisionDetected( int x, int y );
-void savePiece( int x, int y );
-void eraseLines();
-void FS_ActualizarPuntaje( void );
-void FS_ActualizarNivel( void );
-int queueGetNextShape();
-void tetroQueueDraw();
-void FS_DibujarFigura( int figura, double x, double y );
 void FS_ActualizarTamanioFuente( TTF_Font *fuente, std::string archivo, double tamanioBase );
-void FS_ActualizarLineas( void );
-void FS_ActualizarPosicionSombra( void );
-void FS_AlternarPieza( int direccion );
 void FS_Pausar( void );
+void FS_Finalizar( void );
+void FS_ActualizarLineas( int &lineasJugador, std::vector< int > &lineasRealizadas, Texture &textura, Object &objeto );
+void FS_ActualizarNivel( int &nivelJugador, int &lineasJugador, Texture &texura, Object &objeto );
+void FS_ActualizarPuntaje( int &puntajeJugador, std::vector< int > &lineasRealizadas, int &combo, Texture &textura, Object &objeto );
+void FS_DibujarFigura( int figura, double x, double y );
 void FS_DibujarTiempo( Uint32 tiempo, Texture &textura, Object &objeto, TTF_Font *fuente, double x, double y );
 void FS_ActualizarDatos( int dato, Texture &textura, Object &objeto, int relleno, TTF_Font *fuente, double x, double y );
 
+void Pieza_NuevaPieza( Pieza &pieza, int figura, int tablero[ 21 ][ 10 ] );
+void Pieza_ActualizarSombra( Pieza &pieza, int tablero[ 21 ][ 10 ] );
+void Pieza_Rotar( Pieza &pieza, int direccion );
+void Pieza_Alternar( Pieza &pieza, int tablero[ 21 ][ 10 ], int direccion );
+void Pieza_Grabar( Pieza &pieza, int tablero[ 21 ][ 10 ] );
+void Pieza_Dibujar( Pieza &pieza, int posicionX, int posicionY, SDL_Color color );
+
+void Tablero_Inicializar( int tablero[ 21 ][ 10 ] );
+bool Tablero_PermiteMover( int tablero[ 21 ][ 10 ], Pieza &pieza, int movimientoX, int movimientoY );
+bool Tablero_CasillaUtilizada( int tablero[ 21 ][ 10 ], int posicionX, int posicionY );
+void Tablero_ObtenerLineas( int tablero[ 21 ][ 10 ], std::vector< int > &lineas );
+void Tablero_EliminarLineas( int tablero[ 21 ][ 10 ], std::vector< int > &lineas );
+void Tablero_Acomodar( int tablero[ 21 ][ 10 ], std::vector< int > &lineas );
+void Tablero_Dibujar( int tablero[ 21 ][ 10 ] );
+
+void Cola_Inicializar( int colaFiguras[ 4 ] );
+int Cola_ObtenerSiguenteFigura( int colaFiguras[ 4 ] );
+void Cola_Dibujar( int colaFiguras[ 4 ] );
 #endif
