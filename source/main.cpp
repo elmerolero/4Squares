@@ -1,8 +1,7 @@
 #include <cstdlib>
 #include <iostream>
-using namespace std;
 #include "game.h"
-#include "foursquares.h" 
+using namespace std;
 
 int main( int argc, char * args[] )
 {
@@ -10,9 +9,10 @@ int main( int argc, char * args[] )
 	jSalir = !Juego_Iniciar( "4Squares" );
 
 	while( !jSalir ){
+		SDL_Delay( 1 );
 		estadoJuego -> estadoEntrada();
-		estadoJuego -> estadoLogica();
-		estadoJuego -> estadoRenderizado();
+		EstadoJuego_Logica();
+		EstadoJuego_Renderizar();
 	}
 	
 	return 0;
