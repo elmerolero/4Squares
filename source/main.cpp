@@ -10,6 +10,7 @@ int main( int argc, char * args[] )
 
 	while( !jSalir ){
 		SDL_Delay( 1 );
+		EstadoJuego_Salir( estadosJuego );
 		estadoJuego -> estadoEntrada();
 		EstadoJuego_Logica();
 		EstadoJuego_Renderizar();

@@ -21,6 +21,8 @@ Preparacion::Preparacion(){
     temporizador.iniciar();
     contador = 0;
 
+    tetroTexBlock.show( false );
+
     actualizarViewport();
 }
 
@@ -36,9 +38,6 @@ void Preparacion::estadoEntrada(){
         else if( gGameEvent.type == SDL_KEYDOWN && !arribaPresionado ){
 			if( gGameEvent.key.keysym.sym == SDLK_UP ){
 				arribaPresionado = true;
-			}
-			else if( gGameEvent.key.keysym.sym == SDLK_RETURN ){
-				FS_Pausar();
 			}
 			else if( gGameEvent.key.keysym.sym == SDLK_ESCAPE ){
 				Juego_EstablecerPantallaCompleta( !jPantallaCompleta );
@@ -56,13 +55,18 @@ void Preparacion::estadoEntrada(){
 }
 
 void Preparacion::estadoLogica(){
+     // Actualiza las dimensiones de la textura
     cuentaRegresivaObjeto.setRelativeX( ( gameViewport.w - cuentaRegresivaObjeto.getRelativeW() ) / 2 );
     SDL_Rect trect = { contador * 82, 0, 82, 157 };
     cuentaRegresivaObjeto.setTextureCoords( trect );
+
     if( temporizador.obtenerTicks() > 1000 ){
+        // Incrementa el contador
         contador++;
+
         if( contador > 2 ){
             contador = 2;
+            tetroTexBlock.show( true );
             tiempoPartida.reanudar();
 	        gameTimer.reanudar(); 
 	        tiempoEntradaBajada.reanudar();

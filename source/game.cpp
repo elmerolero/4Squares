@@ -47,6 +47,10 @@ bool jMostrarTasaCuadros;
 int  jAnchoPantalla;
 int  jAltoPantalla;
 
+// Fuentes
+TTF_Font *fuenteArg;
+TTF_Font *fuenteAllStar;
+
 bool Juego_Iniciar( std::string nombre )
 {
 	// Inicializa SDL
@@ -70,7 +74,7 @@ bool Juego_Iniciar( std::string nombre )
 			
 	// Crea una ventana
 	cout << "Creating Window. ";
-	gPtrWindow = SDL_CreateWindow( nombre.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 480, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE );
+	gPtrWindow = SDL_CreateWindow( nombre.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1024, 600, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE );
 	if( gPtrWindow == NULL ){
 		cout << "There was an error creating window. Details: " << SDL_GetError() << endl;
 		return false;
@@ -84,7 +88,7 @@ bool Juego_Iniciar( std::string nombre )
 	}
 
 	//Carga el ícono
-	SDL_Surface * icono = IMG_Load("recursos/img/icono.bmp");
+	SDL_Surface * icono = IMG_Load("../recursos/img/icono.bmp");
 	if( icono != NULL ){
 		SDL_SetWindowIcon( gPtrWindow, icono );
 		SDL_FreeSurface(icono);
@@ -149,8 +153,8 @@ void Juego_EstablecerPantallaCompleta( bool pantallaCompleta )
 		jAltoPantalla = gDisplayInfo.h;
 	}
 	else{
-		jAnchoPantalla = 800;
-		jAltoPantalla = 480;
+		jAnchoPantalla = 1024;
+		jAltoPantalla = 600;
 	}
 
 	// Establece el tamaño de la ventana

@@ -6,11 +6,30 @@ using namespace std;
 Texture::Texture()
 {
 	ptrTexture = NULL;
+	showTexture = true;
 }
 
 Texture::~Texture()
 {
 	destroyTexture();
+}
+
+bool Texture::crearTexturaDesdeSuperficie( SDL_Renderer *render, SDL_Surface *superficie ){
+	// Crea y asigna la textura desde la superficie dada
+	ptrTexture = SDL_CreateTextureFromSurface( render, superficie );
+	if( ptrTexture == nullptr ){
+		cout << "No pudimos crear la textura. Detalles: " << SDL_GetError() << endl;
+		SDL_FreeSurface( superficie );
+		return false;
+	}
+	
+	textureWidth = superficie -> w;
+	textureHeight = superficie -> h;
+			
+	SDL_FreeSurface( superficie );
+	
+	return true;
+
 }
 
 bool Texture::loadFileTexture( const char* path )
@@ -28,17 +47,9 @@ bool Texture::loadFileTexture( const char* path )
 		return false;
 	}
 
-	ptrTexture = SDL_CreateTextureFromSurface( gPtrRenderer, ptrAuxSurface );
-	if( ptrTexture == NULL ){
-		cout << "We could not create the texture. Details: " << SDL_GetError() << endl;
-		SDL_FreeSurface( ptrAuxSurface );
+	if( !crearTexturaDesdeSuperficie( gPtrRenderer, ptrAuxSurface ) ){
 		return false;
 	}
-	
-	textureWidth = ptrAuxSurface -> w;
-	textureHeight = ptrAuxSurface -> h;
-			
-	SDL_FreeSurface( ptrAuxSurface );
 	
 	return true;
 }
@@ -94,9 +105,36 @@ void Texture::setColorMod( SDL_Color color )
 		cout << SDL_GetError() << endl;
 }
 
+void Texture::crearTexturaRenderizable( SDL_Renderer *render, int ancho, int alto )
+{
+	// Crea la textura
+	SDL_Texture *textura = SDL_CreateTexture( render, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, ancho, alto );
+	if( textura == nullptr ){
+		cout << "Ocurrió un error al crear la textura." << endl;
+		return;
+	}
+
+	// Establece las dimensiones de la textura
+	textureWidth = ancho;
+	textureHeight = alto;
+}
+
+
+void Texture::establecerTexturaRenderizado( SDL_Renderer *render )
+{
+	// Establece la textura
+	SDL_SetRenderTarget( render, ptrTexture );
+}
+
+void Texture::show( bool show ){
+	showTexture = show;
+}
+
 void Texture::renderTexture( const SDL_Rect* srcRect, const SDL_Rect* destRect )
 {
-	SDL_RenderCopy( gPtrRenderer, ptrTexture, srcRect, destRect );
+	if( showTexture ){
+		SDL_RenderCopy( gPtrRenderer, ptrTexture, srcRect, destRect );
+	}
 }
 
 void Texture::destroyTexture()

@@ -16,8 +16,15 @@ class Texture
 		// Loads texture from a file
 		bool loadFileTexture( const char* path );
 		
+		bool crearTexturaDesdeSuperficie( SDL_Renderer *render, SDL_Surface *superficie );
+
 		// Crea una textura dado un texto
 		bool crearTexturaDesdeTexto( const char *texto, SDL_Color color, TTF_Font *fuente );
+
+		// Crea una textura renderizable
+		void crearTexturaRenderizable( SDL_Renderer *render, int ancho, int alto );
+
+		void establecerTexturaRenderizado( SDL_Renderer *render );
 
 		// Sets blend mode 
 		void setBlendMode( SDL_BlendMode blend );
@@ -28,6 +35,9 @@ class Texture
 		// Sets color modulation
 		void setColorMod( SDL_Color color );
 		
+		// Show or hide render
+		void show( bool show );
+
 		// Renders the texture
 		void renderTexture( const SDL_Rect* srcRect, const SDL_Rect* destRect );
 		
@@ -42,6 +52,7 @@ class Texture
 		
 	private:
 		SDL_Texture* ptrTexture;
+		bool showTexture;
 		int	textureWidth;
 		int textureHeight;
 		 

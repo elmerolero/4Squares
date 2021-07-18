@@ -64,7 +64,7 @@ void FourSquares::estadoEntrada()
 				arribaPresionado = true;
 			}
 			else if( gGameEvent.key.keysym.sym == SDLK_RETURN ){
-				FS_Pausar();
+				FS_PausarPartida();
 			}
 			else if( gGameEvent.key.keysym.sym == SDLK_ESCAPE ){
 				Juego_EstablecerPantallaCompleta( !jPantallaCompleta );
@@ -119,6 +119,9 @@ void FourSquares::estadoEntrada()
 		else if( gGameEvent.type == SDL_WINDOWEVENT ){
 			if( gGameEvent.window.event == SDL_WINDOWEVENT_RESIZED ){
 				Juego_ActualizarVentana();
+			}
+			if( gGameEvent.type == SDL_WINDOW_MINIMIZED ){
+
 			}
 		}
 	}
@@ -272,6 +275,8 @@ void FourSquares::estadoRenderizado()
 	if( tiempoPartida.obtenerTicks() < 2000 && estadoJuego == this ){
 		ya.renderTexture( yaObjeto.getSrcRect(), yaObjeto.getDestRect() );
 	}
+
+	FS_EstablecerEstadistico();
 }
 
 /* FUNCTIONS */
@@ -696,17 +701,15 @@ void FS_ActualizarPuntaje( int &puntaje, vector< int > &lineas, int &combo, Text
 	FS_ActualizarDatos( puntaje, textura, objeto, 7, fuenteArg, tetroMargin.getRelativeX() + 0.227, 2.33 );
 }
 
-void FS_ActualizarTamanioFuente( TTF_Font *fuente, string archivo, double tamanioBase )
+void FS_ActualizarTamanioFuente( TTF_Font *&fuente, string archivo, double tamanioBase )
 {
 	// Fuente
 	TTF_CloseFont( fuente );
-	fuenteArg = TTF_OpenFont( archivo.c_str(), (int)( ( (float)jAltoPantalla / 1080.f ) * tamanioBase ) );
+	fuente = TTF_OpenFont( archivo.c_str(), (int)( ( (float)jAltoPantalla / 1080.f ) * tamanioBase ) );
 	if( fuente == nullptr ){
 		cout << "Error al cargar la fuente. Error: " << TTF_GetError() << endl;
 	}
 }
-
-
 
 void FS_ActualizarDatos( int dato, Texture &textura, Object &objeto, int relleno, TTF_Font *fuente, double x, double y )
 {
@@ -745,8 +748,7 @@ void FS_DibujarTiempo( Uint32 tiempo, Texture &textura, Object &objeto, TTF_Font
 	textura.renderTexture( objeto.getSrcRect(), objeto.getDestRect() );
 }
 
-void FS_Pausar()
-{
+void FS_PausarPartida(){
 	// Pausa el tiempo
 	gameTimer.pausar();
 	tiempoPartida.pausar();
@@ -754,27 +756,23 @@ void FS_Pausar()
 	tiempoEntradaBajada.pausar();
 	tiempoEntradaLaterales.pausar();
 
-	bool reanudar = false;
-	while( !reanudar ){
-		if( SDL_WaitEvent( &gGameEvent ) != 0 ){
-			if( gGameEvent.type == SDL_QUIT ){
-				jSalir = true;
-				reanudar = true;
-			}
-			else if( gGameEvent.type == SDL_KEYDOWN ){
-				if( gGameEvent.key.keysym.sym == SDLK_RETURN ){
-					reanudar = true;
-				}
-			}
-		}
-	}
+	// Evita que se muestren algunas cosas
+	tetroTexBlock.show( false );
 
+	// Establece el estado de pausa
+	EstadoJuego_ApilarEstado( estadosJuego, new Pausa() );
+}
+
+void FS_ReanudarPartida( void ){
 	// Reanuda el tiempo
-	gameTimer.reanudar();
 	tiempoPartida.reanudar();
 	tiempoAdicional.reanudar();
 	tiempoEntradaBajada.reanudar();
 	tiempoEntradaLaterales.reanudar();
+	gameTimer.reanudar();
+
+	// Vuelve a mostrar lo que se había ocultado
+	tetroTexBlock.show( true );
 }
 
 void FS_Finalizar( void )
@@ -808,6 +806,10 @@ void FS_Finalizar( void )
 	system( "notepad resultados.txt &" );
 }
 
+void FS_EstablecerEstadistico( void )
+{
+}
+
 /* VARIABLES */
 
 // Fondo
@@ -828,6 +830,9 @@ Object  tetroBlock;
 // Shapes attributes
 Texture tetroTexShapes;
 Object gFigura;
+
+Object estadisticoObjeto;
+Texture estadisticoTextura;
 
 // Tiempo del juego
 Temporizador tiempoPartida;
@@ -876,10 +881,6 @@ int contadorCombo;
 int contadorLineas;
 int contadorNivel;
 int contadorPuntaje;
-
-// Fuentes
-TTF_Font *fuenteArg;
-TTF_Font *fuenteAllStar;
 
 Object puntaje;
 Texture puntajeTextura;

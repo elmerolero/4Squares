@@ -3,6 +3,7 @@
 #include "gamestate.h"
 #include "object.h"
 #include "texture.h"
+#include "pausa.h"
 #include <vector>
 
 // World game state
@@ -131,10 +132,6 @@ extern int pieceSaved;
 extern bool arribaPresionado;
 extern int pasosRealizados;
 
-// Fuentes 
-extern TTF_Font *fuenteArg;
-extern TTF_Font *fuenteAllStar;
-
 // Puntaje
 extern Object puntaje;
 extern Texture puntajeTextura;
@@ -155,6 +152,9 @@ extern Texture tiempoTextura;
 extern Object fpsObjeto;
 extern Texture fpsTextura;
 
+extern Object estadisticoObjeto;
+extern Texture estadisticoTextura;
+
 // Textura con el texto ya
 extern Texture ya;
 extern Object yaObjeto;
@@ -164,8 +164,7 @@ extern std::vector< int > lineasJugador;
 void FS_CargarElementos( void );
 
 // Funtions
-void FS_ActualizarTamanioFuente( TTF_Font *fuente, std::string archivo, double tamanioBase );
-void FS_Pausar( void );
+void FS_ActualizarTamanioFuente( TTF_Font *&fuente, std::string archivo, double tamanioBase );
 void FS_Finalizar( void );
 void FS_ActualizarLineas( int &lineasJugador, std::vector< int > &lineasRealizadas, Texture &textura, Object &objeto );
 void FS_ActualizarNivel( int &nivelJugador, int &lineasJugador, Texture &texura, Object &objeto );
@@ -173,6 +172,9 @@ void FS_ActualizarPuntaje( int &puntajeJugador, std::vector< int > &lineasRealiz
 void FS_DibujarFigura( int figura, double x, double y );
 void FS_DibujarTiempo( Uint32 tiempo, Texture &textura, Object &objeto, TTF_Font *fuente, double x, double y );
 void FS_ActualizarDatos( int dato, Texture &textura, Object &objeto, int relleno, TTF_Font *fuente, double x, double y );
+void FS_PausarPartida( void );
+void FS_ReanudarPartida( void );
+void FS_EstablecerEstadistico( void );
 
 void Pieza_NuevaPieza( Pieza &pieza, int figura, int tablero[ 21 ][ 10 ] );
 void Pieza_ActualizarSombra( Pieza &pieza, int tablero[ 21 ][ 10 ] );
@@ -192,4 +194,6 @@ void Tablero_Dibujar( int tablero[ 21 ][ 10 ] );
 void Cola_Inicializar( int colaFiguras[ 4 ] );
 int Cola_ObtenerSiguenteFigura( int colaFiguras[ 4 ] );
 void Cola_Dibujar( int colaFiguras[ 4 ] );
+
+
 #endif

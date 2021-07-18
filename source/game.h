@@ -72,12 +72,13 @@ void EstadoJuego_Salir( std::vector< EstadoJuego * > &estadosJuego );
 void EstadoJuego_Logica( void );
 void EstadoJuego_Renderizar( void );
 
-/* GAMESTATES OPTIONS */
-// Game states
-enum GameStates{
-	GAME_STATE_NULL = 0,
-	GAME_STATE_EXIT,
-	GAME_STATE_GAME
-};
+/* Fuentes del juego */
+// Fuentes 
+extern TTF_Font *fuenteArg;
+extern TTF_Font *fuenteAllStar;
+
+/* COLORES */
+const SDL_Color COLOR_BLANCO{ 255, 255, 255 };
+const SDL_Color COLOR_NEGRO{ 0, 0, 0 };
 
 #endif
