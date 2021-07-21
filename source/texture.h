@@ -18,8 +18,11 @@ class Texture
 		
 		bool crearTexturaDesdeSuperficie( SDL_Renderer *render, SDL_Surface *superficie );
 
-		// Crea una textura dado un texto
-		bool crearTexturaDesdeTexto( const char *texto, SDL_Color color, TTF_Font *fuente );
+		// Crea una textura dado un texto en texto solido
+		bool crearTexturaDesdeTextoSolido( const char *texto, SDL_Color color, TTF_Font *fuente );
+
+		// Crea una textura desde texto en modo blended
+		bool crearTexturaDesdeTextoBlended( const char *texto, SDL_Color color, TTF_Font *fuente, Uint32 largoMaximo );
 
 		// Crea una textura renderizable
 		void crearTexturaRenderizable( SDL_Renderer *render, int ancho, int alto );
@@ -37,6 +40,7 @@ class Texture
 		
 		// Show or hide render
 		void show( bool show );
+		bool show( void ) const;
 
 		// Renders the texture
 		void renderTexture( const SDL_Rect* srcRect, const SDL_Rect* destRect );

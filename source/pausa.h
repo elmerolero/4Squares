@@ -11,6 +11,7 @@ class Pausa : public EstadoJuego
     public:
         Pausa();
         void estadoEntrada();
+        void estadoEventos();
         void estadoLogica();
         void estadoRenderizado();
         void actualizarViewport();

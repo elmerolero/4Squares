@@ -82,6 +82,16 @@ void Object::setRelativeY( double y )
 	absoluteRect.y = relativeRect.y * gameUnitSize;
 }
 
+void Object::setRelativeW( double w ){
+	relativeRect.w = w;
+	absoluteRect.w = relativeRect.w * gameUnitSize;
+}
+
+void Object::setRelativeH( double h ){
+	relativeRect.h = h;
+	absoluteRect.h = relativeRect.h * gameUnitSize;
+}
+
 double Object::getRelativeX()
 {
 	return relativeRect.x;
@@ -130,6 +140,46 @@ void Object::setAbsoluteX( int x )
 void Object::setAbsoluteY( int y )
 {
 	absoluteRect.y = y;
+}
+
+// Establece la posición X a mostrar en la textura
+void Object::establecerTexturaX( int x ){
+	textureRect.x = x;
+}
+
+// Establece la posición Y a mostrar en la textura
+void Object::establecerTexturaY( int y ){
+	textureRect.y = y;
+}
+
+// Establece la posición W a mostrar en la textura
+void Object::establecerTexturaW( int w ){
+	textureRect.w = w;
+}
+
+// Establece la posición H a mostrar en la textura
+void Object::establecerTexturaH( int h ){
+	textureRect.h = h;
+}
+
+// Obtiene la posición X a mostrar en la textura
+int Object::obtenerTexturaX( void ) const{
+	return textureRect.x;
+}
+
+// Obtiene la posición Y a mostrar en la textura
+int Object::obtenerTexturaY( void ) const{
+	return textureRect.y;
+}
+
+// Obtiene la posición W a mostrar en la textura
+int Object::obtenerTexturaW( void ) const{
+	return textureRect.w;
+}
+
+// Obtiene la posición H a mostrar en la textura
+int Object::obtenerTexturaH( void ) const{
+	return textureRect.h;
 }
 
 SDL_Rect* Object::getSrcRect( void )

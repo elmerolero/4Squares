@@ -4,6 +4,7 @@
 #include "object.h"
 #include "texture.h"
 #include "pausa.h"
+#include "derrota.h"
 #include <vector>
 
 // World game state
@@ -15,6 +16,7 @@ class FourSquares : public EstadoJuego
 		~FourSquares();
 		
 		void estadoEntrada();
+		void estadoEventos();
 		void estadoLogica();
 		void estadoRenderizado();
 		void actualizarViewport();
@@ -37,13 +39,14 @@ class FourSquares : public EstadoJuego
 #define FIGURA_Z		4
 #define FIGURA_LINEA  	5
 #define FIGURA_CUADRADO 6
+#define DERROTA  7
 
 // Numero de movimientos máximos permitidos cuando la pieza llegó a tope
 #define PASOS_MAXIMOS	13
 
 // Colores de las figuras (naranja, azul, morado, verde, rojo )
-const SDL_Color shapeColor[ 7 ] = { { 255, 120,   5 }, {   0,  84, 247 }, {  92,  72, 255 }, { 198,   0,   0 },
-									{  63, 158,  82 }, {  60, 143, 255 }, { 255, 221,  60 } };
+const SDL_Color shapeColor[ 8 ] = { { 255, 120,   5 }, {   0,  84, 247 }, {  92,  72, 255 }, { 198,   0,   0 },
+									{  63, 158,  82 }, {  60, 143, 255 }, { 255, 221,  60 }, { 150, 150, 150 } };
 						
 // Colores de la sombra de cada figura							
 const SDL_Color shadowColor[ 7 ] = { { 185,  80,   5 }, {   0,  51, 150 }, {  60,  10, 185 }, { 128,   0,   0 },
@@ -165,7 +168,6 @@ void FS_CargarElementos( void );
 
 // Funtions
 void FS_ActualizarTamanioFuente( TTF_Font *&fuente, std::string archivo, double tamanioBase );
-void FS_Finalizar( void );
 void FS_ActualizarLineas( int &lineasJugador, std::vector< int > &lineasRealizadas, Texture &textura, Object &objeto );
 void FS_ActualizarNivel( int &nivelJugador, int &lineasJugador, Texture &texura, Object &objeto );
 void FS_ActualizarPuntaje( int &puntajeJugador, std::vector< int > &lineasRealizadas, int &combo, Texture &textura, Object &objeto );
@@ -180,16 +182,17 @@ void Pieza_NuevaPieza( Pieza &pieza, int figura, int tablero[ 21 ][ 10 ] );
 void Pieza_ActualizarSombra( Pieza &pieza, int tablero[ 21 ][ 10 ] );
 void Pieza_Rotar( Pieza &pieza, int direccion );
 void Pieza_Alternar( Pieza &pieza, int tablero[ 21 ][ 10 ], int direccion );
-void Pieza_Grabar( Pieza &pieza, int tablero[ 21 ][ 10 ] );
+void Pieza_Grabar( Pieza &pieza, int tablero[ BOARD_HEIGHT ][ BOARD_WIDTH ] );
 void Pieza_Dibujar( Pieza &pieza, int posicionX, int posicionY, SDL_Color color );
 
-void Tablero_Inicializar( int tablero[ 21 ][ 10 ] );
-bool Tablero_PermiteMover( int tablero[ 21 ][ 10 ], Pieza &pieza, int movimientoX, int movimientoY );
-bool Tablero_CasillaUtilizada( int tablero[ 21 ][ 10 ], int posicionX, int posicionY );
-void Tablero_ObtenerLineas( int tablero[ 21 ][ 10 ], std::vector< int > &lineas );
-void Tablero_EliminarLineas( int tablero[ 21 ][ 10 ], std::vector< int > &lineas );
-void Tablero_Acomodar( int tablero[ 21 ][ 10 ], std::vector< int > &lineas );
-void Tablero_Dibujar( int tablero[ 21 ][ 10 ] );
+void Tablero_Inicializar( int tablero[ BOARD_HEIGHT ][ BOARD_WIDTH ] );
+bool Tablero_PermiteMover( int tablero[ BOARD_HEIGHT ][ BOARD_WIDTH ], Pieza &pieza, int movimientoX, int movimientoY );
+bool Tablero_CasillaUtilizada( int tablero[ BOARD_HEIGHT ][ BOARD_WIDTH ], int posicionX, int posicionY );
+void Tablero_ObtenerLineas( int tablero[ BOARD_HEIGHT ][ BOARD_WIDTH ], std::vector< int > &lineas );
+void Tablero_EliminarLineas( int tablero[ BOARD_HEIGHT ][ BOARD_WIDTH ], std::vector< int > &lineas );
+void Tablero_Acomodar( int tablero[ BOARD_HEIGHT ][ BOARD_WIDTH ], std::vector< int > &lineas );
+void Tablero_Dibujar( int tablero[ BOARD_HEIGHT ][ BOARD_WIDTH ] );
+void Tablero_EstablecerColorRenglon( int tablero[ BOARD_HEIGHT ][ BOARD_WIDTH ], int renglon, int color );
 
 void Cola_Inicializar( int colaFiguras[ 4 ] );
 int Cola_ObtenerSiguenteFigura( int colaFiguras[ 4 ] );

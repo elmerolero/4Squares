@@ -14,7 +14,29 @@ Texture::~Texture()
 	destroyTexture();
 }
 
+bool Texture::loadFileTexture( const char* path )
+{	
+	// Surface for creating surface
+	SDL_Surface* ptrAuxSurface = NULL;
+	ptrAuxSurface = IMG_Load( path );
+	if( ptrAuxSurface == NULL ){
+		cout << "Error loading image. Details: " << IMG_GetError() << endl;
+		return false;
+	}
+
+	if( !crearTexturaDesdeSuperficie( gPtrRenderer, ptrAuxSurface ) ){
+		return false;
+	}
+	
+	return true;
+}
+
 bool Texture::crearTexturaDesdeSuperficie( SDL_Renderer *render, SDL_Surface *superficie ){
+	// Frees texture if exists another
+	if( ptrTexture != NULL ){
+		destroyTexture();
+	}
+	
 	// Crea y asigna la textura desde la superficie dada
 	ptrTexture = SDL_CreateTextureFromSurface( render, superficie );
 	if( ptrTexture == nullptr ){
@@ -32,35 +54,7 @@ bool Texture::crearTexturaDesdeSuperficie( SDL_Renderer *render, SDL_Surface *su
 
 }
 
-bool Texture::loadFileTexture( const char* path )
-{
-	// Frees texture if exists another
-	if( ptrTexture != NULL ){
-		destroyTexture();
-	}
-	
-	// Surface for creating surface
-	SDL_Surface* ptrAuxSurface = NULL;
-	ptrAuxSurface = IMG_Load( path );
-	if( ptrAuxSurface == NULL ){
-		cout << "Error loading image. Details: " << IMG_GetError() << endl;
-		return false;
-	}
-
-	if( !crearTexturaDesdeSuperficie( gPtrRenderer, ptrAuxSurface ) ){
-		return false;
-	}
-	
-	return true;
-}
-
-bool Texture::crearTexturaDesdeTexto( const char *texto, SDL_Color color, TTF_Font *fuente )
-{
-	// Libera la textura que exista anteriormente
-	if( ptrTexture != NULL ){
-		destroyTexture();
-	}
-
+bool Texture::crearTexturaDesdeTextoSolido( const char *texto, SDL_Color color, TTF_Font *fuente ){
 	// Rasteriza el texto
 	SDL_Surface *superficie = TTF_RenderText_Solid( fuente, texto, color );
 	if( superficie == nullptr ){
@@ -69,19 +63,26 @@ bool Texture::crearTexturaDesdeTexto( const char *texto, SDL_Color color, TTF_Fo
 	}
 
 	// Convierte la superficie en una textura
-	ptrTexture = SDL_CreateTextureFromSurface( gPtrRenderer, superficie );
-	if( ptrTexture == nullptr ){
-		cout << "No pudo crearse la textura de texto. Error: " << TTF_GetError() << endl;
-		SDL_FreeSurface( superficie );
+	if( !crearTexturaDesdeSuperficie( gPtrRenderer, superficie ) ){
+		return false;
+	}
+
+	// Returna true
+	return true;
+}
+
+bool Texture::crearTexturaDesdeTextoBlended( const char *texto, SDL_Color color, TTF_Font *fuente, Uint32 largoMaximo ){
+	// Rasteriza el texto
+	SDL_Surface *superficie = TTF_RenderUTF8_Blended_Wrapped( fuente, texto, color, largoMaximo );
+	if( superficie == nullptr ){
+		cout << "Ocurrió un error al crear la textura. Error: " << TTF_GetError() << endl;
 		return false;
 	}
 
 	// Convierte la superficie en una textura
-	textureWidth = superficie -> w;
-	textureHeight = superficie -> h;
-
-	// Elimina el residuo
-	SDL_FreeSurface( superficie );
+	if( !crearTexturaDesdeSuperficie( gPtrRenderer, superficie ) ){
+		return false;
+	}
 
 	// Returna true
 	return true;
@@ -89,8 +90,9 @@ bool Texture::crearTexturaDesdeTexto( const char *texto, SDL_Color color, TTF_Fo
 
 void Texture::setBlendMode( SDL_BlendMode blend )
 {
-	if( SDL_SetTextureBlendMode( ptrTexture, blend ) < 0 )
+	if( SDL_SetTextureBlendMode( ptrTexture, blend ) < 0 ){
 		cout << SDL_GetError() << endl;
+	}
 }
 
 void Texture::setAlphaMod( Uint8 alpha )
@@ -130,9 +132,13 @@ void Texture::show( bool show ){
 	showTexture = show;
 }
 
+bool Texture::show( void )const{
+	return showTexture;
+}
+
 void Texture::renderTexture( const SDL_Rect* srcRect, const SDL_Rect* destRect )
 {
-	if( showTexture ){
+	if( show() ){
 		SDL_RenderCopy( gPtrRenderer, ptrTexture, srcRect, destRect );
 	}
 }

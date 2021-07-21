@@ -69,8 +69,11 @@ void EstadoJuego_ApilarEstado( std::vector< EstadoJuego * > &estadosJuego, Estad
 void EstadoJuego_Salir( void );
 void EstadoJuego_Salir( std::vector< EstadoJuego * > &estadosJuego );
 
+void EstadoJuego_Entrada( void );
 void EstadoJuego_Logica( void );
 void EstadoJuego_Renderizar( void );
+
+void EstadoJuego_EsperarParaEvento( bool opcion );
 
 /* Fuentes del juego */
 // Fuentes 
@@ -80,5 +83,7 @@ extern TTF_Font *fuenteAllStar;
 /* COLORES */
 const SDL_Color COLOR_BLANCO{ 255, 255, 255 };
 const SDL_Color COLOR_NEGRO{ 0, 0, 0 };
+
+extern bool esperarEvento;
 
 #endif

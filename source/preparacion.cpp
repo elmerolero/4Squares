@@ -31,26 +31,28 @@ Preparacion::~Preparacion(){
 }
 
 void Preparacion::estadoEntrada(){
-    if( SDL_PollEvent( &gGameEvent ) != 0 ){
-        if( gGameEvent.type == SDL_QUIT ){
-			jSalir = true;
-		}
-        else if( gGameEvent.type == SDL_KEYDOWN && !arribaPresionado ){
-			if( gGameEvent.key.keysym.sym == SDLK_UP ){
-				arribaPresionado = true;
-			}
-			else if( gGameEvent.key.keysym.sym == SDLK_ESCAPE ){
-				Juego_EstablecerPantallaCompleta( !jPantallaCompleta );
-			}
-			else if( gGameEvent.key.keysym.sym == SDLK_f ){
-				jMostrarTasaCuadros = !jMostrarTasaCuadros;
-			}
-		}
-		else if( gGameEvent.type == SDL_WINDOWEVENT ){
-			if( gGameEvent.window.event == SDL_WINDOWEVENT_RESIZED ){
-				Juego_ActualizarVentana();
-			}
-		}
+
+}
+
+void Preparacion::estadoEventos(){
+    if( gGameEvent.type == SDL_QUIT ){
+        jSalir = true;
+    }
+    else if( gGameEvent.type == SDL_KEYDOWN && !arribaPresionado ){
+        if( gGameEvent.key.keysym.sym == SDLK_UP ){
+            arribaPresionado = true;
+        }
+        else if( gGameEvent.key.keysym.sym == SDLK_ESCAPE ){
+            Juego_EstablecerPantallaCompleta( !jPantallaCompleta );
+        }
+        else if( gGameEvent.key.keysym.sym == SDLK_f ){
+            jMostrarTasaCuadros = !jMostrarTasaCuadros;
+        }
+    }
+    else if( gGameEvent.type == SDL_WINDOWEVENT ){
+        if( gGameEvent.window.event == SDL_WINDOWEVENT_RESIZED ){
+            Juego_ActualizarVentana();
+        }
     }
 }
 

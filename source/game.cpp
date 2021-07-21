@@ -47,6 +47,8 @@ bool jMostrarTasaCuadros;
 int  jAnchoPantalla;
 int  jAltoPantalla;
 
+bool esperarEvento;
+
 // Fuentes
 TTF_Font *fuenteArg;
 TTF_Font *fuenteAllStar;
@@ -111,6 +113,8 @@ bool Juego_Iniciar( std::string nombre )
 
 	// Redirige al estado preparación
 	EstadoJuego_ApilarEstado( estadosJuego, new Preparacion() );
+
+	esperarEvento = false;
 
 	return true;
 }
@@ -264,6 +268,34 @@ void EstadoJuego_Salir( vector< EstadoJuego * > &estadosJuego ){
 	estadoSalir = false;
 }
 
+void EstadoJuego_Entrada( void ){
+	if( ( esperarEvento ? SDL_WaitEvent( &gGameEvent ) != 0 : SDL_PollEvent( &gGameEvent ) != 0 ) ){
+		// Ejecuta sus funciones base
+		if( gGameEvent.type == SDL_QUIT ){
+			jSalir = true;
+		}
+        else if( gGameEvent.type == SDL_KEYDOWN ){
+			if( gGameEvent.key.keysym.sym == SDLK_ESCAPE ){
+				Juego_EstablecerPantallaCompleta( !jPantallaCompleta );
+			}
+			else if( gGameEvent.key.keysym.sym == SDLK_f ){
+				jMostrarTasaCuadros = !jMostrarTasaCuadros;
+			}
+		}
+		else if( gGameEvent.type == SDL_WINDOWEVENT ){
+			if( gGameEvent.window.event == SDL_WINDOWEVENT_RESIZED ){
+				Juego_ActualizarVentana();
+			}
+		}
+
+		// Llama a estado eventos
+		estadoJuego -> estadoEventos();	
+	}
+
+	// Llama a estado entrada
+	estadoJuego -> estadoEntrada();
+}
+
 void EstadoJuego_Logica( void ){
 	// Reinica la tasa de fotogramas
 	if( tempFPS.obtenerTicks() >= 1000 ){
@@ -297,4 +329,8 @@ void EstadoJuego_Renderizar( void ){
 
 	// Incrementa el numero de fps
 	fps++;
+}
+
+void EstadoJuego_EsperarParaEvento( bool opcion ){
+	esperarEvento = opcion;
 }

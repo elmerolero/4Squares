@@ -22,6 +22,8 @@ class Object
 		// Sets the relative position of the object
 		void setRelativeX( double x );
 		void setRelativeY( double y );
+		void setRelativeW( double w );
+		void setRelativeH( double h );
 		
 		// Gets the relative position of the object
 		double getRelativeX();
@@ -34,6 +36,18 @@ class Object
 		int getAbsoluteY();
 		int getAbsoluteW();
 		int getAbsoluteH();
+
+		/* Dimensiones de la textura */
+		void establecerTexturaX( int x );	// Establece la posición X de la textura
+		void establecerTexturaY( int y );
+		void establecerTexturaW( int w );
+		void establecerTexturaH( int h );
+
+		// Gets texture dimensions
+		int obtenerTexturaX( void ) const;
+		int obtenerTexturaY( void ) const;
+		int obtenerTexturaW( void ) const;
+		int obtenerTexturaH( void ) const;
 		
 		void setAbsoluteX( int x );
 		void setAbsoluteY( int y );

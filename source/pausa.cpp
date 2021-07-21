@@ -1,11 +1,14 @@
 #include "pausa.h"
 #include "texture.h"
 #include "foursquares.h"
+#include "utilidades.h"
 #include <iostream>
 using namespace std;
 
 Pausa::Pausa()
 {
+    EstadoJuego_EsperarParaEvento( true );
+
     if( letreroPausaTextura.loadFileTexture( "../recursos/img/texto/pausa.png" ) ){
         // Establece sus dimensiones en pantalla
         SDL_Rect arect = { 0, 0, letreroPausaTextura.getWidth(), letreroPausaTextura.getHeight() };
@@ -25,52 +28,37 @@ Pausa::Pausa()
     actualizarViewport();
 }
 
-void Pausa::estadoEntrada()
-{
-    if( SDL_WaitEvent( &gGameEvent ) != 0 ){
-		if( gGameEvent.type == SDL_QUIT ){
-			jSalir = true;
-		}
-        else if( gGameEvent.type == SDL_KEYDOWN ){
-			if( gGameEvent.key.keysym.sym == SDLK_UP ){
-                // Cambia de opcion hacia arriba
-                opcionPausa--;
-                if( opcionPausa < 1 ){
-                    opcionPausa = NUMERO_OPCIONES;
-                }
-			}
-            else if( gGameEvent.key.keysym.sym == SDLK_DOWN ){
-                // Cambia de opción hacia abajo
-                opcionPausa++;
-                if( opcionPausa > NUMERO_OPCIONES ){
-                    opcionPausa = 1;
-                }
+void Pausa::estadoEntrada(){
+    
+}
+
+void Pausa::estadoEventos(){
+    if( gGameEvent.type == SDL_KEYDOWN ){
+        if( gGameEvent.key.keysym.sym == SDLK_UP ){
+            // Cambia de opcion hacia arriba
+            opcionPausa--;
+            if( opcionPausa < 1 ){
+                opcionPausa = NUMERO_OPCIONES;
             }
-			else if( gGameEvent.key.keysym.sym == SDLK_RETURN ){
-                Pausa_SeleccionarOpcion();
-			}
-			else if( gGameEvent.key.keysym.sym == SDLK_ESCAPE ){
-				Juego_EstablecerPantallaCompleta( !jPantallaCompleta );
-			}
-			else if( gGameEvent.key.keysym.sym == SDLK_f ){
-				jMostrarTasaCuadros = !jMostrarTasaCuadros;
-			}
-		}
-		else if( gGameEvent.type == SDL_WINDOWEVENT ){
-			if( gGameEvent.window.event == SDL_WINDOWEVENT_RESIZED ){
-				Juego_ActualizarVentana();
-			}
-		}
-	}
+        }
+        else if( gGameEvent.key.keysym.sym == SDLK_DOWN ){
+            // Cambia de opción hacia abajo
+            opcionPausa++;
+            if( opcionPausa > NUMERO_OPCIONES ){
+                opcionPausa = 1;
+            }
+        }
+        else if( gGameEvent.key.keysym.sym == SDLK_RETURN ){
+            Pausa_SeleccionarOpcion();
+        }
+    }
 }
 
-void Pausa::estadoLogica()
-{
+void Pausa::estadoLogica(){
 
 }
 
-void Pausa::estadoRenderizado()
-{
+void Pausa::estadoRenderizado(){
     // Dibuja el fondo de pantalla
     SDL_SetRenderDrawColor( gPtrRenderer, 0x00, 0x00, 0x00, 0x88 );
     SDL_RenderFillRect( gPtrRenderer, &fondoPausa );
@@ -99,6 +87,7 @@ void Pausa::actualizarViewport()
 void Pausa_SeleccionarOpcion( void ){
     if( opcionPausa == OPCION_CONTINUAR ){
         // Continúa con la partida
+        EstadoJuego_EsperarParaEvento( false );
         FS_ReanudarPartida();
 		EstadoJuego_Salir();
     }
@@ -127,10 +116,9 @@ void Pausa_DibujarOpciones( void ){
             opcionPausaTextura.renderTexture( &opcionPausaRect[ 1 ], opcionPausaObjeto.getDestRect() );
         }
 
-        if( opcionTextoTextura.crearTexturaDesdeTexto( opciones[ i ], COLOR_BLANCO, fuenteArg ) ){
-            SDL_Rect arect = { 0, 0, opcionTextoTextura.getWidth(), opcionTextoTextura.getHeight() };
+        if( opcionTextoTextura.crearTexturaDesdeTextoSolido( opciones[ i ], COLOR_BLANCO, fuenteArg ) ){
             SDL_DRect rrect = { opcionPausaObjeto.getRelativeX() + 0.1, posicionY + 0.07, (float)opcionTextoTextura.getWidth() / gameUnitSize, (float)opcionTextoTextura.getHeight() / gameUnitSize };
-            opcionTextoObjeto.setTextureCoords( arect );
+            opcionTextoObjeto.setTextureCoords( obtenerRectTextura( opcionTextoTextura ) );
             opcionTextoObjeto.setRelativeCoords( rrect );
             opcionTextoTextura.renderTexture( opcionTextoObjeto.getSrcRect(), opcionTextoObjeto.getDestRect() );
         }

@@ -12,6 +12,7 @@ class Preparacion : public EstadoJuego
         ~Preparacion();
 
         void estadoEntrada();
+        void estadoEventos();
 		void estadoLogica();
 		void estadoRenderizado();
 		void actualizarViewport();

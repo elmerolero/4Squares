@@ -53,79 +53,63 @@ FourSquares::~FourSquares()
 	tetroTexBackground.destroyTexture();
 }
 
-void FourSquares::estadoEntrada()
-{
-	if( SDL_PollEvent( &gGameEvent ) != 0 ){
-		if( gGameEvent.type == SDL_QUIT ){
-			jSalir = true;
+void FourSquares::estadoEventos(){
+	if( gGameEvent.type == SDL_KEYDOWN && !arribaPresionado ){
+		if( gGameEvent.key.keysym.sym == SDLK_UP ){
+			arribaPresionado = true;
 		}
-        else if( gGameEvent.type == SDL_KEYDOWN && !arribaPresionado ){
-			if( gGameEvent.key.keysym.sym == SDLK_UP ){
-				arribaPresionado = true;
-			}
-			else if( gGameEvent.key.keysym.sym == SDLK_RETURN ){
-				FS_PausarPartida();
-			}
-			else if( gGameEvent.key.keysym.sym == SDLK_ESCAPE ){
-				Juego_EstablecerPantallaCompleta( !jPantallaCompleta );
-			}
-			else if( gGameEvent.key.keysym.sym == SDLK_x && piezaJugador.tipo != FIGURA_CUADRADO ){
-				Pieza_Alternar( piezaJugador, tetroBoard, 1 );
-				if( gameTimer.obtenerTicks() >= downSpeed[ contadorNivel - 1 ] ){
-					pasosRealizados++;
-					tiempoAdicional.reiniciar();
-				}
-			}
-			else if( gGameEvent.key.keysym.sym == SDLK_z && piezaJugador.tipo != FIGURA_CUADRADO ){
-				Pieza_Alternar( piezaJugador, tetroBoard, -1 );
-				if( gameTimer.obtenerTicks() >= downSpeed[ contadorNivel - 1 ] ){
-					pasosRealizados++;
-					tiempoAdicional.reiniciar();
-				}
-			}
-			else if( gGameEvent.key.keysym.sym == SDLK_LSHIFT || gGameEvent.key.keysym.sym == SDLK_RSHIFT ){
-				if( allowedChange ){
-					int pieza;
-					// ¿Hay una pieza guardada?
-					if( pieceSaved ){
-						// Obtiene la pieza guardada
-						pieza = pieceSaved - 1;
-
-						// Guarda la pieza actualmente en juego
-						pieceSaved = piezaJugador.tipo + 1;
-					}
-					else{
-						// Guarda la pieza en juego
-						pieceSaved = piezaJugador.tipo + 1;
-
-						// Obtiene una nueva pieza de la cola
-						pieza = Cola_ObtenerSiguenteFigura( queueShapes );
-					}
-
-					// Establece los nuevos datos de la pieza
-					Pieza_NuevaPieza( piezaJugador, pieza, tetroBoard );
-
-					// Establece las banderas y reinicia el tiempo
-					allowedChange = false;
-					pasosRealizados = 0;
-					tiempoAdicional.reiniciar();
-					tiempoAdicional.pausar();
-				}
-			}
-			else if( gGameEvent.key.keysym.sym == SDLK_f ){
-				jMostrarTasaCuadros = !jMostrarTasaCuadros;
+		else if( gGameEvent.key.keysym.sym == SDLK_RETURN ){
+			FS_PausarPartida();
+			EstadoJuego_ApilarEstado( estadosJuego, new Pausa() );
+		}
+		else if( gGameEvent.key.keysym.sym == SDLK_x && piezaJugador.tipo != FIGURA_CUADRADO ){
+			Pieza_Alternar( piezaJugador, tetroBoard, 1 );
+			if( gameTimer.obtenerTicks() >= downSpeed[ contadorNivel - 1 ] ){
+				pasosRealizados++;
+				tiempoAdicional.reiniciar();
 			}
 		}
-		else if( gGameEvent.type == SDL_WINDOWEVENT ){
-			if( gGameEvent.window.event == SDL_WINDOWEVENT_RESIZED ){
-				Juego_ActualizarVentana();
+		else if( gGameEvent.key.keysym.sym == SDLK_z && piezaJugador.tipo != FIGURA_CUADRADO ){
+			Pieza_Alternar( piezaJugador, tetroBoard, -1 );
+			if( gameTimer.obtenerTicks() >= downSpeed[ contadorNivel - 1 ] ){
+				pasosRealizados++;
+				tiempoAdicional.reiniciar();
 			}
-			if( gGameEvent.type == SDL_WINDOW_MINIMIZED ){
+		}
+		else if( allowedChange && ( gGameEvent.key.keysym.sym == SDLK_LSHIFT || gGameEvent.key.keysym.sym == SDLK_RSHIFT ) ){
+			int pieza;
+			
+			// ¿Hay una pieza guardada?
+			if( pieceSaved ){
+				// Obtiene la pieza guardada
+				pieza = pieceSaved - 1;
+			}
+			else{
+				// Obtiene una nueva pieza de la cola
+				pieza = Cola_ObtenerSiguenteFigura( queueShapes );
+			}
 
-			}
+			// Guarda la pieza en juego
+			pieceSaved = piezaJugador.tipo + 1;
+
+			// Establece los nuevos datos de la pieza
+			Pieza_NuevaPieza( piezaJugador, pieza, tetroBoard );
+
+			// Establece las banderas y reinicia el tiempo
+			allowedChange = false;
+			pasosRealizados = 0;
+			tiempoAdicional.reiniciar();
+			tiempoAdicional.pausar();
 		}
 	}
+	else if( gGameEvent.type == SDL_WINDOWEVENT ){
+		if( gGameEvent.type == SDL_WINDOW_MINIMIZED ){
 
+		}
+	}
+}
+
+void FourSquares::estadoEntrada(){
 	if( arribaPresionado ){
 		return;
 	}
@@ -183,14 +167,7 @@ void FourSquares::estadoEntrada()
 }
 
 void FourSquares::estadoLogica()
-{ 
-	// Si se presionó tecla arriba
-	if( arribaPresionado ){
-		if( Tablero_PermiteMover( tetroBoard, piezaJugador, piezaJugador.figura.x, piezaJugador.figura.y + 1 ) ){
-			piezaJugador.figura.y++;
-		}
-	}
-	
+{ 	
 	// Revisa si es momento de bajar la pieza
 	if( ( gameTimer.obtenerTicks() >= downSpeed[ contadorNivel - 1 ] ) || arribaPresionado ){
 		// Reinicia el tiempo
@@ -211,11 +188,16 @@ void FourSquares::estadoLogica()
 		// Guarda la pieza en el tablero dado
 		Pieza_Grabar( piezaJugador, tetroBoard );
 
+		// El jugador está en una posición 
 		if( piezaJugador.figura.y == 1 ){
-			jSalir = true;
-			FS_Finalizar();
+			tiempoPartida.pausar();
+			gameTimer.pausar();
+			tiempoEntradaBajada.pausar();
+			tiempoEntradaLaterales.pausar();
+			EstadoJuego_ApilarEstado( estadosJuego, new Derrota() );
+			return;
 		}
-
+		
 		allowedChange = true;
 		Tablero_ObtenerLineas( tetroBoard, lineasJugador );
 		Tablero_EliminarLineas( tetroBoard, lineasJugador );
@@ -275,8 +257,6 @@ void FourSquares::estadoRenderizado()
 	if( tiempoPartida.obtenerTicks() < 2000 && estadoJuego == this ){
 		ya.renderTexture( yaObjeto.getSrcRect(), yaObjeto.getDestRect() );
 	}
-
-	FS_EstablecerEstadistico();
 }
 
 /* FUNCTIONS */
@@ -332,7 +312,6 @@ void FS_CargarElementos( void )
 	if( !tetroTexMargin.loadFileTexture( "../recursos/img/bloques/margen.png" ) )
 		jSalir = true;
 	else{
-		//tetroMargin.loadCoordinatesFromFile( "../recursos/coord/margin.crd" );
 		auxDRect = { ( gameViewport.w - tetroMargin.getRelativeW() ) / 2, 0, ( (float)tetroTexMargin.getWidth() * 6.13 ) / 1080, ( (float)tetroTexMargin.getHeight() * 6.13 ) / 1080 };
 		auxRect = { 0, 0, tetroTexMargin.getWidth(), tetroTexMargin.getHeight() };
 		tetroMargin.setRelativeCoords( auxDRect );
@@ -499,10 +478,11 @@ void Pieza_Alternar( Pieza &pieza, int tablero[ 21 ][ 10 ], int direccion  ){
 	Pieza_ActualizarSombra( pieza, tablero );
 }
 
-void Pieza_Grabar( Pieza &pieza, int tablero[ 21 ][ 10 ] ){
+void Pieza_Grabar( Pieza &pieza, int tablero[ BOARD_HEIGHT ][ BOARD_WIDTH ] ){
 	for( int i = 0; i < 4; i++ ){
 		int posX = pieza.figura.x + pieza.bloques[ i ].x;
 		int posY = pieza.figura.y + pieza.bloques[ i ].y;
+		
         tablero[ posY ][ posX ] = pieza.tipo + 1;
 	}
 }
@@ -521,13 +501,13 @@ void Pieza_Dibujar( Pieza &pieza, int posicionX, int posicionY, SDL_Color color 
 	for( int i = 0; i < 4; i++ ){
 		auxRect.x = tempX + ( ( posicionX + pieza.bloques[ i ].x ) * auxRect.w );
 		auxRect.y = tempY + ( ( posicionY + pieza.bloques[ i ].y ) * auxRect.w );
-
+		
 		tetroTexBlock.renderTexture( tetroBlock.getSrcRect(), &auxRect );
 	}
 }
 
 // Inicializa el tablero en ceros
-void Tablero_Inicializar( int tablero[ 21 ][ 10 ] ){
+void Tablero_Inicializar( int tablero[ BOARD_HEIGHT ][ BOARD_WIDTH ] ){
 	for( size_t renglones = 0; renglones < BOARD_HEIGHT; renglones++ ){
 		for( int columnas = 0; columnas < BOARD_WIDTH; columnas++ ){
 			tetroBoard[ renglones ][ columnas ] = 0;
@@ -536,7 +516,7 @@ void Tablero_Inicializar( int tablero[ 21 ][ 10 ] ){
 }
 
 // Indica si dentro del tablero dado se puede mover una pieza dada
-bool Tablero_PermiteMover( int tablero[ 21 ][ 10 ], Pieza &pieza, int posicionX, int posicionY )
+bool Tablero_PermiteMover( int tablero[ BOARD_HEIGHT ][ BOARD_WIDTH ], Pieza &pieza, int posicionX, int posicionY )
 {
 	for( int i = 0; i < 4; i++ ){
 		int posX = posicionX + pieza.bloques[ i ].x;
@@ -551,12 +531,12 @@ bool Tablero_PermiteMover( int tablero[ 21 ][ 10 ], Pieza &pieza, int posicionX,
 }
 
 // Indica si la casilla indicada ya contiene un bloque
-bool Tablero_CasillaUtilizada( int tablero[ 21 ][ 10 ], int posicionX, int posicionY ){
+bool Tablero_CasillaUtilizada( int tablero[ BOARD_HEIGHT ][ BOARD_WIDTH ], int posicionX, int posicionY ){
 	return tablero[ posicionY ][ posicionX ] != 0;
 }
 
 // Obtiene el número de líneas realizadas en un tablero dado
-void Tablero_ObtenerLineas( int tablero[ 21 ][ 10 ], vector< int > &lineas ){
+void Tablero_ObtenerLineas( int tablero[ BOARD_HEIGHT ][ BOARD_WIDTH ], vector< int > &lineas ){
 	// Contador de casillas llenas por renglon
 	int casillasLlenas = 0;
 
@@ -582,7 +562,7 @@ void Tablero_ObtenerLineas( int tablero[ 21 ][ 10 ], vector< int > &lineas ){
 }
 
 // Elimina las líneas dadas
-void Tablero_EliminarLineas( int tablero[ 21 ][ 10 ], vector< int > &lineas )
+void Tablero_EliminarLineas( int tablero[ BOARD_HEIGHT ][ BOARD_WIDTH ], vector< int > &lineas )
 {
 	for( size_t columnas = 0; columnas < BOARD_WIDTH; ++columnas ){
 		for( size_t renglones = 0; renglones < lineas.size(); ++renglones ){
@@ -595,7 +575,7 @@ void Tablero_EliminarLineas( int tablero[ 21 ][ 10 ], vector< int > &lineas )
 }
 
 
-void Tablero_Acomodar( int tablero[ 21 ][ 10 ], vector< int > &lineas )
+void Tablero_Acomodar( int tablero[ BOARD_HEIGHT ][ BOARD_WIDTH ], vector< int > &lineas )
 {
 	for( int linea : lineas ){
 		// A partir de esa linea copiamos el contenido de las casillas hacia arriba
@@ -609,7 +589,7 @@ void Tablero_Acomodar( int tablero[ 21 ][ 10 ], vector< int > &lineas )
 }
 
 // Dibuja el tablero
-void Tablero_Dibujar( int tablero[ 21 ][ 10 ] )
+void Tablero_Dibujar( int tablero[ BOARD_HEIGHT ][ BOARD_WIDTH ] )
 {
 	SDL_Rect auxRect = { 0, 0, tetroBlock.getDestRect() -> w, tetroBlock.getDestRect() -> h };
 	int tempX = tetroBoardSurface.getDestRect() -> x;
@@ -623,6 +603,14 @@ void Tablero_Dibujar( int tablero[ 21 ][ 10 ] )
 				tetroTexBlock.setColorMod( shapeColor[ tetroBoard[ renglones ][ columnas ] - 1 ] );
 				tetroTexBlock.renderTexture( tetroBlock.getSrcRect(), &auxRect );
 			}
+		}
+	}
+}
+
+void Tablero_EstablecerColorRenglon( int tablero[ BOARD_HEIGHT ][ BOARD_WIDTH ], int renglon, int color ){
+	for( int columna = 0; columna < BOARD_WIDTH; ++columna ){
+		if( tablero[ renglon ][ columna ] ){
+			tablero[ renglon ][ columna ] = color + 1;
 		}
 	}
 }
@@ -718,7 +706,7 @@ void FS_ActualizarDatos( int dato, Texture &textura, Object &objeto, int relleno
 
 	// Fuente
 	SDL_Color color = { 255, 255, 255 };
-	if( !textura.crearTexturaDesdeTexto( datoStr.str().c_str(), color, fuente ) ){
+	if( !textura.crearTexturaDesdeTextoSolido( datoStr.str().c_str(), color, fuente ) ){
 		jSalir = true;
 		return;
 	}
@@ -736,7 +724,7 @@ void FS_DibujarTiempo( Uint32 tiempo, Texture &textura, Object &objeto, TTF_Font
 
 	// Fuente
 	SDL_Color color = { 255, 255, 255 };
-	if( !textura.crearTexturaDesdeTexto( tiempoStr.str().c_str(), color, fuente ) ){
+	if( !textura.crearTexturaDesdeTextoSolido( tiempoStr.str().c_str(), color, fuente ) ){
 		jSalir = true;
 		return;
 	}
@@ -758,9 +746,6 @@ void FS_PausarPartida(){
 
 	// Evita que se muestren algunas cosas
 	tetroTexBlock.show( false );
-
-	// Establece el estado de pausa
-	EstadoJuego_ApilarEstado( estadosJuego, new Pausa() );
 }
 
 void FS_ReanudarPartida( void ){
@@ -775,39 +760,57 @@ void FS_ReanudarPartida( void ){
 	tetroTexBlock.show( true );
 }
 
-void FS_Finalizar( void )
-{
-	// Crea un archivo de error
-    ofstream log;
-	Uint32 tiempo = tiempoPartida.obtenerTicks();
-
-    // Se abre el archivo
-    log.open( "resultados.txt", ios_base::out );
-    if( !log ){
-        cout << "Ha ocurrido un error." << endl;
-     }
-
-    // Indica el tipo de error generado
-    log << "********** Resultados **********" << endl;
-	log << "Puntaje: " << contadorPuntaje << endl
-		<< "Líneas realizadas: " << contadorLineas << endl
-		<< "Nivel alcanzado: " << contadorNivel << endl << endl
-		<< "Tiempo: " << (tiempo / 60000) % 60 << ":" << std::setfill('0') << std::setw(2) << (tiempo / 1000) % 60 << ":" << (tiempo % 1000) / 10 << endl;
-
-	if( contadorNivel == 15 ){
-		log << "Llegaste al nivel máximo. ¡Bien hecho!" << endl;
-	}
-
-	log << "Fin del juego, cierra este bloc para salir." << endl;
-
-    // Cierra el archivo
-    log.close();
-
-	system( "notepad resultados.txt &" );
-}
-
 void FS_EstablecerEstadistico( void )
 {
+	stringstream informacion;
+	Uint32 t = tiempoPartida.obtenerTicks();
+	TTF_Font *fuente = TTF_OpenFont( "../recursos/fuentes/Aaargh.ttf", ( (float)jAltoPantalla / 1080.f ) * 35 );
+
+	informacion << "Puntaje:" << setw( 14 ) << "Nivel:" << setw( 32 ) << "Puntaje máximo:" << '\n'
+				<< setfill( '0' ) << setw( 7 ) << contadorPuntaje << setfill( ' ' ) << setw( 10 ) << contadorNivel << setw( 26 ) << "0000000" << '\n' << '\n'
+				<< "Tiempo:" << setw( 22 ) << "Combo máximo:" << setw( 20 ) << "Máximo líneas:" << '\n' << setfill( '0' )
+				<< (t / 60000) % 60 << "'" << setw( 2 ) << (t / 1000) % 60 << "'" << setw( 2 ) << (t % 1000) / 10 << setfill( ' ' ) << setw( 12 ) << 10 << setw( 23 ) << 300 << '\n' << '\n'
+				<< "Líneas:" << setw( 23 ) << "Menor tiempo: " << '\n'
+				<< contadorLineas << setw( 23 ) << "00:00:00" << endl;
+
+	SDL_Surface *texto = TTF_RenderUTF8_Blended_Wrapped( fuente, informacion.str().c_str(), COLOR_BLANCO, ( (float)jAltoPantalla / 1080.f ) * 900 );
+	SDL_Rect rect{ 0, ( jAltoPantalla - texto -> h ) / 2, texto -> w, texto -> h };
+	SDL_Rect rect2{ 0, 0, texto -> w, texto -> h };
+	estadisticoTextura.crearTexturaDesdeSuperficie( gPtrRenderer, texto );
+	estadisticoTextura.show( true );
+	int ancho = estadisticoTextura.getWidth();
+	for( int anchura = 0; anchura < ancho; anchura += 4 ){
+		rect.w = anchura;
+		rect.x = ( jAnchoPantalla - anchura ) / 2;
+		rect2.x = ( ancho - anchura ) / 2;
+		rect2.w = anchura;
+		EstadoJuego_Renderizar();
+		SDL_SetRenderDrawColor( gPtrRenderer, 0, 0, 0, 255 );
+		SDL_RenderFillRect( gPtrRenderer, &rect );
+		estadisticoTextura.renderTexture( &rect2, &rect );
+		SDL_RenderPresent( gPtrRenderer );
+		SDL_Delay( 10 );
+	}
+
+	while( !jSalir ){
+		if( SDL_PollEvent( &gGameEvent ) != 0 ){
+			if( gGameEvent.type == SDL_QUIT ){
+				jSalir = true;
+			}
+			if( gGameEvent.type == SDL_KEYDOWN ){
+				if( gGameEvent.key.keysym.sym == SDLK_RETURN ){
+					jSalir = true;
+				}
+			}
+		}
+		EstadoJuego_Renderizar();
+		SDL_SetRenderDrawColor( gPtrRenderer, 0, 0, 0, 255 );
+		SDL_RenderFillRect( gPtrRenderer, &rect );
+		estadisticoTextura.renderTexture( &rect2, &rect );
+		SDL_RenderPresent( gPtrRenderer );
+	}
+
+	TTF_CloseFont( fuente );
 }
 
 /* VARIABLES */
@@ -830,9 +833,6 @@ Object  tetroBlock;
 // Shapes attributes
 Texture tetroTexShapes;
 Object gFigura;
-
-Object estadisticoObjeto;
-Texture estadisticoTextura;
 
 // Tiempo del juego
 Temporizador tiempoPartida;
