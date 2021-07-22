@@ -717,6 +717,21 @@ void FS_ActualizarDatos( int dato, Texture &textura, Object &objeto, int relleno
 	objeto.setTextureCoords( acoords );
 }
 
+void FS_ActualizarTexto( string texto, Texture &textura, Object &objeto, TTF_Font *fuente, double x, double y )
+{
+	// Fuente
+	SDL_Color color = { 255, 255, 255 };
+	if( !textura.crearTexturaDesdeTextoSolido( texto.c_str(), color, fuente ) ){
+		jSalir = true;
+		return;
+	}
+
+	SDL_Rect acoords = { 0, 0, textura.getWidth(), textura.getHeight() };
+	SDL_DRect rcoords = { x, y, (float)textura.getWidth() / gameUnitSize, (float)textura.getHeight() / gameUnitSize };
+	objeto.setRelativeCoords( rcoords );
+	objeto.setTextureCoords( acoords );
+}
+
 void FS_DibujarTiempo( Uint32 tiempo, Texture &textura, Object &objeto, TTF_Font *fuente, double x, double y )
 {
 	stringstream tiempoStr;
@@ -758,59 +773,6 @@ void FS_ReanudarPartida( void ){
 
 	// Vuelve a mostrar lo que se había ocultado
 	tetroTexBlock.show( true );
-}
-
-void FS_EstablecerEstadistico( void )
-{
-	stringstream informacion;
-	Uint32 t = tiempoPartida.obtenerTicks();
-	TTF_Font *fuente = TTF_OpenFont( "../recursos/fuentes/Aaargh.ttf", ( (float)jAltoPantalla / 1080.f ) * 35 );
-
-	informacion << "Puntaje:" << setw( 14 ) << "Nivel:" << setw( 32 ) << "Puntaje máximo:" << '\n'
-				<< setfill( '0' ) << setw( 7 ) << contadorPuntaje << setfill( ' ' ) << setw( 10 ) << contadorNivel << setw( 26 ) << "0000000" << '\n' << '\n'
-				<< "Tiempo:" << setw( 22 ) << "Combo máximo:" << setw( 20 ) << "Máximo líneas:" << '\n' << setfill( '0' )
-				<< (t / 60000) % 60 << "'" << setw( 2 ) << (t / 1000) % 60 << "'" << setw( 2 ) << (t % 1000) / 10 << setfill( ' ' ) << setw( 12 ) << 10 << setw( 23 ) << 300 << '\n' << '\n'
-				<< "Líneas:" << setw( 23 ) << "Menor tiempo: " << '\n'
-				<< contadorLineas << setw( 23 ) << "00:00:00" << endl;
-
-	SDL_Surface *texto = TTF_RenderUTF8_Blended_Wrapped( fuente, informacion.str().c_str(), COLOR_BLANCO, ( (float)jAltoPantalla / 1080.f ) * 900 );
-	SDL_Rect rect{ 0, ( jAltoPantalla - texto -> h ) / 2, texto -> w, texto -> h };
-	SDL_Rect rect2{ 0, 0, texto -> w, texto -> h };
-	estadisticoTextura.crearTexturaDesdeSuperficie( gPtrRenderer, texto );
-	estadisticoTextura.show( true );
-	int ancho = estadisticoTextura.getWidth();
-	for( int anchura = 0; anchura < ancho; anchura += 4 ){
-		rect.w = anchura;
-		rect.x = ( jAnchoPantalla - anchura ) / 2;
-		rect2.x = ( ancho - anchura ) / 2;
-		rect2.w = anchura;
-		EstadoJuego_Renderizar();
-		SDL_SetRenderDrawColor( gPtrRenderer, 0, 0, 0, 255 );
-		SDL_RenderFillRect( gPtrRenderer, &rect );
-		estadisticoTextura.renderTexture( &rect2, &rect );
-		SDL_RenderPresent( gPtrRenderer );
-		SDL_Delay( 10 );
-	}
-
-	while( !jSalir ){
-		if( SDL_PollEvent( &gGameEvent ) != 0 ){
-			if( gGameEvent.type == SDL_QUIT ){
-				jSalir = true;
-			}
-			if( gGameEvent.type == SDL_KEYDOWN ){
-				if( gGameEvent.key.keysym.sym == SDLK_RETURN ){
-					jSalir = true;
-				}
-			}
-		}
-		EstadoJuego_Renderizar();
-		SDL_SetRenderDrawColor( gPtrRenderer, 0, 0, 0, 255 );
-		SDL_RenderFillRect( gPtrRenderer, &rect );
-		estadisticoTextura.renderTexture( &rect2, &rect );
-		SDL_RenderPresent( gPtrRenderer );
-	}
-
-	TTF_CloseFont( fuente );
 }
 
 /* VARIABLES */

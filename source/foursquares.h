@@ -174,9 +174,9 @@ void FS_ActualizarPuntaje( int &puntajeJugador, std::vector< int > &lineasRealiz
 void FS_DibujarFigura( int figura, double x, double y );
 void FS_DibujarTiempo( Uint32 tiempo, Texture &textura, Object &objeto, TTF_Font *fuente, double x, double y );
 void FS_ActualizarDatos( int dato, Texture &textura, Object &objeto, int relleno, TTF_Font *fuente, double x, double y );
+void FS_ActualizarTexto( std::string texto, Texture &textura, Object &objeto, TTF_Font *fuente, double x, double y );
 void FS_PausarPartida( void );
 void FS_ReanudarPartida( void );
-void FS_EstablecerEstadistico( void );
 
 void Pieza_NuevaPieza( Pieza &pieza, int figura, int tablero[ 21 ][ 10 ] );
 void Pieza_ActualizarSombra( Pieza &pieza, int tablero[ 21 ][ 10 ] );
