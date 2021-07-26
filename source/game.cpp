@@ -1,6 +1,4 @@
 #include "game.h"
-#include "foursquares.h"
-#include "preparacion.h"
 #include <iostream>
 #include <vector>
 using namespace std;
@@ -24,7 +22,6 @@ SDL_Event gGameEvent;
 
 // Variables para viewport y tamaño de unidad
 SDL_DRect gameViewport;
-double gameUnitSize;
 
 // Temporizador
 Temporizador tempFPS;
@@ -32,6 +29,7 @@ int fps;
 
 // Para el estado del juego
 bool estadoSalir;
+EstadoJuego *estadoCambiar;
 EstadoJuego *estadoJuego;
 vector< EstadoJuego * > estadosJuego;
 
@@ -48,6 +46,10 @@ int  jAnchoPantalla;
 int  jAltoPantalla;
 
 bool esperarEvento;
+
+// FPS textura
+Object fpsObjeto;
+Texture fpsTextura;
 
 // Fuentes
 TTF_Font *fuenteArg;
@@ -89,6 +91,8 @@ bool Juego_Iniciar( std::string nombre )
 		return false;
 	}
 
+	Texture::establecerContextoRender( gPtrRenderer );
+
 	//Carga el ícono
 	SDL_Surface * icono = IMG_Load("../recursos/img/icono.bmp");
 	if( icono != NULL ){
@@ -107,14 +111,6 @@ bool Juego_Iniciar( std::string nombre )
 
 	// Inicializa el temporizador de imagenes por segundo
 	tempFPS.iniciar();
-
-	// Establece el juego
-	EstadoJuego_EstablecerEstado( estadosJuego, new FourSquares() );
-
-	// Redirige al estado preparación
-	EstadoJuego_ApilarEstado( estadosJuego, new Preparacion() );
-
-	esperarEvento = false;
 
 	return true;
 }
@@ -194,8 +190,8 @@ void Juego_ActualizarVentana( void )
 	SDL_RenderSetLogicalSize( gPtrRenderer, jAnchoPantalla, jAltoPantalla );
 
 	// Actualiza el tamaño de la unidad y las dimensiones del viewport
-	gameUnitSize = jAltoPantalla / DISPLAY_UNIT;
-	gameViewport.h = DISPLAY_UNIT;
+	Objeto_ActualizarMagnitudUnidad( jAltoPantalla );
+	gameViewport.h = UNIDAD_PANTALLA;
 	gameViewport.w = jAnchoPantalla / gameUnitSize;
 	gameViewport.x = 0.0;
 	gameViewport.y = 0.0;
@@ -223,6 +219,12 @@ void EstadoJuego_EstablecerEstado( vector< EstadoJuego * > &estadosJuego, Estado
 
 	// Apila el estado del juego
 	EstadoJuego_ApilarEstado( estadosJuego, estado );
+}
+
+void EstadoJuego_CambiarEstado( EstadoJuego *estado ){
+	if( estado != nullptr ){
+		estadoCambiar = estado;
+	}
 }
 
 // Elimina todos los estados de juego que existan en una pila
@@ -269,7 +271,7 @@ void EstadoJuego_Salir( vector< EstadoJuego * > &estadosJuego ){
 }
 
 void EstadoJuego_Entrada( void ){
-	if( ( esperarEvento ? SDL_WaitEvent( &gGameEvent ) != 0 : SDL_PollEvent( &gGameEvent ) != 0 ) ){
+	if( SDL_PollEvent( &gGameEvent ) != 0 ){
 		// Ejecuta sus funciones base
 		if( gGameEvent.type == SDL_QUIT ){
 			jSalir = true;
@@ -325,12 +327,31 @@ void EstadoJuego_Renderizar( void ){
 
 	// Actualiza la pantalla
 	SDL_RenderPresent( gPtrRenderer );
-	EstadoJuego_Salir( estadosJuego );
 
 	// Incrementa el numero de fps
 	fps++;
 }
 
-void EstadoJuego_EsperarParaEvento( bool opcion ){
-	esperarEvento = opcion;
+void EstadoJuego_Actualizar( void ){
+	if( estadoCambiar != nullptr ){
+		EstadoJuego_EstablecerEstado( estadosJuego, estadoCambiar );
+	}
+}
+
+void FS_ActualizarDatos( int dato, Texture &textura, Object &objeto, int relleno, TTF_Font *fuente, double x, double y )
+{
+	stringstream datoStr;
+	datoStr << setfill( '0' ) << setw( relleno ) << dato;
+
+	// Fuente
+	SDL_Color color = { 255, 255, 255 };
+	if( !textura.crearTexturaDesdeTextoSolido( datoStr.str().c_str(), color, fuente ) ){
+		jSalir = true;
+		return;
+	}
+
+	SDL_Rect acoords = { 0, 0, textura.getWidth(), textura.getHeight() };
+	SDL_DRect rcoords = { x, y, (float)textura.getWidth() / gameUnitSize, (float)textura.getHeight() / gameUnitSize };
+	objeto.setRelativeCoords( rcoords );
+	objeto.setTextureCoords( acoords );
 }

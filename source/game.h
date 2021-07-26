@@ -1,22 +1,13 @@
 #ifndef GAME_H
 #define GAME_H
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
 #include <SDL2/SDL_TTF.h>
 #include <string>
 #include <vector>
-#include "gamestate.h"
+#include "estadojuego.h"
 #include "texture.h"
+#include "object.h"
 #include "temporizador.h"
-
-// For floating point operations
-struct SDL_DRect
-{
-	double x;
-	double y;
-	double w;
-	double h;
-};
 
 // Display constants
 #define DISPLAY_UNIT	6.13
@@ -50,6 +41,10 @@ extern bool jMostrarTasaCuadros;
 extern int  jAnchoPantalla;
 extern int 	jAltoPantalla;
 
+// Fotogramas por segundo
+extern Object fpsObjeto;
+extern Texture fpsTextura;
+
 // Funciones del juego
 bool Juego_Iniciar( std::string nombre );
 void Juego_CargarPreferencias( void );
@@ -66,6 +61,7 @@ void EstadoJuego_LimpiarEstados( std::vector< EstadoJuego * > &estadosJuego );
 
 // Apila un estado de juego dado
 void EstadoJuego_ApilarEstado( std::vector< EstadoJuego * > &estadosJuego, EstadoJuego *estado );
+void EstadoJuego_Actualizar( void );
 void EstadoJuego_Salir( void );
 void EstadoJuego_Salir( std::vector< EstadoJuego * > &estadosJuego );
 
@@ -73,7 +69,7 @@ void EstadoJuego_Entrada( void );
 void EstadoJuego_Logica( void );
 void EstadoJuego_Renderizar( void );
 
-void EstadoJuego_EsperarParaEvento( bool opcion );
+void FS_ActualizarDatos( int dato, Texture &textura, Object &objeto, int relleno, TTF_Font *fuente, double x, double y );
 
 /* Fuentes del juego */
 // Fuentes 
@@ -84,6 +80,5 @@ extern TTF_Font *fuenteAllStar;
 const SDL_Color COLOR_BLANCO{ 255, 255, 255 };
 const SDL_Color COLOR_NEGRO{ 0, 0, 0 };
 
-extern bool esperarEvento;
 
 #endif
