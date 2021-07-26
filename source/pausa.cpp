@@ -1,29 +1,25 @@
 #include "pausa.h"
-#include "texture.h"
 #include "foursquares.h"
-#include "utilidades.h"
 #include <iostream>
 using namespace std;
 
 Pausa::Pausa()
 {
-    EstadoJuego_EsperarParaEvento( true );
-
-    if( letreroPausaTextura.loadFileTexture( "../recursos/img/texto/pausa.png" ) ){
+    if( letreroPausa.loadFileTexture( "../recursos/img/texto/pausa.png" ) ){
         // Establece sus dimensiones en pantalla
-        SDL_Rect arect = { 0, 0, letreroPausaTextura.getWidth(), letreroPausaTextura.getHeight() };
-        SDL_DRect rrect = { 0, 1, ( (float)arect.w * 6.13 ) / 1080, ( (float)arect.h * 6.13 ) / 1080 };
-        letreroPausaObjeto.setTextureCoords( arect );
-        letreroPausaObjeto.setRelativeCoords( rrect );
+        SDL_Rect arect = { 0, 0, letreroPausa.getWidth(), letreroPausa.getHeight() };
+        SDL_DRect rrect = { 0, 1, ( (float)arect.w * 6.13 ) / (float)1080, ( (float)arect.h * 6.13 ) / (float)1080 };
+        letreroPausa.escribirDimensionesTextura( arect );
+        letreroPausa.escribirDimensionesEspaciales( rrect );
     }
 
-    if( opcionPausaTextura.loadFileTexture( "../recursos/img/otros/selector-pausa.png" ) ){
-        SDL_DRect rrect = { 0, 0, ( (float)opcionPausaRect[ 0 ].w * 6.13 ) / 1080, ( (float)opcionPausaRect[ 0 ].h * 6.13 ) / 1080 };
-        opcionPausaObjeto.setRelativeCoords( rrect );
+    if( opcionPausa.loadFileTexture( "../recursos/img/otros/selector-pausa.png" ) ){
+        SDL_DRect rrect = { 0, 0, ( (float)opcionPausaRect[ 0 ].w * 6.13 ) / (float)1080, ( (float)opcionPausaRect[ 0 ].h * 6.13 ) / (float)1080 };
+        opcionPausa.escribirDimensionesEspaciales( rrect );
     }
 
     // Opcion pausa por defecto es la primera opcion
-    opcionPausa = 1;
+    opcion = 1;
 
     actualizarViewport();
 }
@@ -32,20 +28,20 @@ void Pausa::estadoEntrada(){
     
 }
 
-void Pausa::estadoEventos(){
+void Pausa::estadoEventos( SDL_Event &gGameEvent ){
     if( gGameEvent.type == SDL_KEYDOWN ){
         if( gGameEvent.key.keysym.sym == SDLK_UP ){
             // Cambia de opcion hacia arriba
-            opcionPausa--;
-            if( opcionPausa < 1 ){
-                opcionPausa = NUMERO_OPCIONES;
+            opcion--;
+            if( opcion < 1 ){
+                opcion = NUMERO_OPCIONES;
             }
         }
         else if( gGameEvent.key.keysym.sym == SDLK_DOWN ){
             // Cambia de opción hacia abajo
-            opcionPausa++;
-            if( opcionPausa > NUMERO_OPCIONES ){
-                opcionPausa = 1;
+            opcion++;
+            if( opcion > NUMERO_OPCIONES ){
+                opcion = 1;
             }
         }
         else if( gGameEvent.key.keysym.sym == SDLK_RETURN ){
@@ -59,12 +55,11 @@ void Pausa::estadoLogica(){
 }
 
 void Pausa::estadoRenderizado(){
-    // Dibuja el fondo de pantalla
-    SDL_SetRenderDrawColor( gPtrRenderer, 0x00, 0x00, 0x00, 0x88 );
-    SDL_RenderFillRect( gPtrRenderer, &fondoPausa );
+    // Dibuja el fondo negro
+    fourSquares.fondoNegro();
 
     // Dibuja el letrero de pausa
-    letreroPausaTextura.renderTexture( letreroPausaObjeto.getSrcRect(), letreroPausaObjeto.getDestRect() );
+    letreroPausa.renderTexture( letreroPausa.leerDimensionesTextura(), letreroPausa.leerDimensionesEspaciales() );
 
     // Dibuja las opciones
     Pausa_DibujarOpciones();
@@ -72,69 +67,62 @@ void Pausa::estadoRenderizado(){
 
 void Pausa::actualizarViewport()
 {
-    // Actualiza el tamaño del rectangulo del fondo
-    fondoPausa = { 0, 0, jAnchoPantalla, jAltoPantalla };
-
     // Actualiza el letrero en pantalla
-    letreroPausaObjeto.setRelativeX( ( gameViewport.w - letreroPausaObjeto.getRelativeW() ) / 2 );
-    letreroPausaObjeto.actualizarCoordanadasAbsolutas();
+    letreroPausa.escribirEspacialX( ( fourSquares.leerEspacioAncho() - letreroPausa.leerEspacialAncho() ) / 2 );
+    letreroPausa.actualizarDimensionesAbsolutas();
 
     // Actualiza la posicion de las opciones en pantalla 
-    opcionPausaObjeto.setRelativeX( ( gameViewport.w - opcionPausaObjeto.getRelativeW() ) / 2 );
-    opcionPausaObjeto.actualizarCoordanadasAbsolutas();
+    opcionPausa.escribirEspacialX( ( fourSquares.leerEspacioAncho() - opcionPausa.leerEspacialAncho() ) / 2 );
+    opcionPausa.actualizarDimensionesAbsolutas();
 }
 
 void Pausa_SeleccionarOpcion( void ){
-    if( opcionPausa == OPCION_CONTINUAR ){
+    if( opcion == OPCION_CONTINUAR ){
         // Continúa con la partida
-        EstadoJuego_EsperarParaEvento( false );
         FS_ReanudarPartida();
-		EstadoJuego_Salir();
+		fourSquares.finalizarEstado();
     }
-    else if( opcionPausa == OPCION_REINICIAR ){
-        // No hace nada
+    else if( opcion == OPCION_REINICIAR ){
+        // Inicia una nueva instancia del juego
+        FS_ReanudarPartida();
+        fourSquares.establecerEstado( new FourSquares() );
+        fourSquares.apilarEstado( new Preparacion() );
     }
-    else if( opcionPausa == OPCION_SALIR ){
+    else if( opcion == OPCION_SALIR ){
         // Sale del juego
-        jSalir = true;
+        fourSquares.salir( true );
     }
 }
 
 void Pausa_DibujarOpciones( void ){
     // Obtiene la mitad de la pantalla
-    double mediaY = gameViewport.h / 2;
+    double mediaY = fourSquares.leerEspacioAlto() / 2;
 
     // Dibuja el las opciones disponibles
     for( int i = 0; i < NUMERO_OPCIONES; i++ ){
-        double posicionY = ( opcionPausaObjeto.getRelativeH() + .2 ) * ( i ) + mediaY;
-        opcionPausaObjeto.setRelativeY( posicionY );
-        opcionPausaObjeto.actualizarCoordanadasAbsolutas();
-        opcionPausaTextura.renderTexture( &opcionPausaRect[ 0 ], opcionPausaObjeto.getDestRect() );
+        double posicionY = ( opcionPausa.leerEspacialAlto() + .2 ) * ( i ) + mediaY;
+        opcionPausa.escribirEspacialY( posicionY );
+        opcionPausa.renderTexture( &opcionPausaRect[ 0 ], opcionPausa.leerDimensionesEspaciales() );
 
         // ¿Es la opción seleccionada?
-        if( opcionPausa == i + 1 ){
-            opcionPausaTextura.renderTexture( &opcionPausaRect[ 1 ], opcionPausaObjeto.getDestRect() );
+        if( opcion == i + 1 ){
+            opcionPausa.renderTexture( &opcionPausaRect[ 1 ], opcionPausa.leerDimensionesEspaciales() );
         }
 
-        if( opcionTextoTextura.crearTexturaDesdeTextoSolido( opciones[ i ], COLOR_BLANCO, fuenteArg ) ){
-            SDL_DRect rrect = { opcionPausaObjeto.getRelativeX() + 0.1, posicionY + 0.07, (float)opcionTextoTextura.getWidth() / gameUnitSize, (float)opcionTextoTextura.getHeight() / gameUnitSize };
-            opcionTextoObjeto.setTextureCoords( obtenerRectTextura( opcionTextoTextura ) );
-            opcionTextoObjeto.setRelativeCoords( rrect );
-            opcionTextoTextura.renderTexture( opcionTextoObjeto.getSrcRect(), opcionTextoObjeto.getDestRect() );
+        SDL_Color color = { 255, 255, 255 };
+        if( opcionTexto.crearTexturaDesdeTextoSolido( opciones[ i ], color, fuenteTexto.fuente ) ){
+            SDL_DRect rrect = { opcionPausa.leerEspacialX() + 0.1, posicionY + 0.07, (float)opcionTexto.getWidth() / Objeto::leerMagnitudUnidad(), (float)opcionTexto.getHeight() / Objeto::leerMagnitudUnidad() };
+            opcionTexto.escribirDimensionesTextura( 0, 0, opcionTexto.getWidth(), opcionTexto.getHeight() );
+            opcionTexto.escribirDimensionesEspaciales( rrect );
+            opcionTexto.renderTexture( opcionTexto.leerDimensionesTextura(), opcionTexto.leerDimensionesEspaciales() );
         }
     }
 }
 
-int opcionPausa;
+int opcion;
 const char *opciones[] = { "Continuar", "Reiniciar", "Salir" };
 
-SDL_Rect fondoPausa;
+Objeto letreroPausa;
+Objeto opcionPausa;
 
-Texture letreroPausaTextura;
-Object letreroPausaObjeto;
-
-Texture opcionPausaTextura;
-Object opcionPausaObjeto;
-
-Texture opcionTextoTextura;
-Object opcionTextoObjeto;
+Objeto opcionTexto;

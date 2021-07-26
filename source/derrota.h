@@ -2,59 +2,54 @@
 #define DERROTA_H
 
 #include <string>
-#include "gamestate.h"
+#include "estadojuego.h"
 #include "temporizador.h"
-#include "object.h"
-#include "game.h"
+#include "objeto.h"
+#include "juego.h"
+#include "componentes.h"
  
 class Derrota : public EstadoJuego
 {
     public:
         Derrota();
         void estadoEntrada();
-        void estadoEventos();
+        void estadoEventos( SDL_Event &gGameEvent );
         void estadoLogica();
         void estadoRenderizado();
         void actualizarViewport();
 };
 
-void actualizarTamanioTexto( std::string texto, Texture &textura, Object &objeto, TTF_Font *fuente, int tamanioBase, int anchoTextura );
+void actualizarTamanioTexto( std::string texto, Objeto &objeto, TTF_Font *fuente, int tamanioBase, int anchoTextura );
 
-bool ocultarElementos = false;
+extern bool ocultarElementos;
 
 extern int lineaSombreada;
 extern std::string datosPartida;
 extern TTF_Font *fuenteInformacion;
-extern SDL_Rect fondoDerrota;
 
 extern int incremento;
 extern double incrementoRelativo;
 extern int anchoActual;
 extern double anchoRelativoActual;
-extern Object estadisticoObjeto;
-extern Texture estadisticoTextura;
+extern Objeto estadistico;
 
-extern Object tableroEstadisticoObjeto;
-extern Texture tableroEstadistico;
+extern Objeto tableroEstadistico;
 
 extern Temporizador tiempoEspera;
-extern Object seAcaboObjeto;
-extern Texture seAcaboTextura;
+extern Objeto seAcabo;
 
-extern Object continuarObjeto;
-extern Texture continuarTextura;
+extern Objeto continuar;
 
-extern Object textoContinuarObjeto;
-extern Texture textoContinuarTextura;
+extern Objeto textoContinuar;
 
 struct Opciones{
     int numero;
     int seleccionada;
 };
 
-Opciones finOpciones = { 2, 1 };
-const char *finListaOpciones[] = { "Volver a jugar", "Salir" };
+extern Opciones finOpciones;
 
-void Opciones_Dibujar( Opciones &informacionOpciones, const char *opciones[], Texture &opcionTextura, Object &opcionObjeto, Texture &textoTextura, Object &opcionTextoObjeto );
+void Opciones_Dibujar( Opciones &informacionOpciones, const char *opciones[], Objeto &opcionObjeto, Objeto &opcionTextoObjeto );
+std::string comparativo( int puntaje, int nivel, int lineas, int combo, Uint32 tiempo );
 
 #endif

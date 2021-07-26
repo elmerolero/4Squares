@@ -1,6 +1,5 @@
 #include "preparacion.h"
 #include <iostream>
-#include "game.h"
 #include "foursquares.h"
 #include "texture.h"
 using namespace std;
@@ -9,8 +8,8 @@ Preparacion::Preparacion(){
     if( cuentaRegresiva.loadFileTexture( "../recursos/img/texto/cuenta.png" ) ){
         SDL_Rect trect = { 0, 0, 82, 157 };
         SDL_DRect rrect = { 0, 1, ( (float)trect.w * 6.13 ) / 1080, ( (float)trect.h * 6.13 ) / 1080 };
-        cuentaRegresivaObjeto.setRelativeCoords( rrect );
-	    cuentaRegresivaObjeto.setTextureCoords( trect );
+        cuentaRegresiva.escribirDimensionesEspaciales( rrect );
+	    cuentaRegresiva.escribirDimensionesTextura( trect );
     }
 
 	tiempoPartida.pausar();
@@ -21,8 +20,9 @@ Preparacion::Preparacion(){
     temporizador.iniciar();
     contador = 0;
 
-    tetroTexBlock.show( false );
+    tetroBlock.show( false );
 
+    ya.show( false );
     actualizarViewport();
 }
 
@@ -31,36 +31,18 @@ Preparacion::~Preparacion(){
 }
 
 void Preparacion::estadoEntrada(){
-
+    // No hay entradas que procesar
 }
 
-void Preparacion::estadoEventos(){
-    if( gGameEvent.type == SDL_QUIT ){
-        jSalir = true;
-    }
-    else if( gGameEvent.type == SDL_KEYDOWN && !arribaPresionado ){
-        if( gGameEvent.key.keysym.sym == SDLK_UP ){
-            arribaPresionado = true;
-        }
-        else if( gGameEvent.key.keysym.sym == SDLK_ESCAPE ){
-            Juego_EstablecerPantallaCompleta( !jPantallaCompleta );
-        }
-        else if( gGameEvent.key.keysym.sym == SDLK_f ){
-            jMostrarTasaCuadros = !jMostrarTasaCuadros;
-        }
-    }
-    else if( gGameEvent.type == SDL_WINDOWEVENT ){
-        if( gGameEvent.window.event == SDL_WINDOWEVENT_RESIZED ){
-            Juego_ActualizarVentana();
-        }
-    }
+void Preparacion::estadoEventos( SDL_Event &gGameEvent ){
+    // No hay eventos que procesar
 }
 
 void Preparacion::estadoLogica(){
      // Actualiza las dimensiones de la textura
-    cuentaRegresivaObjeto.setRelativeX( ( gameViewport.w - cuentaRegresivaObjeto.getRelativeW() ) / 2 );
+    cuentaRegresiva.escribirEspacialX( ( fourSquares.leerEspacioAncho() - cuentaRegresiva.leerEspacialAncho() ) / 2 );
     SDL_Rect trect = { contador * 82, 0, 82, 157 };
-    cuentaRegresivaObjeto.setTextureCoords( trect );
+    cuentaRegresiva.escribirDimensionesTextura( trect );
 
     if( temporizador.obtenerTicks() > 1000 ){
         // Incrementa el contador
@@ -68,33 +50,32 @@ void Preparacion::estadoLogica(){
 
         if( contador > 2 ){
             contador = 2;
-            tetroTexBlock.show( true );
+            ya.show( true );
+            tetroBlock.show( true );
             tiempoPartida.reanudar();
 	        gameTimer.reanudar(); 
 	        tiempoEntradaBajada.reanudar();
 	        tiempoEntradaLaterales.reanudar();
-            EstadoJuego_Salir();
+            fourSquares.finalizarEstado();
         }
         temporizador.reiniciar();
     }
 }
 
 void Preparacion::estadoRenderizado(){
-    SDL_SetRenderDrawColor( gPtrRenderer, 0x00, 0x00, 0x00, 0x88 );
-    SDL_RenderFillRect( gPtrRenderer, &fondoNegro );
+    // Dibuja un fondo negro
+    fourSquares.fondoNegro();
 
-    cuentaRegresiva.renderTexture( cuentaRegresivaObjeto.getSrcRect(), cuentaRegresivaObjeto.getDestRect() );
+    // Dibuja la cuenta regresiva
+    cuentaRegresiva.renderTexture( cuentaRegresiva.leerDimensionesTextura(), cuentaRegresiva.leerDimensionesEspaciales() );
 }
 
 void Preparacion::actualizarViewport(){
-    fondoNegro = { 0, 0, jAnchoPantalla, jAltoPantalla };
-    cuentaRegresivaObjeto.actualizarCoordanadasAbsolutas();
-    yaObjeto.actualizarCoordanadasAbsolutas();
+    // Actuliza la textura de cuenta regresiva
+    cuentaRegresiva.actualizarDimensionesAbsolutas();
 }
 
-Texture cuentaRegresiva;
-Object cuentaRegresivaObjeto;
-SDL_Rect fondoNegro;
+Objeto cuentaRegresiva;
 
 Temporizador temporizador;
 int contador;

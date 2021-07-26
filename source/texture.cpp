@@ -1,16 +1,25 @@
 #include "texture.h"
-#include "game.h"
 #include <iostream>
 using namespace std;
 
-Texture::Texture()
-{
+// Variable estática hacia donde se renderizan las texturas
+SDL_Renderer *Texture::renderer = nullptr;
+
+// Establece el contexto de render
+void Texture::establecerContextoRender( SDL_Renderer *render ){
+	if( render != nullptr ){
+		renderer = render;
+	}
+}
+
+// Constructor
+Texture::Texture(){
 	ptrTexture = NULL;
 	showTexture = true;
 }
 
-Texture::~Texture()
-{
+// Destructor
+Texture::~Texture(){
 	destroyTexture();
 }
 
@@ -24,7 +33,7 @@ bool Texture::loadFileTexture( const char* path )
 		return false;
 	}
 
-	if( !crearTexturaDesdeSuperficie( gPtrRenderer, ptrAuxSurface ) ){
+	if( !crearTexturaDesdeSuperficie( renderer, ptrAuxSurface ) ){
 		return false;
 	}
 	
@@ -63,7 +72,7 @@ bool Texture::crearTexturaDesdeTextoSolido( const char *texto, SDL_Color color, 
 	}
 
 	// Convierte la superficie en una textura
-	if( !crearTexturaDesdeSuperficie( gPtrRenderer, superficie ) ){
+	if( !crearTexturaDesdeSuperficie( renderer, superficie ) ){
 		return false;
 	}
 
@@ -80,7 +89,7 @@ bool Texture::crearTexturaDesdeTextoBlended( const char *texto, SDL_Color color,
 	}
 
 	// Convierte la superficie en una textura
-	if( !crearTexturaDesdeSuperficie( gPtrRenderer, superficie ) ){
+	if( !crearTexturaDesdeSuperficie( renderer, superficie ) ){
 		return false;
 	}
 
@@ -139,7 +148,7 @@ bool Texture::show( void )const{
 void Texture::renderTexture( const SDL_Rect* srcRect, const SDL_Rect* destRect )
 {
 	if( show() ){
-		SDL_RenderCopy( gPtrRenderer, ptrTexture, srcRect, destRect );
+		SDL_RenderCopy( renderer, ptrTexture, srcRect, destRect );
 	}
 }
 

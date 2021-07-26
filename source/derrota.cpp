@@ -1,9 +1,13 @@
 #include "derrota.h"
 #include "foursquares.h"
+#include "preparacion.h"
 #include <iostream>
 #include <sstream>
 #include "utilidades.h"
+#include "database.h"
 using namespace std;
+
+const char *finListaOpciones[] = { "Volver a jugar", "Salir" };
 
 Derrota::Derrota(){
     anchoActual = 0;
@@ -13,40 +17,31 @@ Derrota::Derrota(){
     lineaSombreada = BOARD_HEIGHT;
 
     // Crea el string con la información a mostrar sobre la partida
-    Uint32 t = tiempoPartida.obtenerTicks();
-    stringstream informacion;
-    informacion << "Puntaje:" << setw( 14 ) << "Nivel:" << setw( 32 ) << "Puntaje máximo:" << '\n'
-				<< setfill( '0' ) << setw( 7 ) << contadorPuntaje << setfill( ' ' ) << setw( 10 ) << contadorNivel << setw( 26 ) << "0000000" << '\n' << '\n'
-				<< "Tiempo:" << setw( 22 ) << "Combo máximo:" << setw( 20 ) << "Máximo líneas:" << '\n' << setfill( '0' )
-				<< (t / 60000) % 60 << "'" << setw( 2 ) << (t / 1000) % 60 << "'" << setw( 2 ) << (t % 1000) / 10 << setfill( ' ' ) << setw( 12 ) << 00 << setw( 23 ) << 000 << '\n' << '\n'
-				<< "Líneas:" << setw( 23 ) << "Menor tiempo: " << '\n'
-				<< contadorLineas << setw( 23 ) << "00:00:00" << endl;
-    
-    datosPartida = informacion.str();
-    estadisticoTextura.show( false );
+    datosPartida = comparativo( contadorPuntaje, contadorNivel, contadorLineas, comboMaximo, tiempoPartida.obtenerTicks() );
+    estadistico.show( false );
 
     tableroEstadistico.loadFileTexture( "../recursos/img/otros/estadistico.png" );
-    tableroEstadisticoObjeto.setRelativeCoords( obtenerRectRelativo( tableroEstadistico ) );
-    tableroEstadisticoObjeto.setTextureCoords( obtenerRectTextura( tableroEstadistico ) );
+    tableroEstadistico.escribirDimensionesEspaciales( obtenerRectRelativo( tableroEstadistico ) );
+    tableroEstadistico.escribirDimensionesTextura( obtenerRectTextura( tableroEstadistico ) );
     tableroEstadistico.show( false );
 
     // Carga el letrero de "Se acabó"
-    if( seAcaboTextura.loadFileTexture( "../recursos/img/texto/se-acabo.png" ) ){
-        seAcaboObjeto.setTextureCoords( obtenerRectTextura( seAcaboTextura ) );
-        seAcaboObjeto.setRelativeCoords( obtenerRectRelativo( seAcaboTextura ) );
-        seAcaboObjeto.setRelativeY( 0.5 );
-        seAcaboTextura.show( false );
+    if( seAcabo.loadFileTexture( "../recursos/img/texto/se-acabo.png" ) ){
+        seAcabo.escribirDimensionesTextura( obtenerRectTextura( seAcabo ) );
+        seAcabo.escribirDimensionesEspaciales( obtenerRectRelativo( seAcabo ) );
+        seAcabo.escribirEspacialY( 0.5 );
+        seAcabo.show( false );
     }
 
     // Carga la textura de opciones
-    if( continuarTextura.loadFileTexture( "../recursos/img/otros/selector-pausa.png" ) ){
-        continuarObjeto.setTextureCoords( obtenerRectTextura( continuarTextura ) );
-        continuarObjeto.setRelativeCoords( obtenerRectRelativo( continuarTextura ) );
-        continuarObjeto.establecerTexturaH( continuarObjeto.obtenerTexturaH() / 2 );
-        continuarObjeto.setRelativeH( continuarObjeto.getRelativeH() / 2 );
-        continuarObjeto.setRelativeY( ( gameViewport.h / 5.f ) * 4.f );
-        continuarTextura.show( false );
-        textoContinuarTextura.show( false );
+    if( continuar.loadFileTexture( "../recursos/img/otros/selector-pausa.png" ) ){
+        continuar.escribirDimensionesTextura( obtenerRectTextura( continuar ) );
+        continuar.escribirDimensionesEspaciales( obtenerRectRelativo( continuar ) );
+        continuar.escribirTexturaH( continuar.leerTexturaH() / 2 );
+        continuar.escribirEspacialAlto( continuar.leerEspacialAlto() / 2 );
+        continuar.escribirEspacialY( ( fourSquares.leerEspacioAlto() / 5.f ) * 4.f );
+        continuar.show( false );
+        textoContinuar.show( false );
     }
 
     ocultarElementos = false;
@@ -59,18 +54,22 @@ void Derrota::estadoEntrada(){
 
 }
 
-void Derrota::estadoEventos(){
+void Derrota::estadoEventos(  SDL_Event &gGameEvent ){
     if( gGameEvent.type == SDL_KEYDOWN ){
 		if( gGameEvent.key.keysym.sym == SDLK_RETURN ){
-			if( continuarTextura.show() && tableroEstadistico.show() ){
+			if( continuar.show() && tableroEstadistico.show() ){
                 // Oculta todo y ejecuta el siguiente menú
                 tableroEstadistico.show( false );
-                estadisticoTextura.show( false );
+                estadistico.show( false );
                 ocultarElementos = true;
             }
             else if( ocultarElementos ){
+                if( finOpciones.seleccionada == 1 ){
+                    fourSquares.establecerEstado( new FourSquares() );
+                    fourSquares.apilarEstado( new Preparacion() );
+                }
                 if( finOpciones.seleccionada == 2 ){
-                    jSalir = true;
+                    fourSquares.salir( true );
                 }
             }
 		}
@@ -105,8 +104,8 @@ void Derrota::estadoLogica(){
     }
 
     // Muestra la textura de "Se acabo" y empieza a contar el tiempo
-    if( !seAcaboTextura.show() ){
-        seAcaboTextura.show( true );
+    if( !seAcabo.show() ){
+        seAcabo.show( true );
         tiempoEspera.iniciar();
     }
 
@@ -117,16 +116,16 @@ void Derrota::estadoLogica(){
 
     if( !ocultarElementos ){
         // Muestra las estadísticas
-        estadisticoTextura.show( true );
+        estadistico.show( true );
         tableroEstadistico.show( true );
 
         // Si el ancho actual es menor que el ancho de la textura
-        if( anchoActual < estadisticoTextura.getWidth() ){
+        if( anchoActual < estadistico.getWidth() ){
             // Actualiza el ancho del rectángulo
-            estadisticoObjeto.establecerTexturaX( ( estadisticoTextura.getWidth() - anchoActual ) / 2 );
-            estadisticoObjeto.establecerTexturaW( anchoActual );
-            estadisticoObjeto.setRelativeX( estadisticoObjeto.getRelativeX() + ( estadisticoObjeto.getRelativeW() - anchoRelativoActual ) / 2 );
-            estadisticoObjeto.setRelativeW( unidadesRelativas( estadisticoObjeto.obtenerTexturaW() ) );
+            estadistico.escribirTexturaX( ( estadistico.getWidth() - anchoActual ) / 2 );
+            estadistico.escribirTexturaW( anchoActual );
+            estadistico.escribirEspacialX( estadistico.leerEspacialX() + ( estadistico.leerEspacialAncho() - anchoRelativoActual ) / 2 );
+            estadistico.escribirEspacialAncho( unidadesRelativas( estadistico.leerTexturaW() ) );
 
             // Incrementa el contador
             anchoActual += incremento;
@@ -134,67 +133,65 @@ void Derrota::estadoLogica(){
             return;
         }
 
-        continuarTextura.show( true );
-        textoContinuarTextura.show( true );
+        continuar.show( true );
+        textoContinuar.show( true );
     }
 }
 
 void Derrota::estadoRenderizado(){
     // Dibuja el fondo
-    SDL_SetRenderDrawColor( gPtrRenderer, 0x00, 0x00, 0x00, 0x88 );
-    SDL_RenderFillRect( gPtrRenderer, &fondoDerrota );
+    fourSquares.fondoNegro();
 
     // Letrero "Se acabó"
-    seAcaboTextura.renderTexture( seAcaboObjeto.getSrcRect(), seAcaboObjeto.getDestRect() );
+    seAcabo.renderTexture( seAcabo.leerDimensionesTextura(), seAcabo.leerDimensionesEspaciales() );
 
     if( !ocultarElementos ){
         // Tamaño del tablero
-        tableroEstadistico.renderTexture( tableroEstadisticoObjeto.getSrcRect(), tableroEstadisticoObjeto.getDestRect() );
+        tableroEstadistico.renderTexture( tableroEstadistico.leerDimensionesTextura(), tableroEstadistico.leerDimensionesEspaciales() );
 
         // Tamaño de la información
-        estadisticoTextura.renderTexture( estadisticoObjeto.getSrcRect(), estadisticoObjeto.getDestRect() );
+        estadistico.renderTexture( estadistico.leerDimensionesTextura(), estadistico.leerDimensionesEspaciales() );
 
         // El botón continuar
-        continuarTextura.renderTexture( continuarObjeto.getSrcRect(), continuarObjeto.getDestRect() );
-        continuarObjeto.establecerTexturaY( continuarObjeto.obtenerTexturaY() + continuarObjeto.obtenerTexturaH() );
-        continuarTextura.renderTexture( continuarObjeto.getSrcRect(), continuarObjeto.getDestRect() );
-        continuarObjeto.establecerTexturaY( 0 );
-        textoContinuarTextura.renderTexture( textoContinuarObjeto.getSrcRect(), textoContinuarObjeto.getDestRect() );
+        continuar.renderTexture( continuar.leerDimensionesTextura(), continuar.leerDimensionesEspaciales() );
+        continuar.escribirTexturaY( continuar.leerTexturaY() + continuar.leerTexturaH() );
+        continuar.renderTexture( continuar.leerDimensionesTextura(), continuar.leerDimensionesEspaciales() );
+        continuar.escribirTexturaY( 0 );
+        textoContinuar.renderTexture( textoContinuar.leerDimensionesTextura(), textoContinuar.leerDimensionesEspaciales() );
     }
     else{
         // Dibuja
-        Opciones_Dibujar( finOpciones, finListaOpciones, continuarTextura, continuarObjeto, textoContinuarTextura, textoContinuarObjeto  );
+        Opciones_Dibujar( finOpciones, finListaOpciones, continuar, textoContinuar  );
     }
 }
 
 void Derrota::actualizarViewport(){
-    // Fondo de pantalla
-    fondoDerrota = { 0, 0, jAnchoPantalla, jAltoPantalla };
-
     // Letrero de se acabó
-    seAcaboObjeto.setRelativeX( ( gameViewport.w - seAcaboObjeto.getRelativeW() ) / 2  );
-    seAcaboObjeto.actualizarCoordanadasAbsolutas();
+    seAcabo.escribirEspacialX( ( fourSquares.leerEspacioAncho() - seAcabo.leerEspacialAncho() ) / 2  );
+    seAcabo.actualizarDimensionesAbsolutas();
 
     // Tablero
-    tableroEstadisticoObjeto.setRelativeX( ( gameViewport.w - tableroEstadisticoObjeto.getRelativeW() ) / 2  );
-    tableroEstadisticoObjeto.setRelativeY( ( gameViewport.h - tableroEstadisticoObjeto.getRelativeH() ) / 2  );
-    tableroEstadisticoObjeto.actualizarCoordanadasAbsolutas();
+    tableroEstadistico.escribirEspacialX( ( fourSquares.leerEspacioAncho() - tableroEstadistico.leerEspacialAncho() ) / 2  );
+    tableroEstadistico.escribirEspacialY( ( fourSquares.leerEspacioAlto() - tableroEstadistico.leerEspacialAlto() ) / 2  );
+    tableroEstadistico.actualizarDimensionesAbsolutas();
 
     // Texto
-    actualizarTamanioTexto( datosPartida, estadisticoTextura, estadisticoObjeto, fuenteInformacion, 30, 800 );
-    estadisticoObjeto.setRelativeX( ( gameViewport.w - estadisticoObjeto.getRelativeW() ) / 2 );
-    estadisticoObjeto.setRelativeY( ( ( gameViewport.h - estadisticoObjeto.getRelativeH() ) / 2 ) + .15 );
+    actualizarTamanioTexto( datosPartida, estadistico, fuenteInformacion, 30, 800 );
+    estadistico.escribirEspacialX( ( fourSquares.leerEspacioAncho() - estadistico.leerEspacialAncho() ) / 2 );
+    estadistico.escribirEspacialY( ( ( fourSquares.leerEspacioAlto() - estadistico.leerEspacialAlto() ) / 2 ) + .15 );
 
     // Boton continuar
-    continuarObjeto.setRelativeX( ( gameViewport.w - continuarObjeto.getRelativeW() ) / 2 );
-    continuarObjeto.actualizarCoordanadasAbsolutas();
+    continuar.escribirEspacialX( ( fourSquares.leerEspacioAncho() - continuar.leerEspacialAncho() ) / 2 );
+    continuar.actualizarDimensionesAbsolutas();
 
     // Texto coninuar
-    FS_ActualizarTamanioFuente( fuenteArg, "../recursos/fuentes/Aaargh.ttf", 47 );
-    FS_ActualizarTexto( "Continuar", textoContinuarTextura, textoContinuarObjeto, fuenteArg, continuarObjeto.getRelativeX() + 0.1, continuarObjeto.getRelativeY() + 0.07 );
+    Fuente_ActualizarTamanio( fuenteTexto );
+    Fuente_ActualizarTexto( "Continuar", fuenteTexto, textoContinuar );
+    textoContinuar.escribirEspacialX( continuar.leerEspacialX() + 0.1 );
+    textoContinuar.escribirEspacialY( continuar.leerEspacialY() + 0.07 );
 }
 
-void actualizarTamanioTexto( string texto, Texture &textura, Object &objeto, TTF_Font *fuente, int tamanioBase, int anchoTextura ){
+void actualizarTamanioTexto( string texto, Objeto &objeto, TTF_Font *fuente, int tamanioBase, int anchoTextura ){
     // Cierra la fuente anterior
     if( fuente != nullptr ){
         TTF_CloseFont( fuente );
@@ -202,59 +199,113 @@ void actualizarTamanioTexto( string texto, Texture &textura, Object &objeto, TTF
 
     // Vuelve a abrir otras fuentes
     fuente = TTF_OpenFont( "../recursos/fuentes/Aaargh.ttf", tamanioBase );
-    textura.crearTexturaDesdeTextoBlended( texto.c_str(), COLOR_BLANCO, fuente, anchoTextura );
-    objeto.setTextureCoords( obtenerRectTextura( textura ) );
-    objeto.setRelativeCoords( obtenerRectRelativo( textura ) );
+    SDL_Color color = { 255, 255, 255 };
+    objeto.crearTexturaDesdeTextoBlended( texto.c_str(), color, fuente, anchoTextura );
+    objeto.escribirDimensionesTextura( obtenerRectTextura( objeto ) );
+    objeto.escribirDimensionesEspaciales( obtenerRectRelativo( objeto ) );
+}
+
+string comparativo( int puntaje, int nivel, int lineas, int combo, Uint32 tiempo )
+{
+    // Base de datos de donde abrirá el archivo
+    Database database;
+
+    // Mejores logros
+    int puntajeMaximo = 0;
+    int lineasMaximas = 0;
+    Uint32 mejorTiempo = 0;
+    int comboMaximo = 0;
+
+    // Realiza la consulta a la base de datos
+    database.open( databaseFile );
+    database.query( "select * from records" );
+    database.close();
+
+    // ¿Hay resultados?
+    if( results.size() > 0 ){
+        puntajeMaximo = stoi( ( *results.at( 0 ) )[ "puntaje_maximo" ] );
+        lineasMaximas = stoi( ( *results.at( 0 ) )[ "lineas_maximas" ] );
+        mejorTiempo = stoi( ( *results.at( 0 ) )[ "mejor_tiempo" ] );
+        comboMaximo = stoi( ( *results.at( 0 ) )[ "combo_maximo" ] );
+    }
+
+    // Realiza la comparación
+    lineasMaximas = ( lineasMaximas > lineas ? lineasMaximas : lineas );
+    mejorTiempo = ( mejorTiempo > tiempo ? mejorTiempo : tiempo );
+    comboMaximo = ( comboMaximo > combo ? comboMaximo : combo );
+
+    // Contruye el comparativo
+    stringstream informacion;
+    if( puntajeMaximo < puntaje ){
+        puntajeMaximo = puntaje;
+        informacion << ' ' << setw( 36 ) << "¡Nuevo récord!" << endl;
+    }
+
+    informacion << "Puntaje:" << setw( 15 ) << "Nivel:" << setw( 29 ) << "Puntaje máximo:" << "\n"
+				<< setfill( '0' ) << setw( 7 ) << puntaje << setfill( ' ' ) << setw( 10 ) << nivel << setfill( ' ' ) << setw( 17 ) << " " << setfill( '0' ) << setw( 7 ) << puntajeMaximo << setfill( ' ' ) << "\n\n"
+				<< "Tiempo:" << setw( 21 ) << "Mejor combo:" << setw( 21 ) << "Máximo líneas:" << '\n' << setfill( '0' )
+				<< (tiempo / 60000) % 60 << "'" << setw( 2 ) << (tiempo / 1000) % 60 << "'" << setw( 2 ) << (tiempo % 1000) / 10 << setfill( ' ' ) << setw( 13 ) << comboMaximo << setw( 23 ) << lineasMaximas << '\n' << '\n'
+				<< "Líneas:" << setw( 24 ) << "Mejor tiempo: " << '\n'
+				<< setw( 3 ) << setfill( '0' ) << lineas << setfill( ' ' ) << setw( 12 ) << " " << setfill( ' ' ) << setw( 2 ) << (mejorTiempo / 60000) % 60 << "'" << setw( 2 ) << (mejorTiempo / 1000) % 60 << "'" << setw( 2 ) << (mejorTiempo % 1000) / 10 << setfill( ' ' ) << endl;
+
+    database.open( databaseFile );
+    if( results.empty() ){
+        database.query( "insert into records values( 1, " + to_string( puntajeMaximo ) + ", " + to_string( lineasMaximas ) + ", " + to_string( mejorTiempo ) + ", " + to_string( comboMaximo ) + ")" );
+    }
+    else{
+        database.query( "update records set puntaje_maximo = " + to_string( puntajeMaximo ) + ", lineas_maximas = " + to_string( lineasMaximas ) + ", mejor_tiempo = " + to_string( mejorTiempo ) + ", combo_maximo = " + to_string( comboMaximo ) + " where codigo = 1" );
+    }
+    database.close();
+
+    return informacion.str();
 }
 
 int lineaSombreada;
 string datosPartida;
-Object tableroEstadisticoObjeto;
-Texture tableroEstadistico;
+Objeto tableroEstadistico;
 TTF_Font *fuenteInformacion;
-SDL_Rect fondoDerrota;
 
 // Datos del juego
 int incremento;
 double incrementoRelativo;
 int anchoActual;
 double anchoRelativoActual;
-Object estadisticoObjeto;
-Texture estadisticoTextura;
+Objeto estadistico;
 
 // Letrero de se acabó
 Temporizador tiempoEspera;
-Texture seAcaboTextura;
-Object seAcaboObjeto;
+Objeto seAcabo;
 
 // 
-Object continuarObjeto;
-Texture continuarTextura;
-Object textoContinuarObjeto;
-Texture textoContinuarTextura;
+Objeto continuar;
+Objeto textoContinuar;
 
-void Opciones_Dibujar( Opciones &informacionOpciones, const char *opciones[], Texture &opcionTextura, Object &opcionObjeto, Texture &textoTextura, Object &opcionTextoObjeto ){
+bool ocultarElementos = false;
+Opciones finOpciones = { 2, 1 };
+
+void Opciones_Dibujar( Opciones &informacionOpciones, const char *opciones[], Objeto &opcion, Objeto &opcionTexto ){
     // Obtiene la mitad de la pantalla
-    double mediaY = gameViewport.h / 2;
+    double mediaY = fourSquares.leerEspacioAlto() / 2;
+    SDL_Color color = { 255, 255, 255 };
 
     // Dibuja el las opciones disponibles
     for( int i = 0; i < informacionOpciones.numero; ++i ){
-        double posicionY = ( opcionObjeto.getRelativeH() + .2 ) * ( i ) + mediaY;
-        opcionObjeto.setRelativeY( posicionY );
-        opcionTextura.renderTexture( opcionObjeto.getSrcRect(), opcionObjeto.getDestRect() );
+        double posicionY = ( opcion.leerEspacialAlto() + .2 ) * ( i ) + mediaY;
+        opcion.escribirEspacialY( posicionY );
+        opcion.renderTexture( opcion.leerDimensionesTextura(), opcion.leerDimensionesEspaciales() );
 
         // ¿Es la opción seleccionada?
         if( informacionOpciones.seleccionada == i + 1 ){
-            opcionObjeto.establecerTexturaY( opcionObjeto.obtenerTexturaY() + opcionObjeto.obtenerTexturaH() );
-            opcionTextura.renderTexture( opcionObjeto.getSrcRect(), opcionObjeto.getDestRect() );
-            opcionObjeto.establecerTexturaY( 0 );
+            opcion.escribirTexturaY( opcion.leerTexturaY() + opcion.leerTexturaH() );
+            opcion.renderTexture( opcion.leerDimensionesTextura(), opcion.leerDimensionesEspaciales() );
+            opcion.escribirTexturaY( 0 );
         }
 
-        if( textoTextura.crearTexturaDesdeTextoSolido( opciones[ i ], COLOR_BLANCO, fuenteArg ) ){
-            SDL_DRect rrect = { opcionObjeto.getRelativeX() + 0.1, posicionY + 0.07, (float)textoTextura.getWidth() / gameUnitSize, (float)textoTextura.getHeight() / gameUnitSize };
-            opcionTextoObjeto.setTextureCoords( obtenerRectTextura( textoTextura ) );
-            opcionTextoObjeto.setRelativeCoords( rrect );
-            textoTextura.renderTexture( opcionTextoObjeto.getSrcRect(), opcionTextoObjeto.getDestRect() );
+        if( opcionTexto.crearTexturaDesdeTextoSolido( opciones[ i ], color, fuenteTexto.fuente ) ){
+            SDL_DRect rrect = { opcion.leerEspacialX() + 0.1, posicionY + 0.07, (float)opcionTexto.getWidth() / Objeto::leerMagnitudUnidad(), (float)opcionTexto.getHeight() / Objeto::leerMagnitudUnidad() };
+            opcionTexto.escribirDimensionesTextura( obtenerRectTextura( opcionTexto ) );
+            opcionTexto.escribirDimensionesEspaciales( rrect );
+            opcionTexto.renderTexture( opcionTexto.leerDimensionesTextura(), opcionTexto.leerDimensionesEspaciales() );
         }
     }
 }

@@ -1,8 +1,8 @@
 #ifndef TEXTURE_H
 #define TEXTURE_H
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
-#include "game.h"
 
 class Texture
 {
@@ -11,8 +11,11 @@ class Texture
 		Texture();
 		
 		// Destructor
-		~Texture();
+		virtual ~Texture();
 		
+		// Permite establecer el contexto de render
+		static void establecerContextoRender( SDL_Renderer *render );
+
 		// Loads texture from a file
 		bool loadFileTexture( const char* path );
 		
@@ -55,6 +58,7 @@ class Texture
 		int getHeight();
 		
 	private:
+		static SDL_Renderer *renderer;
 		SDL_Texture* ptrTexture;
 		bool showTexture;
 		int	textureWidth;

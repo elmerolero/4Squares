@@ -1,9 +1,9 @@
 #ifndef TETROBLOCK_H
 #define TETROBLOCK_H
-#include "gamestate.h"
-#include "object.h"
-#include "texture.h"
-#include "pausa.h"
+#include "estadojuego.h"
+#include "temporizador.h"
+#include "objeto.h"
+#include "juego.h"
 #include "derrota.h"
 #include <vector>
 
@@ -16,7 +16,7 @@ class FourSquares : public EstadoJuego
 		~FourSquares();
 		
 		void estadoEntrada();
-		void estadoEventos();
+		void estadoEventos( SDL_Event &gGameEvent );
 		void estadoLogica();
 		void estadoRenderizado();
 		void actualizarViewport();
@@ -73,29 +73,10 @@ const SDL_Rect shapeRects[ 7 ] = { {  0,  0, 236, 141 }, { 237,  0, 236, 141 }, 
 								   
 
 /* VARIABLES */
-
-// Background
-extern Texture tetroTexBackground;
-extern Object  tetroBackground;
-
-// Margin
-extern Texture tetroTexMargin;
-extern Object tetroMargin;
-
-// Board surface
-extern Object tetroBoardSurface;
-
-// Block
-extern Texture tetroTexBlock;
-extern Object  tetroBlock;
-
-// Shapes queue
-extern Texture tetroTexShapes;
-extern Object gFigura;
-
 // Variables del jugador
 extern Temporizador tiempoPartida;	// Tiempo transcurrido en el juego
 extern int contadorCombo;			// Combo realizado por el jugador
+extern int comboMaximo;				// Combo máximo
 extern int contadorLineas;			// Número de líneas
 extern int contadorNivel;			// Nivel actual
 extern int contadorPuntaje;			// Puntaje
@@ -135,46 +116,30 @@ extern int pieceSaved;
 extern bool arribaPresionado;
 extern int pasosRealizados;
 
-// Puntaje
-extern Object puntaje;
-extern Texture puntajeTextura;
+// Objetos visibles del juego
+extern Objeto tetroBackground;	 // Fondo de pantalla
+extern Objeto tetroMargin;		 // Margen		
+extern Objeto tetroBoardSurface; // Superficie del tablero
+extern Objeto tetroBlock;		 // Bloque
+extern Objeto gFigura;			 // Cola de figuras
+extern Objeto tetroShapes;		 // Figuras
+extern Objeto ya;				 // Textura con el texto ya
 
-// Nivel
-extern Object nivel;
-extern Texture nivelTextura;
-
-// Lineas
-extern Object lineas;
-extern Texture lineasTextura;
-
-// Tiempo
-extern Object tiempo;
-extern Texture tiempoTextura;
-
-// Fotogramas por segundo
-extern Object fpsObjeto;
-extern Texture fpsTextura;
-
-extern Object estadisticoObjeto;
-extern Texture estadisticoTextura;
-
-// Textura con el texto ya
-extern Texture ya;
-extern Object yaObjeto;
+extern Objeto puntaje; // Puntaje
+extern Objeto nivel;   // Nivel
+extern Objeto lineas;  // Lineas
+extern Objeto tiempo;  // Tiempos
 
 extern std::vector< int > lineasJugador;
 
 void FS_CargarElementos( void );
 
-// Funtions
-void FS_ActualizarTamanioFuente( TTF_Font *&fuente, std::string archivo, double tamanioBase );
-void FS_ActualizarLineas( int &lineasJugador, std::vector< int > &lineasRealizadas, Texture &textura, Object &objeto );
-void FS_ActualizarNivel( int &nivelJugador, int &lineasJugador, Texture &texura, Object &objeto );
-void FS_ActualizarPuntaje( int &puntajeJugador, std::vector< int > &lineasRealizadas, int &combo, Texture &textura, Object &objeto );
+// Funciones
+void FS_ActualizarLineas( int &lineasJugador, std::vector< int > &lineasRealizadas, Objeto &objeto );
+void FS_ActualizarNivel( int &nivelJugador, int &lineasJugador, Objeto &objeto );
+void FS_ActualizarPuntaje( int &puntajeJugador, std::vector< int > &lineasRealizadas, int &combo, Objeto &objeto );
 void FS_DibujarFigura( int figura, double x, double y );
-void FS_DibujarTiempo( Uint32 tiempo, Texture &textura, Object &objeto, TTF_Font *fuente, double x, double y );
-void FS_ActualizarDatos( int dato, Texture &textura, Object &objeto, int relleno, TTF_Font *fuente, double x, double y );
-void FS_ActualizarTexto( std::string texto, Texture &textura, Object &objeto, TTF_Font *fuente, double x, double y );
+void FS_DibujarTiempo( Uint32 tiempo, Objeto &objeto, Fuente &fuente, double x, double y );
 void FS_PausarPartida( void );
 void FS_ReanudarPartida( void );
 
@@ -197,6 +162,5 @@ void Tablero_EstablecerColorRenglon( int tablero[ BOARD_HEIGHT ][ BOARD_WIDTH ],
 void Cola_Inicializar( int colaFiguras[ 4 ] );
 int Cola_ObtenerSiguenteFigura( int colaFiguras[ 4 ] );
 void Cola_Dibujar( int colaFiguras[ 4 ] );
-
 
 #endif

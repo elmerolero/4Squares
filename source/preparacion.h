@@ -1,8 +1,8 @@
 #ifndef PREPARACION_H
 #define PREPARACION_H
-#include "gamestate.h"
-#include "texture.h"
-#include "object.h"
+#include "estadojuego.h"
+#include "componentes.h"
+#include "objeto.h"
 #include "temporizador.h"
 
 class Preparacion : public EstadoJuego
@@ -12,7 +12,7 @@ class Preparacion : public EstadoJuego
         ~Preparacion();
 
         void estadoEntrada();
-        void estadoEventos();
+        void estadoEventos( SDL_Event &gGameEvent );
 		void estadoLogica();
 		void estadoRenderizado();
 		void actualizarViewport();
@@ -20,8 +20,7 @@ class Preparacion : public EstadoJuego
 
 extern int contador;
 extern Temporizador temporizador;
-extern Texture cuentaRegresiva;
-extern Object cuentaRegresivaObjeto;
+extern Objeto cuentaRegresiva;
 extern SDL_Rect fondoNegro;
 
 #endif

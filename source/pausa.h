@@ -1,17 +1,17 @@
 #ifndef PAUSA_H
 #define PAUSA_H
 
-#include "game.h"
-#include "gamestate.h"
-#include "object.h"
-#include "texture.h" 
+#include "estadojuego.h"
+#include "preparacion.h"
+#include "componentes.h"
+#include "objeto.h"
 
 class Pausa : public EstadoJuego
 {
     public:
         Pausa();
         void estadoEntrada();
-        void estadoEventos();
+        void estadoEventos( SDL_Event &gGameEvent );
         void estadoLogica();
         void estadoRenderizado();
         void actualizarViewport();
@@ -24,7 +24,7 @@ void Pausa_SeleccionarOpcion( void );
 void Pausa_DibujarOpciones( void );
 
 // Selector de opcion
-extern int opcionPausa;
+extern int opcion;
 const int NUMERO_OPCIONES = 3;
 
 // Opciones
@@ -35,16 +35,10 @@ const int OPCION_SALIR = 3;
 // Elementos para dibujar las opciones
 extern const char *opciones[];
 const SDL_Rect opcionPausaRect[] = { { 0, 0, 340, 85 }, { 0, 85, 340, 85 } };
-extern Texture opcionPausaTextura;
-extern Object opcionPausaObjeto;
-extern Texture opcionTextoTextura;
-extern Object opcionTextoObjeto;
-
-// Fondo de pausa
-extern SDL_Rect fondoPausa;
+extern Objeto opcionPausa;
+extern Objeto opcionTexto;
 
 // Letrero que indica pausa
-extern Texture letreroPausaTextura;
-extern Object letreroPausaObjeto;
+extern Objeto letreroPausa;
 
 #endif
