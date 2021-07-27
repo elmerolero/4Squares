@@ -107,8 +107,7 @@ struct Pieza{
 extern Pieza piezaJugador;
 
 // Cola
-extern int queueIndex;
-extern int queueShapes[ 4 ];
+extern int colaFiguras[ 4 ];
 
 // Piece saved
 extern bool allowedChange;

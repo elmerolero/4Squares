@@ -16,7 +16,7 @@ FourSquares::FourSquares()
 	FS_CargarElementos();
 
 	// Inicializa la cola de figuras
-	Cola_Inicializar( queueShapes );
+	Cola_Inicializar( colaFiguras );
 	
 	// Establece una nueva pieza
 	Pieza_NuevaPieza( piezaJugador, rand() % 7, tetroBoard );
@@ -83,7 +83,7 @@ void FourSquares::estadoEventos( SDL_Event &gGameEvent ){
 			}
 			else{
 				// Obtiene una nueva pieza de la cola
-				pieza = Cola_ObtenerSiguenteFigura( queueShapes );
+				pieza = Cola_ObtenerSiguenteFigura( colaFiguras );
 			}
 
 			// Guarda la pieza en juego
@@ -216,7 +216,7 @@ void FourSquares::estadoLogica()
 		FS_ActualizarNivel( contadorNivel, contadorLineas, nivel );
 		FS_ActualizarPuntaje( contadorPuntaje, lineasJugador, contadorCombo, puntaje );
 
-		Pieza_NuevaPieza( piezaJugador, Cola_ObtenerSiguenteFigura( queueShapes ), tetroBoard );
+		Pieza_NuevaPieza( piezaJugador, Cola_ObtenerSiguenteFigura( colaFiguras ), tetroBoard );
 		allowedChange = true;
 		arribaPresionado = false;
 		pasosRealizados = 0;
@@ -241,7 +241,7 @@ void FourSquares::estadoRenderizado()
 	Pieza_Dibujar( piezaJugador, piezaJugador.figura.x, piezaJugador.figura.y, shapeColor[ piezaJugador.tipo ] );
 
 	// Dibuja la cola de figuras
-	Cola_Dibujar( queueShapes );
+	Cola_Dibujar( colaFiguras );
 
 	// Dibuja la pieza guardada
 	FS_DibujarFigura( pieceSaved - 1, ( tetroBoardSurface.leerEspacialX() - 1.7f ), 0.7f );
@@ -255,19 +255,18 @@ void FourSquares::estadoRenderizado()
 	// Dibuja el numero de lineas
 	lineas.renderTexture( lineas.leerDimensionesTextura(), lineas.leerDimensionesEspaciales() );
 
-	// Dibuja el tiempo
-	FS_DibujarTiempo( tiempoPartida.obtenerTicks(), tiempo, fuenteTexto, tetroBoardSurface.leerEspacialX() + tetroBoardSurface.leerEspacialAncho() + 0.6, 5.43f );
-
 	// Dibuja el letrero de ¡Ya!
 	ya.renderTexture( ya.leerDimensionesTextura(), ya.leerDimensionesEspaciales() );
+
+	// Dibuja el tiempo
+	FS_DibujarTiempo( tiempoPartida.obtenerTicks(), tiempo, fuenteTexto, tetroBoardSurface.leerEspacialX() + tetroBoardSurface.leerEspacialAncho() + 0.6, 5.43f );
+	tiempo.renderTexture( tiempo.leerDimensionesTextura(), tiempo.leerDimensionesEspaciales() );
 }
 
 /* FUNCTIONS */
 // Updates game's viewport if window is resized
 void FourSquares::actualizarViewport()
 {	
-	SDL_Rect auxRect;
-	
 	// Board surface
 	tetroBoardSurface.escribirEspacialX( ( fourSquares.leerEspacioAncho() - tetroBoardSurface.leerEspacialAncho() ) / 2  );
 	tetroBoardSurface.escribirEspacialY( ( ( fourSquares.leerEspacioAlto() - tetroBoardSurface.leerEspacialAlto() ) / 2 ) - tetroBlock.leerEspacialAncho() );
@@ -310,11 +309,9 @@ void FS_CargarElementos( void )
 		
 		// Margin
 		tetroMargin.loadFileTexture( "../recursos/img/bloques/margen.png" );
-		auxDRect = { ( fourSquares.leerEspacioAncho() - tetroMargin.leerEspacialAncho() ) / 2, 0, ( (float)tetroMargin.getWidth() * 6.13 ) / 1080, ( (float)tetroMargin.getHeight() * 6.13 ) / 1080 };
-		auxRect = { 0, 0, tetroMargin.getWidth(), tetroMargin.getHeight() };
-		tetroMargin.escribirDimensionesEspaciales( auxDRect );
-		tetroMargin.escribirDimensionesTextura( auxRect );
-		
+		tetroMargin.escribirDimensionesEspaciales( ( fourSquares.leerEspacioAncho() - tetroMargin.leerEspacialAncho() ) / 2, 0, ( (float)tetroMargin.getWidth() * 6.13 ) / 1080, ( (float)tetroMargin.getHeight() * 6.13 ) / 1080 );
+		tetroMargin.escribirDimensionesTextura( 0, 0, tetroMargin.getWidth(), tetroMargin.getHeight() );
+
 		// Background
 		tetroBackground.loadFileTexture( "../recursos/img/fondos/space.png" );
 		
@@ -326,13 +323,7 @@ void FS_CargarElementos( void )
 		tetroShapes.loadFileTexture( "../recursos/img/bloques/figuras.png" );
 
 		// Shapes rect (black rects for the shapes queue	
-		SDL_DRect auxDRect;
-		auxDRect.w = ( 236.f * 6.13 ) / 1080;
-		auxDRect.h = ( 141.f * 6.13 ) / 1080;
-		auxDRect.x = ( 0 );
-		auxDRect.y = ( 0 );
-
-		gFigura.escribirDimensionesEspaciales( auxDRect );
+		gFigura.escribirDimensionesEspaciales( 0, 0, ( 236.f * 6.13 ) / 1080, ( 141.f * 6.13 ) / 1080 );
 
 		// Textura ya
 		ya.loadFileTexture( "../recursos/img/texto/ya.png" );
@@ -475,8 +466,8 @@ void Pieza_Grabar( Pieza &pieza, int tablero[ BOARD_HEIGHT ][ BOARD_WIDTH ] ){
 void Pieza_Dibujar( Pieza &pieza, int posicionX, int posicionY, SDL_Color color )
 {
 	SDL_Rect auxRect = { 0, 0, tetroBlock.leerDimensionesEspaciales() -> w, tetroBlock.leerDimensionesEspaciales() -> h };
-	int tempX = tetroBoardSurface.leerDimensionesEspaciales() -> x;
-	int tempY = tetroBoardSurface.leerDimensionesEspaciales() -> y;
+	int tempX = tetroBoardSurface.leerAbsolutoX();
+	int tempY = tetroBoardSurface.leerAbsolutoY();
 	
 	// Establece el color
 	tetroBlock.setColorMod( color );
@@ -575,9 +566,9 @@ void Tablero_Acomodar( int tablero[ BOARD_HEIGHT ][ BOARD_WIDTH ], vector< int >
 // Dibuja el tablero
 void Tablero_Dibujar( int tablero[ BOARD_HEIGHT ][ BOARD_WIDTH ] )
 {
-	SDL_Rect auxRect = { 0, 0, tetroBlock.leerDimensionesEspaciales() -> w, tetroBlock.leerDimensionesEspaciales() -> h };
-	int tempX = tetroBoardSurface.leerDimensionesEspaciales() -> x;
-	int tempY = tetroBoardSurface.leerDimensionesEspaciales() -> y;
+	SDL_Rect auxRect = { 0, 0, tetroBlock.leerAbsolutoAncho(), tetroBlock.leerAbsolutoAlto() };
+	int tempX = tetroBoardSurface.leerAbsolutoX();
+	int tempY = tetroBoardSurface.leerAbsolutoY();
 
 	for( int renglones = 0; renglones < BOARD_HEIGHT; renglones++ ){
 		for( int columnas = 0; columnas < BOARD_WIDTH; columnas++ ){
@@ -691,11 +682,8 @@ void FS_DibujarTiempo( Uint32 tiempo, Objeto &objeto, Fuente &fuente, double x, 
 		return;
 	}
 
-	SDL_Rect acoords = { 0, 0, objeto.getWidth(), objeto.getHeight() };
-	SDL_DRect rcoords = { x, y, (float)objeto.getWidth() / Objeto::leerMagnitudUnidad(), (float)objeto.getHeight() / Objeto::leerMagnitudUnidad() };
-	objeto.escribirDimensionesEspaciales( rcoords );
-	objeto.escribirDimensionesTextura( acoords );
-	objeto.renderTexture( objeto.leerDimensionesTextura(), objeto.leerDimensionesEspaciales() );
+	objeto.escribirDimensionesTextura( 0, 0, objeto.getWidth(), objeto.getHeight() );
+	objeto.escribirDimensionesEspaciales( x, y, (float)objeto.getWidth() / Objeto::leerMagnitudUnidad(), (float)objeto.getHeight() / Objeto::leerMagnitudUnidad() );
 }
 
 void FS_PausarPartida(){
@@ -756,8 +744,7 @@ int sombraPosX;
 int sombraPosY;
 
 // Queue
-int queueIndex;
-int queueShapes[ 4 ];
+int colaFiguras[ 4 ];
 
 //
 bool allowedChange;
