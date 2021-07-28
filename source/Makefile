@@ -1,5 +1,5 @@
 CC=g++
-LINKER_FLAGS= `pkg-config --libs gtk+-3.0 sqlite3`-lmingw32 -mwindows -lSDL2main -lSDL2 -lSDL2_image -lSDL2_ttf -mwindows
+LINKER_FLAGS= `pkg-config --libs sqlite3`-lmingw32 -mwindows -lSDL2main -lSDL2 -lSDL2_image -lSDL2_ttf -mwindows
 CFLAGS= -IC:/msys64/mingw64/include/SDL2 `pkg-config --cflags sqlite3`
 OBJETOS= juego.o utilidades.o database.o temporizador.o componentes.o objeto.o foursquares.o texture.o preparacion.o pausa.o derrota.o
 ../build/aplicacion: main.cpp $(OBJETOS)

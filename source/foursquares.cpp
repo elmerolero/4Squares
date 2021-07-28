@@ -303,7 +303,6 @@ void FS_CargarElementos( void )
 	SDL_Rect auxRect;
 	
 	try{
-
 		// Board surface
 		tetroBoardSurface.leerDimensionesDesdeArchivo( "../recursos/coord/board.crd" );
 		
@@ -313,7 +312,7 @@ void FS_CargarElementos( void )
 		tetroMargin.escribirDimensionesTextura( 0, 0, tetroMargin.getWidth(), tetroMargin.getHeight() );
 
 		// Background
-		tetroBackground.loadFileTexture( "../recursos/img/fondos/space.png" );
+		tetroBackground.loadFileTexture( "../recursos/img/fondos/Space.png" );
 		
 		// Blocks
 		tetroBlock.loadFileTexture( "../recursos/img/bloques/bloque.png" );
@@ -327,11 +326,8 @@ void FS_CargarElementos( void )
 
 		// Textura ya
 		ya.loadFileTexture( "../recursos/img/texto/ya.png" );
-		SDL_Rect trect = { 0, 0, ya.getWidth(), ya.getHeight() };
-		SDL_DRect rrect = { 0, 1, ( (float)trect.w * 6.13 ) / 1080, ( (float)trect.h * 6.13 ) / 1080 };
-		ya.escribirDimensionesEspaciales( rrect );
-		ya.escribirDimensionesTextura( trect );
-		ya.escribirEspacialX( ( fourSquares.leerEspacioAncho() - ya.leerEspacialAncho() ) / 2 );
+		ya.escribirDimensionesTextura( 0, 0, ya.getWidth(), ya.getHeight() );
+		ya.escribirDimensionesEspaciales( ( fourSquares.leerEspacioAncho() - ya.leerEspacialAncho() ) / 2, 1, ( (float)ya.leerTexturaW() * 6.13 ) / 1080, ( (float)ya.leerTexturaH() * 6.13 ) / 1080 );
 	}
 	catch( invalid_argument &ia ){
 		cout << ia.what() << endl;
@@ -465,7 +461,7 @@ void Pieza_Grabar( Pieza &pieza, int tablero[ BOARD_HEIGHT ][ BOARD_WIDTH ] ){
 // Dibuja la pieza
 void Pieza_Dibujar( Pieza &pieza, int posicionX, int posicionY, SDL_Color color )
 {
-	SDL_Rect auxRect = { 0, 0, tetroBlock.leerDimensionesEspaciales() -> w, tetroBlock.leerDimensionesEspaciales() -> h };
+	SDL_Rect auxRect = { 0, 0, tetroBlock.leerAbsolutoAncho(), tetroBlock.leerAbsolutoAncho() };
 	int tempX = tetroBoardSurface.leerAbsolutoX();
 	int tempY = tetroBoardSurface.leerAbsolutoY();
 	
@@ -763,7 +759,7 @@ int contadorPuntaje;
 Objeto tetroBackground; // Fondo
 Objeto tetroMargin; // Margin
 Objeto tetroBoardSurface; // Board surface
-Objeto  tetroBlock; // Blocks attributes
+Objeto tetroBlock; // Blocks attributes
 Objeto gFigura; // Shapes attributes
 Objeto puntaje;
 Objeto nivel;

@@ -41,7 +41,7 @@ void Juego::iniciar( string nombre, string traducciones ){
 			
 	// Crea una ventana
 	cout << leerValor( "crear_ventana" ) << endl;
-	jVentana = SDL_CreateWindow( nombre.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1024, 600, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE );
+	jVentana = SDL_CreateWindow( nombre.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 480, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE );
 	if( jVentana == nullptr ){
         throw runtime_error( leerValor( "error_crear_ventana" ) + SDL_GetError() + " IMG: " + IMG_GetError() );
 	}
@@ -110,6 +110,12 @@ void Juego::entrada( void ){
 		}
         else if( jEvento.type == SDL_KEYDOWN ){
 			if( jEvento.key.keysym.sym == SDLK_ESCAPE ){
+				jPantallaCompleta = !jPantallaCompleta;
+				SDL_SetWindowSize( jVentana, 800, 480 );
+				if( jPantallaCompleta ){
+					SDL_SetWindowSize( jVentana, jVistaInfo.w, jVistaInfo.h );
+				}
+				actualizarVentana();
 				//Juego_EstablecerPantallaCompleta( !jPantallaCompleta );
 			}
 			else if( jEvento.key.keysym.sym == SDLK_f ){
@@ -198,6 +204,9 @@ void Juego::actualizarVentana( void ){
 	
 	// Actualiza el tamaño del área de renderizado
 	SDL_RenderSetLogicalSize( jRender, jPantallaAncho, jPantallaAlto );
+
+	// Establece en pantalla completa
+	SDL_SetWindowFullscreen( jVentana, jPantallaCompleta );
 
 	// Actualiza el tamaño de la unidad y las dimensiones del viewport
 	Objeto::actualizarMagnitudUnidad( jPantallaAlto );

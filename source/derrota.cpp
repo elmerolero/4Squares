@@ -7,7 +7,7 @@
 #include "database.h"
 using namespace std;
 
-const char *finListaOpciones[] = { "Volver a jugar", "Salir" };
+const char *finListaOpciones[] = { "Reintentar", "Salir" };
 
 Derrota::Derrota(){
     anchoActual = 0;
@@ -211,9 +211,11 @@ string comparativo( int puntaje, int nivel, int lineas, int combo, Uint32 tiempo
     Database database;
 
     // Mejores logros
+    int auxiliar = 0;
     int puntajeMaximo = 0;
     int lineasMaximas = 0;
     Uint32 mejorTiempo = 0;
+    int lineasLogradas = 0;
     int comboMaximo = 0;
 
     // Realiza la consulta a la base de datos
@@ -226,12 +228,12 @@ string comparativo( int puntaje, int nivel, int lineas, int combo, Uint32 tiempo
         puntajeMaximo = stoi( ( *results.at( 0 ) )[ "puntaje_maximo" ] );
         lineasMaximas = stoi( ( *results.at( 0 ) )[ "lineas_maximas" ] );
         mejorTiempo = stoi( ( *results.at( 0 ) )[ "mejor_tiempo" ] );
+        lineasLogradas = stoi( ( *results.at( 0 ) )[ "lineas_logradas" ] ); 
         comboMaximo = stoi( ( *results.at( 0 ) )[ "combo_maximo" ] );
     }
 
     // Realiza la comparación
     lineasMaximas = ( lineasMaximas > lineas ? lineasMaximas : lineas );
-    mejorTiempo = ( mejorTiempo > tiempo ? mejorTiempo : tiempo );
     comboMaximo = ( comboMaximo > combo ? comboMaximo : combo );
 
     // Contruye el comparativo
@@ -245,15 +247,14 @@ string comparativo( int puntaje, int nivel, int lineas, int combo, Uint32 tiempo
 				<< setfill( '0' ) << setw( 7 ) << puntaje << setfill( ' ' ) << setw( 10 ) << nivel << setfill( ' ' ) << setw( 17 ) << " " << setfill( '0' ) << setw( 7 ) << puntajeMaximo << setfill( ' ' ) << "\n\n"
 				<< "Tiempo:" << setw( 21 ) << "Mejor combo:" << setw( 21 ) << "Máximo líneas:" << '\n' << setfill( '0' )
 				<< (tiempo / 60000) % 60 << "'" << setw( 2 ) << (tiempo / 1000) % 60 << "'" << setw( 2 ) << (tiempo % 1000) / 10 << setfill( ' ' ) << setw( 13 ) << comboMaximo << setw( 23 ) << lineasMaximas << '\n' << '\n'
-				<< "Líneas:" << setw( 24 ) << "Mejor tiempo: " << '\n'
-				<< setw( 3 ) << setfill( '0' ) << lineas << setfill( ' ' ) << setw( 12 ) << " " << setfill( ' ' ) << setw( 2 ) << (mejorTiempo / 60000) % 60 << "'" << setw( 2 ) << (mejorTiempo / 1000) % 60 << "'" << setw( 2 ) << (mejorTiempo % 1000) / 10 << setfill( ' ' ) << endl;
+				<< "Líneas:\n" << setw( 3 ) << setfill( '0' ) << lineas << setfill( ' ' ) << endl;
 
     database.open( databaseFile );
     if( results.empty() ){
-        database.query( "insert into records values( 1, " + to_string( puntajeMaximo ) + ", " + to_string( lineasMaximas ) + ", " + to_string( mejorTiempo ) + ", " + to_string( comboMaximo ) + ")" );
+        database.query( "insert into records values( 1, " + to_string( puntajeMaximo ) + ", " + to_string( lineasMaximas ) + ", " + to_string( mejorTiempo ) + ", " + to_string( lineasLogradas ) + "," + to_string( comboMaximo ) + ")" );
     }
     else{
-        database.query( "update records set puntaje_maximo = " + to_string( puntajeMaximo ) + ", lineas_maximas = " + to_string( lineasMaximas ) + ", mejor_tiempo = " + to_string( mejorTiempo ) + ", combo_maximo = " + to_string( comboMaximo ) + " where codigo = 1" );
+        database.query( "update records set puntaje_maximo = " + to_string( puntajeMaximo ) + ", lineas_maximas = " + to_string( lineasMaximas ) + ", mejor_tiempo = " + to_string( mejorTiempo ) + ", lineas_logradas = " + to_string( lineasLogradas ) + ", combo_maximo = " + to_string( comboMaximo ) + " where codigo = 1" );
     }
     database.close();
 
