@@ -180,6 +180,9 @@ void Juego::renderizar( void ){
 
 	// Incrementa el numero de fps
 	contadorFPS++;
+
+	// Retrasa un milisegundo
+	SDL_Delay( 1 );
 }
 
 // Dibuja un fondo negro transparente

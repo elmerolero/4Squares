@@ -7,7 +7,7 @@
 #include "derrota.h"
 #include <vector>
 
-// World game state
+// Estado del juego
 class FourSquares : public EstadoJuego
 {
 	public:
@@ -20,6 +20,14 @@ class FourSquares : public EstadoJuego
 		void estadoLogica();
 		void estadoRenderizado();
 		void actualizarViewport();
+};
+
+// Pieza
+struct Pieza{
+	int tipo;					// Indica si es un cuadrado, una línea, una t, etc.
+	SDL_Point bloques[ 4 ];		// Posición relativa de cada uno de los bloques que componen la figura
+	SDL_Point figura;			// Posición de la figura en el tablero
+	SDL_Point sombra;			// Posición de la sombra en el tablero
 };
 
 /* CONSTANTES */
@@ -53,7 +61,7 @@ const SDL_Color shadowColor[ 7 ] = { { 185,  80,   5 }, {   0,  51, 150 }, {  60
 									 { 40,   90,  50 }, {  58, 119, 244 }, { 192, 157, 39 } };
 
 // Velocidad de bajada por nivel
-const Uint32 downSpeed[] = { 1000, 900, 800, 700, 500, 400, 300, 200, 100, 80, 60, 40, 30, 20, 10 };
+const Uint32 downSpeed[] = { 1000, 900, 800, 700, 600, 500, 400, 300, 200, 100, 80, 60, 40, 30, 20 };
 
 // Response time
 const Uint32 moveResponseTime[] = { 0, 200, 40 };
@@ -74,16 +82,19 @@ const SDL_Rect shapeRects[ 7 ] = { {  0,  0, 236, 141 }, { 237,  0, 236, 141 }, 
 
 /* VARIABLES */
 // Variables del jugador
-extern Temporizador tiempoPartida;	// Tiempo transcurrido en el juego
-extern int contadorCombo;			// Combo realizado por el jugador
-extern int comboMaximo;				// Combo máximo
-extern int contadorLineas;			// Número de líneas
-extern int contadorNivel;			// Nivel actual
-extern int contadorPuntaje;			// Puntaje
+extern Temporizador tiempoPartida;		 // Tiempo transcurrido en el juego
+extern int contadorCombo;				 // Combo realizado por el jugador
+extern int comboMaximo;					 // Combo máximo
+extern int contadorLineas;				 // Número de líneas
+extern int contadorNivel;				 // Nivel actual
+extern int contadorPuntaje;				 // Puntaje
+extern std::vector< int > lineasJugador; // Lineas realizadas por el jugador
+extern int colaFiguras[ 4 ];			 // Cola de figuras
+extern int columna;
 
 // Game's timer
 extern Temporizador tiempoAdicional;
-extern Temporizador gameTimer;
+extern Temporizador indicadorTiempo;
 
 // 
 extern int nivelRespuestaLaterales;
@@ -91,26 +102,16 @@ extern Temporizador tiempoEntradaBajada;
 extern Temporizador tiempoEntradaLaterales;
 
 // Board
-extern int tetroBoard[ BOARD_HEIGHT ][ BOARD_WIDTH ];
+extern int tablero[ BOARD_HEIGHT ][ BOARD_WIDTH ];
 
 // For erasing line animation
-extern Temporizador animationTimer;
-
-struct Pieza{
-	int tipo;					// Indica si es un cuadrado, una línea, una t, etc.
-	SDL_Point bloques[ 4 ];		// Posición relativa de cada uno de los bloques que componen la figura
-	SDL_Point figura;			// Posición de la figura en el tablero
-	SDL_Point sombra;			// Posición de la sombra en el tablero
-};
+extern Temporizador tiempoAnimacion;
 
 // Pieza
 extern Pieza piezaJugador;
 
-// Cola
-extern int colaFiguras[ 4 ];
-
 // Piece saved
-extern bool allowedChange;
+extern bool permitirCambio;
 extern int pieceSaved;
 extern bool arribaPresionado;
 extern int pasosRealizados;
@@ -118,7 +119,7 @@ extern int pasosRealizados;
 // Objetos visibles del juego
 extern Objeto tetroBackground;	 // Fondo de pantalla
 extern Objeto tetroMargin;		 // Margen		
-extern Objeto tetroBoardSurface; // Superficie del tablero
+extern Objeto tableroSurface; // Superficie del tablero
 extern Objeto tetroBlock;		 // Bloque
 extern Objeto gFigura;			 // Cola de figuras
 extern Objeto tetroShapes;		 // Figuras
@@ -128,8 +129,6 @@ extern Objeto puntaje; // Puntaje
 extern Objeto nivel;   // Nivel
 extern Objeto lineas;  // Lineas
 extern Objeto tiempo;  // Tiempos
-
-extern std::vector< int > lineasJugador;
 
 void FS_CargarElementos( void );
 
@@ -153,7 +152,6 @@ void Tablero_Inicializar( int tablero[ BOARD_HEIGHT ][ BOARD_WIDTH ] );
 bool Tablero_PermiteMover( int tablero[ BOARD_HEIGHT ][ BOARD_WIDTH ], Pieza &pieza, int movimientoX, int movimientoY );
 bool Tablero_CasillaUtilizada( int tablero[ BOARD_HEIGHT ][ BOARD_WIDTH ], int posicionX, int posicionY );
 void Tablero_ObtenerLineas( int tablero[ BOARD_HEIGHT ][ BOARD_WIDTH ], std::vector< int > &lineas );
-void Tablero_EliminarLineas( int tablero[ BOARD_HEIGHT ][ BOARD_WIDTH ], std::vector< int > &lineas );
 void Tablero_Acomodar( int tablero[ BOARD_HEIGHT ][ BOARD_WIDTH ], std::vector< int > &lineas );
 void Tablero_Dibujar( int tablero[ BOARD_HEIGHT ][ BOARD_WIDTH ] );
 void Tablero_EstablecerColorRenglon( int tablero[ BOARD_HEIGHT ][ BOARD_WIDTH ], int renglon, int color );

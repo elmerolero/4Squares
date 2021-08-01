@@ -17,10 +17,6 @@ int main( int argc, char * args[] )
 
 	// Inicializa el juego
 	while( !fourSquares.salir() ){
-		
-		// Genera retraso de un milisegundo
-		SDL_Delay( 1 );
-
 		// Lee la entrada
 		fourSquares.entrada();
 

@@ -13,7 +13,7 @@ Preparacion::Preparacion(){
     }
 
 	tiempoPartida.pausar();
-	gameTimer.pausar(); 
+	indicadorTiempo.pausar(); 
 	tiempoEntradaBajada.pausar();
 	tiempoEntradaLaterales.pausar();
 
@@ -53,9 +53,10 @@ void Preparacion::estadoLogica(){
             ya.show( true );
             tetroBlock.show( true );
             tiempoPartida.reanudar();
-	        gameTimer.reanudar(); 
+	        indicadorTiempo.reanudar(); 
 	        tiempoEntradaBajada.reanudar();
 	        tiempoEntradaLaterales.reanudar();
+            tiempoAnimacion.iniciar();
             fourSquares.finalizarEstado();
         }
         temporizador.reiniciar();

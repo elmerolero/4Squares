@@ -98,7 +98,7 @@ void Derrota::estadoEventos(  SDL_Event &gGameEvent ){
 void Derrota::estadoLogica(){
     //
     if( lineaSombreada > 0 ){
-        Tablero_EstablecerColorRenglon( tetroBoard, --lineaSombreada, DERROTA );
+        Tablero_EstablecerColorRenglon( tablero, --lineaSombreada, DERROTA );
         SDL_Delay( 50 );
         return;
     }
