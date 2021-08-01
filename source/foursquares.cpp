@@ -348,25 +348,25 @@ void FS_CargarElementos( void )
 		tableroSurface.leerDimensionesDesdeArchivo( "../recursos/coord/board.crd" );
 		
 		// Margin
-		tetroMargin.loadFileTexture( "../recursos/img/bloques/margen.png" );
+		tetroMargin.loadFileTexture( "../recursos/imagenes/bloques/margen.png" );
 		tetroMargin.escribirDimensionesEspaciales( ( fourSquares.leerEspacioAncho() - tetroMargin.leerEspacialAncho() ) / 2, 0, ( (float)tetroMargin.getWidth() * 6.13 ) / 1080, ( (float)tetroMargin.getHeight() * 6.13 ) / 1080 );
 		tetroMargin.escribirDimensionesTextura( 0, 0, tetroMargin.getWidth(), tetroMargin.getHeight() );
 
 		// Background
-		tetroBackground.loadFileTexture( "../recursos/img/fondos/Space.png" );
+		tetroBackground.loadFileTexture( "../recursos/imagenes/fondos/Space.png" );
 		
 		// Blocks
-		tetroBlock.loadFileTexture( "../recursos/img/bloques/bloque.png" );
+		tetroBlock.loadFileTexture( "../recursos/imagenes/bloques/bloque.png" );
 		tetroBlock.leerDimensionesDesdeArchivo( "../recursos/coord/block.crd" );
 		
 		// Queue shapes
-		tetroShapes.loadFileTexture( "../recursos/img/bloques/figuras.png" );
+		tetroShapes.loadFileTexture( "../recursos/imagenes/bloques/figuras.png" );
 
 		// Shapes rect (black rects for the shapes queue	
 		gFigura.escribirDimensionesEspaciales( 0, 0, ( 236.f * 6.13 ) / 1080, ( 141.f * 6.13 ) / 1080 );
 
 		// Textura ya
-		ya.loadFileTexture( "../recursos/img/texto/ya.png" );
+		ya.loadFileTexture( "../recursos/imagenes/texto/ya.png" );
 		ya.escribirDimensionesTextura( 0, 0, ya.getWidth(), ya.getHeight() );
 		ya.escribirDimensionesEspaciales( ( fourSquares.leerEspacioAncho() - ya.leerEspacialAncho() ) / 2, 1, ( (float)ya.leerTexturaW() * 6.13 ) / 1080, ( (float)ya.leerTexturaH() * 6.13 ) / 1080 );
 	}

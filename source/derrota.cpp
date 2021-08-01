@@ -20,13 +20,13 @@ Derrota::Derrota(){
     datosPartida = comparativo( contadorPuntaje, contadorNivel, contadorLineas, comboMaximo, tiempoPartida.obtenerTicks() );
     estadistico.show( false );
 
-    tableroEstadistico.loadFileTexture( "../recursos/img/otros/estadistico.png" );
+    tableroEstadistico.loadFileTexture( "../recursos/imagenes/otros/estadistico.png" );
     tableroEstadistico.escribirDimensionesEspaciales( obtenerRectRelativo( tableroEstadistico ) );
     tableroEstadistico.escribirDimensionesTextura( obtenerRectTextura( tableroEstadistico ) );
     tableroEstadistico.show( false );
 
     // Carga el letrero de "Se acabó"
-    if( seAcabo.loadFileTexture( "../recursos/img/texto/se-acabo.png" ) ){
+    if( seAcabo.loadFileTexture( "../recursos/imagenes/texto/se-acabo.png" ) ){
         seAcabo.escribirDimensionesTextura( obtenerRectTextura( seAcabo ) );
         seAcabo.escribirDimensionesEspaciales( obtenerRectRelativo( seAcabo ) );
         seAcabo.escribirEspacialY( 0.5 );
@@ -34,7 +34,7 @@ Derrota::Derrota(){
     }
 
     // Carga la textura de opciones
-    if( continuar.loadFileTexture( "../recursos/img/otros/selector-pausa.png" ) ){
+    if( continuar.loadFileTexture( "../recursos/imagenes/otros/selector-pausa.png" ) ){
         continuar.escribirDimensionesTextura( obtenerRectTextura( continuar ) );
         continuar.escribirDimensionesEspaciales( obtenerRectRelativo( continuar ) );
         continuar.escribirTexturaH( continuar.leerTexturaH() / 2 );

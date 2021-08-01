@@ -5,7 +5,7 @@ using namespace std;
 
 Pausa::Pausa()
 {
-    if( letreroPausa.loadFileTexture( "../recursos/img/texto/pausa.png" ) ){
+    if( letreroPausa.loadFileTexture( "../recursos/imagenes/texto/pausa.png" ) ){
         // Establece sus dimensiones en pantalla
         SDL_Rect arect = { 0, 0, letreroPausa.getWidth(), letreroPausa.getHeight() };
         SDL_DRect rrect = { 0, 1, ( (float)arect.w * 6.13 ) / (float)1080, ( (float)arect.h * 6.13 ) / (float)1080 };
@@ -13,7 +13,7 @@ Pausa::Pausa()
         letreroPausa.escribirDimensionesEspaciales( rrect );
     }
 
-    if( opcionPausa.loadFileTexture( "../recursos/img/otros/selector-pausa.png" ) ){
+    if( opcionPausa.loadFileTexture( "../recursos/imagenes/otros/selector-pausa.png" ) ){
         SDL_DRect rrect = { 0, 0, ( (float)opcionPausaRect[ 0 ].w * 6.13 ) / (float)1080, ( (float)opcionPausaRect[ 0 ].h * 6.13 ) / (float)1080 };
         opcionPausa.escribirDimensionesEspaciales( rrect );
     }

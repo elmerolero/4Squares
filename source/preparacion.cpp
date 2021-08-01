@@ -5,7 +5,7 @@
 using namespace std;
 
 Preparacion::Preparacion(){
-    if( cuentaRegresiva.loadFileTexture( "../recursos/img/texto/cuenta.png" ) ){
+    if( cuentaRegresiva.loadFileTexture( "../recursos/imagenes/texto/cuenta.png" ) ){
         SDL_Rect trect = { 0, 0, 82, 157 };
         SDL_DRect rrect = { 0, 1, ( (float)trect.w * 6.13 ) / 1080, ( (float)trect.h * 6.13 ) / 1080 };
         cuentaRegresiva.escribirDimensionesEspaciales( rrect );

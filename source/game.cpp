@@ -94,7 +94,7 @@ bool Juego_Iniciar( std::string nombre )
 	Texture::establecerContextoRender( gPtrRenderer );
 
 	//Carga el ícono
-	SDL_Surface * icono = IMG_Load("../recursos/img/icono.bmp");
+	SDL_Surface * icono = IMG_Load("../recursos/imagenes/icono.bmp");
 	if( icono != NULL ){
 		SDL_SetWindowIcon( gPtrWindow, icono );
 		SDL_FreeSurface(icono);
