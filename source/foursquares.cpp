@@ -214,7 +214,7 @@ void FourSquares::estadoLogica()
 
 		FS_ActualizarLineas( contadorLineas, lineasJugador, lineas );
 		FS_ActualizarNivel( contadorNivel, contadorLineas, nivel );
-		FS_ActualizarPuntaje( contadorPuntaje, lineasJugador, contadorCombo, puntaje );
+		FS_ActualizarPuntaje( contadorPuntaje, lineasJugador, contadorNivel, contadorCombo, puntaje );
 
 		Pieza_NuevaPieza( piezaJugador, Cola_ObtenerSiguenteFigura( colaFiguras ), tetroBoard );
 		allowedChange = true;
@@ -292,7 +292,7 @@ void FourSquares::actualizarViewport()
 	ya.escribirEspacialX( ( fourSquares.leerEspacioAncho() - ya.leerEspacialAncho() ) / 2 );
 
 	// Texto renderizado
-	FS_ActualizarPuntaje( contadorPuntaje, lineasJugador, contadorCombo, puntaje );
+	FS_ActualizarPuntaje( contadorPuntaje, lineasJugador, contadorNivel, contadorCombo, puntaje );
 	FS_ActualizarNivel( contadorNivel, contadorLineas, nivel );
 	FS_ActualizarLineas( contadorLineas, lineasJugador, lineas );
 }
@@ -333,9 +333,6 @@ void FS_CargarElementos( void )
 		cout << ia.what() << endl;
 		fourSquares.salir( true );
 	}
-
-	/*FS_ActualizarTamanioFuente( fuenteArg, "../recursos/fuentes/Aaargh.ttf", 47.f );
-	FS_ActualizarDatos( fps, fpsTextura, fpsObjeto, 2, fuenteArg, 0.f, 0.f );*/
 }
 
 void Pieza_NuevaPieza( Pieza &pieza, int figura, int tablero[ 21 ][ 10 ] ){
@@ -390,14 +387,10 @@ void Pieza_Alternar( Pieza &pieza, int tablero[ 21 ][ 10 ], int direccion  ){
 	// Rota la figura
 	Pieza_Rotar( pieza, direccion );
 
-	if( pieza.tipo != FIGURA_LINEA ){
-		if( Tablero_PermiteMover( tablero, pieza, pieza.figura.x, pieza.figura.y ) ){
-			Pieza_ActualizarSombra( pieza, tablero );
-			return;
-		}
+	if( !Tablero_PermiteMover( tablero, pieza, pieza.figura.x, pieza.figura.y ) ){
 		// Puede moverse si se mueve a la derecha
-		else if( Tablero_PermiteMover( tablero, pieza, pieza.figura.x + 1, pieza.figura.y ) ){
-			pieza.figura.x++;
+		if( Tablero_PermiteMover( tablero, pieza, pieza.figura.x + 1, pieza.figura.y ) ){
+				pieza.figura.x++;
 		}
 		// Puede moverse si se mueve hacia la izquierda
 		else if( Tablero_PermiteMover( tablero, pieza, pieza.figura.x - 1, pieza.figura.y ) ){
@@ -407,39 +400,22 @@ void Pieza_Alternar( Pieza &pieza, int tablero[ 21 ][ 10 ], int direccion  ){
 		else if( Tablero_PermiteMover( tablero, pieza, pieza.figura.x, pieza.figura.y - 1 ) ){
 			pieza.figura.y--;
 		}
-		else{
-			Pieza_Rotar( pieza, direccion * -1 );
-		}
-	}
-	else{
-		if( Tablero_PermiteMover( tablero, pieza, pieza.figura.x, pieza.figura.y ) ){
-			Pieza_ActualizarSombra( pieza, tablero );
-			return;
-		}
-		// Puede moverse si se mueve a la derecha
-		else if( Tablero_PermiteMover( tablero, pieza, pieza.figura.x + 1, pieza.figura.y ) ){
-			pieza.figura.x++;
-		}
-		else if( Tablero_PermiteMover( tablero, pieza, pieza.figura.x + 2, pieza.figura.y ) ){
-			pieza.figura.x += 2;
-		}
-		// Puede moverse si se mueve hacia la izquierda
-		else if( Tablero_PermiteMover( tablero, pieza, pieza.figura.x - 1, pieza.figura.y ) ){
-			pieza.figura.x--;
-		}
-		else if( Tablero_PermiteMover( tablero, pieza, pieza.figura.x - 2, pieza.figura.y ) ){
-			pieza.figura.x -= 2;
-		}
-		// Puede moverse si se sube
-		else if( Tablero_PermiteMover( tablero, pieza, pieza.figura.x, pieza.figura.y - 1 ) ){
-			pieza.figura.y--;
-		}
-		else if( Tablero_PermiteMover( tablero, pieza, pieza.figura.x, pieza.figura.y - 2 ) ){
-			pieza.figura.y -= 2;
-		}
-		// Puede moverse si se baja
-		else if( Tablero_PermiteMover( tablero, pieza, pieza.figura.x, pieza.figura.y + 1 ) ){
-			pieza.figura.y++;
+		else if( pieza.tipo == FIGURA_LINEA ){
+			if( Tablero_PermiteMover( tablero, pieza, pieza.figura.x + 2, pieza.figura.y ) ){
+				pieza.figura.x += 2;
+			}
+			else if( Tablero_PermiteMover( tablero, pieza, pieza.figura.x - 2, pieza.figura.y ) ){
+				pieza.figura.x -= 2;
+			}
+			else if( Tablero_PermiteMover( tablero, pieza, pieza.figura.x, pieza.figura.y - 2 ) ){
+				pieza.figura.y -= 2;
+			}
+			else if( Tablero_PermiteMover( tablero, pieza, pieza.figura.x, pieza.figura.y + 2 ) ){
+				pieza.figura.y += 2;
+			}
+			else{
+				Pieza_Rotar( pieza, direccion * -1 );
+			}
 		}
 		else{
 			Pieza_Rotar( pieza, direccion * -1 );
@@ -646,14 +622,14 @@ void FS_ActualizarNivel( int &nivelJugador, int &lineasJugador, Objeto &objeto )
 	objeto.escribirEspacialY( 4.4f );
 }
 
-void FS_ActualizarPuntaje( int &puntaje, vector< int > &lineas, int &combo, Objeto &objeto )
+void FS_ActualizarPuntaje( int &puntaje, vector< int > &lineas, int nivel, int combo, Objeto &objeto )
 {
 	// Obtiene el nuevo puntaje
 	int nuevoPuntaje = ( lineas.empty() ? 0 : 50 );
 
 	// Actualiza el puntaje
 	while( !lineas.empty() ){
-		nuevoPuntaje = nuevoPuntaje * lineas.size();
+		nuevoPuntaje = nuevoPuntaje * lineas.size() * nivel;
 		lineas.pop_back();
 	}
 	
