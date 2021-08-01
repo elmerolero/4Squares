@@ -1,4 +1,4 @@
-#include "Database.h"
+#include "database.h"
 #include <stdexcept>
 #include <vector>
 #include <unordered_map>
