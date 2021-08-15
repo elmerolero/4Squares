@@ -21,25 +21,25 @@ Derrota::Derrota(){
     estadistico.show( false );
 
     tableroEstadistico.loadFileTexture( "../recursos/imagenes/otros/estadistico.png" );
-    tableroEstadistico.escribirDimensionesEspaciales( obtenerRectRelativo( tableroEstadistico ) );
+    tableroEstadistico.escribirDimensionesEspacio( obtenerRectRelativo( tableroEstadistico ) );
     tableroEstadistico.escribirDimensionesTextura( obtenerRectTextura( tableroEstadistico ) );
     tableroEstadistico.show( false );
 
     // Carga el letrero de "Se acabó"
     if( seAcabo.loadFileTexture( "../recursos/imagenes/texto/se-acabo.png" ) ){
         seAcabo.escribirDimensionesTextura( obtenerRectTextura( seAcabo ) );
-        seAcabo.escribirDimensionesEspaciales( obtenerRectRelativo( seAcabo ) );
-        seAcabo.escribirEspacialY( 0.5 );
+        seAcabo.escribirDimensionesEspacio( obtenerRectRelativo( seAcabo ) );
+        seAcabo.escribirEspacioY( 0.5 );
         seAcabo.show( false );
     }
 
     // Carga la textura de opciones
     if( continuar.loadFileTexture( "../recursos/imagenes/otros/selector-pausa.png" ) ){
         continuar.escribirDimensionesTextura( obtenerRectTextura( continuar ) );
-        continuar.escribirDimensionesEspaciales( obtenerRectRelativo( continuar ) );
+        continuar.escribirDimensionesEspacio( obtenerRectRelativo( continuar ) );
         continuar.escribirTexturaH( continuar.leerTexturaH() / 2 );
-        continuar.escribirEspacialAlto( continuar.leerEspacialAlto() / 2 );
-        continuar.escribirEspacialY( ( fourSquares.leerEspacioAlto() / 5.f ) * 4.f );
+        continuar.escribirEspacioAlto( continuar.leerEspacioAlto() / 2 );
+        continuar.escribirEspacioY( ( espacioAlto / 5.f ) * 4.f );
         continuar.show( false );
         textoContinuar.show( false );
     }
@@ -65,11 +65,11 @@ void Derrota::estadoEventos(  SDL_Event &gGameEvent ){
             }
             else if( ocultarElementos ){
                 if( finOpciones.seleccionada == 1 ){
-                    fourSquares.establecerEstado( new FourSquares() );
-                    fourSquares.apilarEstado( new Preparacion() );
+                    Juego_EstablecerEstado( new FourSquares() );
+                    Juego_ApilarEstado( new Preparacion() );
                 }
                 if( finOpciones.seleccionada == 2 ){
-                    fourSquares.salir( true );
+                    salir = true;
                 }
             }
 		}
@@ -124,8 +124,8 @@ void Derrota::estadoLogica(){
             // Actualiza el ancho del rectángulo
             estadistico.escribirTexturaX( ( estadistico.getWidth() - anchoActual ) / 2 );
             estadistico.escribirTexturaW( anchoActual );
-            estadistico.escribirEspacialX( estadistico.leerEspacialX() + ( estadistico.leerEspacialAncho() - anchoRelativoActual ) / 2 );
-            estadistico.escribirEspacialAncho( unidadesRelativas( estadistico.leerTexturaW() ) );
+            estadistico.escribirEspacioX( estadistico.leerEspacioX() + ( estadistico.leerEspacioAncho() - anchoRelativoActual ) / 2 );
+            estadistico.escribirEspacioAncho( unidadesRelativas( estadistico.leerTexturaW() ) );
 
             // Incrementa el contador
             anchoActual += incremento;
@@ -140,24 +140,24 @@ void Derrota::estadoLogica(){
 
 void Derrota::estadoRenderizado(){
     // Dibuja el fondo
-    fourSquares.fondoNegro();
+    Juego_FondoNegro();
 
     // Letrero "Se acabó"
-    seAcabo.renderTexture( seAcabo.leerDimensionesTextura(), seAcabo.leerDimensionesEspaciales() );
+    seAcabo.renderTexture( seAcabo.leerDimensionesTextura(), seAcabo.leerDimensionesEspacio() );
 
     if( !ocultarElementos ){
         // Tamaño del tablero
-        tableroEstadistico.renderTexture( tableroEstadistico.leerDimensionesTextura(), tableroEstadistico.leerDimensionesEspaciales() );
+        tableroEstadistico.renderTexture( tableroEstadistico.leerDimensionesTextura(), tableroEstadistico.leerDimensionesEspacio() );
 
         // Tamaño de la información
-        estadistico.renderTexture( estadistico.leerDimensionesTextura(), estadistico.leerDimensionesEspaciales() );
+        estadistico.renderTexture( estadistico.leerDimensionesTextura(), estadistico.leerDimensionesEspacio() );
 
         // El botón continuar
-        continuar.renderTexture( continuar.leerDimensionesTextura(), continuar.leerDimensionesEspaciales() );
+        continuar.renderTexture( continuar.leerDimensionesTextura(), continuar.leerDimensionesEspacio() );
         continuar.escribirTexturaY( continuar.leerTexturaY() + continuar.leerTexturaH() );
-        continuar.renderTexture( continuar.leerDimensionesTextura(), continuar.leerDimensionesEspaciales() );
+        continuar.renderTexture( continuar.leerDimensionesTextura(), continuar.leerDimensionesEspacio() );
         continuar.escribirTexturaY( 0 );
-        textoContinuar.renderTexture( textoContinuar.leerDimensionesTextura(), textoContinuar.leerDimensionesEspaciales() );
+        textoContinuar.renderTexture( textoContinuar.leerDimensionesTextura(), textoContinuar.leerDimensionesEspacio() );
     }
     else{
         // Dibuja
@@ -167,28 +167,28 @@ void Derrota::estadoRenderizado(){
 
 void Derrota::actualizarViewport(){
     // Letrero de se acabó
-    seAcabo.escribirEspacialX( ( fourSquares.leerEspacioAncho() - seAcabo.leerEspacialAncho() ) / 2  );
+    seAcabo.escribirEspacioX( ( espacioAncho - seAcabo.leerEspacioAncho() ) / 2  );
     seAcabo.actualizarDimensionesAbsolutas();
 
     // Tablero
-    tableroEstadistico.escribirEspacialX( ( fourSquares.leerEspacioAncho() - tableroEstadistico.leerEspacialAncho() ) / 2  );
-    tableroEstadistico.escribirEspacialY( ( fourSquares.leerEspacioAlto() - tableroEstadistico.leerEspacialAlto() ) / 2  );
+    tableroEstadistico.escribirEspacioX( ( espacioAncho - tableroEstadistico.leerEspacioAncho() ) / 2  );
+    tableroEstadistico.escribirEspacioY( ( espacioAlto - tableroEstadistico.leerEspacioAlto() ) / 2  );
     tableroEstadistico.actualizarDimensionesAbsolutas();
 
     // Texto
     actualizarTamanioTexto( datosPartida, estadistico, fuenteInformacion, 30, 800 );
-    estadistico.escribirEspacialX( ( fourSquares.leerEspacioAncho() - estadistico.leerEspacialAncho() ) / 2 );
-    estadistico.escribirEspacialY( ( ( fourSquares.leerEspacioAlto() - estadistico.leerEspacialAlto() ) / 2 ) + .15 );
+    estadistico.escribirEspacioX( ( espacioAncho - estadistico.leerEspacioAncho() ) / 2 );
+    estadistico.escribirEspacioY( ( ( espacioAlto - estadistico.leerEspacioAlto() ) / 2 ) + .15 );
 
     // Boton continuar
-    continuar.escribirEspacialX( ( fourSquares.leerEspacioAncho() - continuar.leerEspacialAncho() ) / 2 );
+    continuar.escribirEspacioX( ( espacioAncho - continuar.leerEspacioAncho() ) / 2 );
     continuar.actualizarDimensionesAbsolutas();
 
     // Texto coninuar
     Fuente_ActualizarTamanio( fuenteTexto );
     Fuente_ActualizarTexto( "Continuar", fuenteTexto, textoContinuar );
-    textoContinuar.escribirEspacialX( continuar.leerEspacialX() + 0.1 );
-    textoContinuar.escribirEspacialY( continuar.leerEspacialY() + 0.07 );
+    textoContinuar.escribirEspacioX( continuar.leerEspacioX() + 0.1 );
+    textoContinuar.escribirEspacioY( continuar.leerEspacioY() + 0.07 );
 }
 
 void actualizarTamanioTexto( string texto, Objeto &objeto, TTF_Font *fuente, int tamanioBase, int anchoTextura ){
@@ -202,7 +202,7 @@ void actualizarTamanioTexto( string texto, Objeto &objeto, TTF_Font *fuente, int
     SDL_Color color = { 255, 255, 255 };
     objeto.crearTexturaDesdeTextoBlended( texto.c_str(), color, fuente, anchoTextura );
     objeto.escribirDimensionesTextura( obtenerRectTextura( objeto ) );
-    objeto.escribirDimensionesEspaciales( obtenerRectRelativo( objeto ) );
+    objeto.escribirDimensionesEspacio( obtenerRectRelativo( objeto ) );
 }
 
 string comparativo( int puntaje, int nivel, int lineas, int combo, Uint32 tiempo )
@@ -286,27 +286,27 @@ Opciones finOpciones = { 2, 1 };
 
 void Opciones_Dibujar( Opciones &informacionOpciones, const char *opciones[], Objeto &opcion, Objeto &opcionTexto ){
     // Obtiene la mitad de la pantalla
-    double mediaY = fourSquares.leerEspacioAlto() / 2;
+    double mediaY = espacioAlto / 2;
     SDL_Color color = { 255, 255, 255 };
 
     // Dibuja el las opciones disponibles
     for( int i = 0; i < informacionOpciones.numero; ++i ){
-        double posicionY = ( opcion.leerEspacialAlto() + .2 ) * ( i ) + mediaY;
-        opcion.escribirEspacialY( posicionY );
-        opcion.renderTexture( opcion.leerDimensionesTextura(), opcion.leerDimensionesEspaciales() );
+        double posicionY = ( opcion.leerEspacioAlto() + .2 ) * ( i ) + mediaY;
+        opcion.escribirEspacioY( posicionY );
+        opcion.renderTexture( opcion.leerDimensionesTextura(), opcion.leerDimensionesEspacio() );
 
         // ¿Es la opción seleccionada?
         if( informacionOpciones.seleccionada == i + 1 ){
             opcion.escribirTexturaY( opcion.leerTexturaY() + opcion.leerTexturaH() );
-            opcion.renderTexture( opcion.leerDimensionesTextura(), opcion.leerDimensionesEspaciales() );
+            opcion.renderTexture( opcion.leerDimensionesTextura(), opcion.leerDimensionesEspacio() );
             opcion.escribirTexturaY( 0 );
         }
 
         if( opcionTexto.crearTexturaDesdeTextoSolido( opciones[ i ], color, fuenteTexto.fuente ) ){
-            SDL_DRect rrect = { opcion.leerEspacialX() + 0.1, posicionY + 0.07, (float)opcionTexto.getWidth() / Objeto::leerMagnitudUnidad(), (float)opcionTexto.getHeight() / Objeto::leerMagnitudUnidad() };
+            SDL_DRect rrect = { opcion.leerEspacioX() + 0.1, posicionY + 0.07, (float)opcionTexto.getWidth() / Objeto::leerMagnitudUnidad(), (float)opcionTexto.getHeight() / Objeto::leerMagnitudUnidad() };
             opcionTexto.escribirDimensionesTextura( obtenerRectTextura( opcionTexto ) );
-            opcionTexto.escribirDimensionesEspaciales( rrect );
-            opcionTexto.renderTexture( opcionTexto.leerDimensionesTextura(), opcionTexto.leerDimensionesEspaciales() );
+            opcionTexto.escribirDimensionesEspacio( rrect );
+            opcionTexto.renderTexture( opcionTexto.leerDimensionesTextura(), opcionTexto.leerDimensionesEspacio() );
         }
     }
 }

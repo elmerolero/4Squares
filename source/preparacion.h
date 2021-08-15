@@ -1,8 +1,8 @@
 #ifndef PREPARACION_H
 #define PREPARACION_H
 #include "estadojuego.h"
-#include "componentes.h"
 #include "objeto.h"
+#include "globales.h"
 #include "temporizador.h"
 
 class Preparacion : public EstadoJuego
@@ -21,6 +21,5 @@ class Preparacion : public EstadoJuego
 extern int contador;
 extern Temporizador temporizador;
 extern Objeto cuentaRegresiva;
-extern SDL_Rect fondoNegro;
 
 #endif

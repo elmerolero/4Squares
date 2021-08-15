@@ -6,7 +6,6 @@
 #include "temporizador.h"
 #include "objeto.h"
 #include "juego.h"
-#include "componentes.h"
  
 class Derrota : public EstadoJuego
 {

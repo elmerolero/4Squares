@@ -12,4 +12,14 @@ class EstadoJuego
 		virtual void actualizarViewport() = 0;
 };
 
+struct Pendiente{
+    EstadoJuego *estado;
+    int accion;
+};
+
+static const int ESTADO_CONTINUAR = 1;
+static const int ESTADO_APILAR = 2;
+static const int ESTADO_ESTABLECER = 3;
+static const int ESTADO_FINALIZAR = 0;
+
 #endif

@@ -10,12 +10,12 @@ Pausa::Pausa()
         SDL_Rect arect = { 0, 0, letreroPausa.getWidth(), letreroPausa.getHeight() };
         SDL_DRect rrect = { 0, 1, ( (float)arect.w * 6.13 ) / (float)1080, ( (float)arect.h * 6.13 ) / (float)1080 };
         letreroPausa.escribirDimensionesTextura( arect );
-        letreroPausa.escribirDimensionesEspaciales( rrect );
+        letreroPausa.escribirDimensionesEspacio( rrect );
     }
 
     if( opcionPausa.loadFileTexture( "../recursos/imagenes/otros/selector-pausa.png" ) ){
         SDL_DRect rrect = { 0, 0, ( (float)opcionPausaRect[ 0 ].w * 6.13 ) / (float)1080, ( (float)opcionPausaRect[ 0 ].h * 6.13 ) / (float)1080 };
-        opcionPausa.escribirDimensionesEspaciales( rrect );
+        opcionPausa.escribirDimensionesEspacio( rrect );
     }
 
     // Opcion pausa por defecto es la primera opcion
@@ -56,10 +56,10 @@ void Pausa::estadoLogica(){
 
 void Pausa::estadoRenderizado(){
     // Dibuja el fondo negro
-    fourSquares.fondoNegro();
+    Juego_FondoNegro();
 
     // Dibuja el letrero de pausa
-    letreroPausa.renderTexture( letreroPausa.leerDimensionesTextura(), letreroPausa.leerDimensionesEspaciales() );
+    letreroPausa.renderTexture( letreroPausa.leerDimensionesTextura(), letreroPausa.leerDimensionesEspacio() );
 
     // Dibuja las opciones
     Pausa_DibujarOpciones();
@@ -68,11 +68,11 @@ void Pausa::estadoRenderizado(){
 void Pausa::actualizarViewport()
 {
     // Actualiza el letrero en pantalla
-    letreroPausa.escribirEspacialX( ( fourSquares.leerEspacioAncho() - letreroPausa.leerEspacialAncho() ) / 2 );
+    letreroPausa.escribirEspacioX( ( espacioAncho - letreroPausa.leerEspacioAncho() ) / 2 );
     letreroPausa.actualizarDimensionesAbsolutas();
 
     // Actualiza la posicion de las opciones en pantalla 
-    opcionPausa.escribirEspacialX( ( fourSquares.leerEspacioAncho() - opcionPausa.leerEspacialAncho() ) / 2 );
+    opcionPausa.escribirEspacioX( ( espacioAncho - opcionPausa.leerEspacioAncho() ) / 2 );
     opcionPausa.actualizarDimensionesAbsolutas();
 }
 
@@ -80,41 +80,41 @@ void Pausa_SeleccionarOpcion( void ){
     if( opcion == OPCION_CONTINUAR ){
         // Continúa con la partida
         FS_ReanudarPartida();
-		fourSquares.finalizarEstado();
+		Juego_FinalizarEstado();
     }
     else if( opcion == OPCION_REINICIAR ){
         // Inicia una nueva instancia del juego
         FS_ReanudarPartida();
-        fourSquares.establecerEstado( new FourSquares() );
-        fourSquares.apilarEstado( new Preparacion() );
+        Juego_EstablecerEstado( new FourSquares() );
+        Juego_ApilarEstado( new Preparacion() );
     }
     else if( opcion == OPCION_SALIR ){
         // Sale del juego
-        fourSquares.salir( true );
+        salir = true;
     }
 }
 
 void Pausa_DibujarOpciones( void ){
     // Obtiene la mitad de la pantalla
-    double mediaY = fourSquares.leerEspacioAlto() / 2;
+    double mediaY = espacioAlto / 2;
 
     // Dibuja el las opciones disponibles
     for( int i = 0; i < NUMERO_OPCIONES; i++ ){
-        double posicionY = ( opcionPausa.leerEspacialAlto() + .2 ) * ( i ) + mediaY;
-        opcionPausa.escribirEspacialY( posicionY );
-        opcionPausa.renderTexture( &opcionPausaRect[ 0 ], opcionPausa.leerDimensionesEspaciales() );
+        double posicionY = ( opcionPausa.leerEspacioAlto() + .2 ) * ( i ) + mediaY;
+        opcionPausa.escribirEspacioY( posicionY );
+        opcionPausa.renderTexture( &opcionPausaRect[ 0 ], opcionPausa.leerDimensionesEspacio() );
 
         // ¿Es la opción seleccionada?
         if( opcion == i + 1 ){
-            opcionPausa.renderTexture( &opcionPausaRect[ 1 ], opcionPausa.leerDimensionesEspaciales() );
+            opcionPausa.renderTexture( &opcionPausaRect[ 1 ], opcionPausa.leerDimensionesEspacio() );
         }
 
         SDL_Color color = { 255, 255, 255 };
         if( opcionTexto.crearTexturaDesdeTextoSolido( opciones[ i ], color, fuenteTexto.fuente ) ){
-            SDL_DRect rrect = { opcionPausa.leerEspacialX() + 0.1, posicionY + 0.07, (float)opcionTexto.getWidth() / Objeto::leerMagnitudUnidad(), (float)opcionTexto.getHeight() / Objeto::leerMagnitudUnidad() };
+            SDL_DRect rrect = { opcionPausa.leerEspacioX() + 0.1, posicionY + 0.07, (float)opcionTexto.getWidth() / Objeto::leerMagnitudUnidad(), (float)opcionTexto.getHeight() / Objeto::leerMagnitudUnidad() };
             opcionTexto.escribirDimensionesTextura( 0, 0, opcionTexto.getWidth(), opcionTexto.getHeight() );
-            opcionTexto.escribirDimensionesEspaciales( rrect );
-            opcionTexto.renderTexture( opcionTexto.leerDimensionesTextura(), opcionTexto.leerDimensionesEspaciales() );
+            opcionTexto.escribirDimensionesEspacio( rrect );
+            opcionTexto.renderTexture( opcionTexto.leerDimensionesTextura(), opcionTexto.leerDimensionesEspacio() );
         }
     }
 }

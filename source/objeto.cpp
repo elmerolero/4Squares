@@ -20,7 +20,7 @@ double Objeto::leerMagnitudUnidad( void ){
 }
 
 // Constructor
-Objeto::Objeto(): espacialX( 0.f ), espacialY( 0.f ), espacialAncho( 0.f ), espacialAlto( 0.f ){
+Objeto::Objeto(): espacioX( 0.f ), espacioY( 0.f ), espacioAncho( 0.f ), espacioAlto( 0.f ){
 	rectTextura  = { 0, 0, 0, 0 };
 	rectAbsoluto = { 0, 0, 0, 0 };
 }
@@ -32,63 +32,39 @@ Objeto::~Objeto(){
 // Renderiza
 void Objeto::renderizar( void ){
 	// Llama a la clase base para renderizar la textura
-	Texture::renderTexture( leerDimensionesTextura(), leerDimensionesEspaciales() );
+	Texture::renderTexture( leerDimensionesTextura(), leerDimensionesEspacio() );
 }
 
-void Objeto::leerDimensionesDesdeArchivo( string ubicacion ){
-	// File descriptor
-	ifstream archivo;
-	
-	// Intenta abrir el archivo
-	archivo.open( ubicacion );
-	if( !archivo.is_open() ){
-		throw runtime_error( "Error al leer archivo." );
-	}
-	
-	// Rect de relativo y rect de texturas
-	SDL_DRect rRect;
-	SDL_Rect  tRect; 
-
-	while( !archivo.eof() ){
-		// Loads relative coordinates
-		archivo >> rRect.x;
-		archivo >> rRect.y;
-		archivo >> rRect.w;
-		archivo >> rRect.h;
-	
-		// Loads absolute coordinates
-		archivo >> tRect.x;
-		archivo >> tRect.y;
-		archivo >> tRect.w;
-		archivo >> tRect.h;
-	}
-	archivo.close();
+// Lee carga una textura y establece las opciones de objeto
+void Objeto::leerObjetoDesdeArchivo( string ubicacion ){
+	// Carga la textura
+	loadFileTexture( ubicacion.c_str() );
 	
 	// Establece las coordenadas
-	escribirDimensionesEspaciales( rRect );
-	escribirDimensionesTextura( tRect );
+	escribirDimensionesTextura( 0, 0, getWidth(), getHeight() );
+	escribirDimensionesEspacio( 0, 0, ( (float)getWidth() * 6.13 ) / 1080, ( (float)getHeight() * 6.13 ) / 1080 );
 }
 
 // Establece las dimensiones actuales en el espacio
-void Objeto::escribirDimensionesEspaciales( SDL_DRect rect )
+void Objeto::escribirDimensionesEspacio( SDL_DRect rect )
 {
 	// Establece las dimensiones relativas
-	espacialX = rect.x;
-	espacialY = rect.y;
-	espacialAncho = rect.w;
-	espacialAlto = rect.h;
+	espacioX = rect.x;
+	espacioY = rect.y;
+	espacioAncho = rect.w;
+	espacioAlto = rect.h;
 
 	// Actualza las dimensiones absolutaas
 	actualizarDimensionesAbsolutas();
 }
 
-void Objeto::escribirDimensionesEspaciales( double x, double y, double ancho, double alto )
+void Objeto::escribirDimensionesEspacio( double x, double y, double ancho, double alto )
 {
-	// Establece las dimensiones espaciales
-	espacialX = x;
-	espacialY = y;
-	espacialAncho = ancho;
-	espacialAlto = alto;
+	// Establece las dimensiones espacioAes
+	espacioX = x;
+	espacioY = y;
+	espacioAncho = ancho;
+	espacioAlto = alto;
 
 	// Actualza las dimensiones absolutaas
 	actualizarDimensionesAbsolutas();
@@ -104,43 +80,45 @@ void Objeto::escribirDimensionesTextura( int x, int y, int ancho, int alto ){
 	rectTextura.y = y;
 	rectTextura.w = ancho;
 	rectTextura.h = alto;
+
+	escribirDimensionesEspacio( ( (float)x * 6.13 ) / 1080, ( (float)y * 6.13 ) / 1080, ( (float)ancho * 6.13 ) / 1080, ( (float)alto * 6.13 ) / 1080 );
 } 
 
-// Permite escribir las dimensiones espaciales de manera individual
-void Objeto::escribirEspacialX( double x ){
-	espacialX = x;
-	rectAbsoluto.x = espacialX * magnitudUnidad;
+// Permite escribir las dimensiones espacioAes de manera individual
+void Objeto::escribirEspacioX( double x ){
+	espacioX = x;
+	rectAbsoluto.x = espacioX * magnitudUnidad;
 }
 
-void Objeto::escribirEspacialY( double y ){
-	espacialY = y;
-	rectAbsoluto.y = espacialY * magnitudUnidad;
+void Objeto::escribirEspacioY( double y ){
+	espacioY = y;
+	rectAbsoluto.y = espacioY * magnitudUnidad;
 }
 
-void Objeto::escribirEspacialAncho( double w ){
-	espacialAncho = w;
-	rectAbsoluto.w = espacialAncho * magnitudUnidad;
+void Objeto::escribirEspacioAncho( double w ){
+	espacioAncho = w;
+	rectAbsoluto.w = espacioAncho * magnitudUnidad;
 }
 
-void Objeto::escribirEspacialAlto( double h ){
-	espacialAlto = h;
-	rectAbsoluto.h = espacialAlto * magnitudUnidad;
+void Objeto::escribirEspacioAlto( double h ){
+	espacioAlto = h;
+	rectAbsoluto.h = espacioAlto * magnitudUnidad;
 }
 
-double Objeto::leerEspacialX( void ) const{
-	return espacialX;
+double Objeto::leerEspacioX( void ) const{
+	return espacioX;
 }
 
-double Objeto::leerEspacialY( void ) const{
-	return espacialY;
+double Objeto::leerEspacioY( void ) const{
+	return espacioY;
 }
 
-double Objeto::leerEspacialAncho( void ) const{
-	return espacialAncho;
+double Objeto::leerEspacioAncho( void ) const{
+	return espacioAncho;
 }
 
-double Objeto::leerEspacialAlto( void ) const{
-	return espacialAlto;
+double Objeto::leerEspacioAlto( void ) const{
+	return espacioAlto;
 }
 
 // Permite leer las dimensiones absolutas de la textura de manera individual
@@ -204,14 +182,14 @@ SDL_Rect *Objeto::leerDimensionesTextura( void ){
 	return &rectTextura;
 }
 
-SDL_Rect *Objeto::leerDimensionesEspaciales( void ){
+SDL_Rect *Objeto::leerDimensionesEspacio( void ){
 	return &rectAbsoluto;
 }
 
 // Actualiza las dimensiones reales respecto a la pantalla
 void Objeto::actualizarDimensionesAbsolutas( void ){
-	rectAbsoluto.x = espacialX * magnitudUnidad;
-	rectAbsoluto.y = espacialY * magnitudUnidad;
-	rectAbsoluto.w = espacialAncho * magnitudUnidad;
-	rectAbsoluto.h = espacialAlto * magnitudUnidad;
+	rectAbsoluto.x = espacioX * magnitudUnidad;
+	rectAbsoluto.y = espacioY * magnitudUnidad;
+	rectAbsoluto.w = espacioAncho * magnitudUnidad;
+	rectAbsoluto.h = espacioAlto * magnitudUnidad;
 }

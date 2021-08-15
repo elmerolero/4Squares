@@ -1,68 +1,55 @@
 #include "juego.h"
+#include "globales.h"
 #include "database.h"
 #include <stdexcept>
 #include <iostream>
 #include "texture.h"
-#include "componentes.h"
 using namespace std;
 
-// Constructor
-Juego::Juego(): jVentana( nullptr ), jRender( nullptr ), estadoActual( nullptr ){
-	// Nada por hacer
-}
-
-Juego::Juego( string nombre, string traducciones ){
-	// Inicia el juego
-	this -> iniciar( nombre, traducciones );
-
-	// Estado actual
-	estadoActual = nullptr;
-}
-
-void Juego::iniciar( string nombre, string traducciones ){
+void Juego_Iniciar( string nombre, string mensajes ){
 	// Carga las traducciones
-	cargarValoresMensaje( traducciones );
+	Juego_CargarValoresMensaje( mensajes );
 
     // Inicializa SDL
-	cout << "\n" << leerValor( "inicializacion_sdl" ) << endl;
+	cout << "\n" << valoresMensaje[ "inicializacion_sdl" ] << endl;
 	if( SDL_Init( SDL_INIT_VIDEO ) < 0 || (IMG_Init( IMG_INIT_PNG ) & IMG_INIT_PNG) != IMG_INIT_PNG || TTF_Init() < 0 ){
-		throw runtime_error( leerValor( "error_inicializacion_sdl" ) + SDL_GetError() + " IMG: " + IMG_GetError() );
+		throw runtime_error( valoresMensaje[ "error_inicializacion_sdl" ] + SDL_GetError() + " IMG: " + IMG_GetError() );
 	}
 	
 	// Gets display options and check display was not too small
-	if( SDL_GetCurrentDisplayMode( 0, &jVistaInfo ) != 0 ){
-        throw runtime_error( leerValor( "error_inicializacion_pantalla" ) + SDL_GetError() + " IMG: " + IMG_GetError() );
+	if( SDL_GetCurrentDisplayMode( 0, &gVistaInfo ) != 0 ){
+        throw runtime_error( valoresMensaje[ "error_inicializacion_pantalla" ] + SDL_GetError() + " IMG: " + IMG_GetError() );
 	}
 	
-	cout << "\n" + leerValor( "exitoso_inicializacion_pantalla" ) << endl
-		 << leerValor( "literal_ancho" ) << jVistaInfo.w << endl
-		 << leerValor( "literal_alto" ) << jVistaInfo.h << endl
-		 << leerValor( "literal_tasa_refresco" ) << jVistaInfo.refresh_rate << endl;
+	cout << "\n" + valoresMensaje[ "exitoso_inicializacion_pantalla" ] << endl
+		 << valoresMensaje[ "literal_ancho" ] << gVistaInfo.w << endl
+		 << valoresMensaje[ "literal_alto" ] << gVistaInfo.h << endl
+		 << valoresMensaje[ "literal_tasa_refresco" ] << gVistaInfo.refresh_rate << endl;
 			
 	// Crea una ventana
-	cout << leerValor( "crear_ventana" ) << endl;
-	jVentana = SDL_CreateWindow( nombre.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 480, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE );
-	if( jVentana == nullptr ){
-        throw runtime_error( leerValor( "error_crear_ventana" ) + SDL_GetError() + " IMG: " + IMG_GetError() );
+	cout << valoresMensaje[ "crear_ventana" ] << endl;
+	gVentana = SDL_CreateWindow( nombre.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 480, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE );
+	if( gVentana == nullptr ){
+        throw runtime_error( valoresMensaje[ "error_crear_ventana" ] + SDL_GetError() + " IMG: " + IMG_GetError() );
 	}
 
-	cout << leerValor( "crear_render" ) << endl;
-	jRender = SDL_CreateRenderer( jVentana, -1, SDL_RENDERER_ACCELERATED );
-	if( jRender == nullptr ){
-        throw runtime_error( leerValor( "error_crear_render" ) + SDL_GetError() );
+	cout << valoresMensaje[ "crear_render" ] << endl;
+	gRender = SDL_CreateRenderer( gVentana, -1, SDL_RENDERER_ACCELERATED );
+	if( gRender == nullptr ){
+        throw runtime_error( valoresMensaje[ "error_crear_render" ] + SDL_GetError() );
 	}
 
 	//Carga el ícono
 	SDL_Surface * icono = IMG_Load("../recursos/img/icono.bmp");
 	if( icono != NULL ){
-		SDL_SetWindowIcon( jVentana, icono );
+		SDL_SetWindowIcon( gVentana, icono );
 		SDL_FreeSurface(icono);
 	}
 
-	Texture::establecerContextoRender( jRender );
+	Texture::establecerContextoRender( gRender );
 					
 	// Habilita el mode de mezcla
-	SDL_SetRenderDrawBlendMode( jRender, SDL_BLENDMODE_BLEND );
+	SDL_SetRenderDrawBlendMode( gRender, SDL_BLENDMODE_BLEND );
 
 	// Inicializa el temporizador de imagenes por segundo
 	temporizadorFPS.iniciar();
@@ -75,62 +62,62 @@ void Juego::iniciar( string nombre, string traducciones ){
 	fuenteTexto.magnitud = 47;
 
 	// Actualiza la ventana
-	actualizarVentana();
+	Juego_ActualizarVentana();
 }
 
 // libera los recursos del juego
-void Juego::cerrar( void ){
+void Juego_Cerrar( void ){
 	while( !estadosPendientes.empty() ){
 		Pendiente *aux = estadosPendientes.back();
 		delete aux;
 		estadosPendientes.pop_back();
 	}
 
-	while( !jEstados.empty() ){
-		EstadoJuego *aux = jEstados.back();
+	while( !estadosJuego.empty() ){
+		EstadoJuego *aux = estadosJuego.back();
 		delete aux;
 		estadosPendientes.pop_back();
 	}
 
 	// Deletes everything of the game
-	SDL_DestroyRenderer( jRender );
-	SDL_DestroyWindow( jVentana );
+	SDL_DestroyRenderer( gRender );
+	SDL_DestroyWindow( gVentana );
 	SDL_Quit();
-	jRender = NULL;
-	jVentana = NULL;
+	gRender = NULL;
+	gVentana = NULL;
 }
 
 // Lee la entrada del juego
-void Juego::entrada( void ){
+void Juego_Entrada( void ){
 	// Revisa la cola de eventos
-	if( SDL_PollEvent( &jEvento ) != 0 ){
+	if( SDL_PollEvent( &gEvento ) != 0 ){
 		// Ejecuta sus funciones base
-		if( jEvento.type == SDL_QUIT ){
-			salir( true );
+		if( gEvento.type == SDL_QUIT ){
+			salir = true;
 		}
-        else if( jEvento.type == SDL_KEYDOWN ){
-			if( jEvento.key.keysym.sym == SDLK_ESCAPE ){
-				jPantallaCompleta = !jPantallaCompleta;
-				SDL_SetWindowSize( jVentana, 800, 480 );
-				if( jPantallaCompleta ){
-					SDL_SetWindowSize( jVentana, jVistaInfo.w, jVistaInfo.h );
+        else if( gEvento.type == SDL_KEYDOWN ){
+			if( gEvento.key.keysym.sym == SDLK_ESCAPE ){
+				pantallaCompleta = !pantallaCompleta;
+				SDL_SetWindowSize( gVentana, 800, 480 );
+				if( pantallaCompleta ){
+					SDL_SetWindowSize( gVentana, gVistaInfo.w, gVistaInfo.h );
 				}
-				actualizarVentana();
-				//Juego_EstablecerPantallaCompleta( !jPantallaCompleta );
+				Juego_ActualizarVentana();
+				//Juego_EstablecerPantallaCompleta( !pantallaCompleta );
 			}
-			else if( jEvento.key.keysym.sym == SDLK_f ){
-				jMostrarTasaCuadros = !jMostrarTasaCuadros;
+			else if( gEvento.key.keysym.sym == SDLK_f ){
+				mostrarFPS = !mostrarFPS;
 			}
 		}
-		else if( jEvento.type == SDL_WINDOWEVENT ){
-			if( jEvento.window.event == SDL_WINDOWEVENT_RESIZED ){
-				actualizarVentana();
+		else if( gEvento.type == SDL_WINDOWEVENT ){
+			if( gEvento.window.event == SDL_WINDOWEVENT_RESIZED ){
+				Juego_ActualizarVentana();
 			}
 		}
 
 		// Llama a estado eventos
 		if( estadoActual != nullptr ){
-			estadoActual -> estadoEventos( jEvento );	
+			estadoActual -> estadoEventos( gEvento );	
 		}
 	}
 
@@ -141,10 +128,10 @@ void Juego::entrada( void ){
 }
 
 // Ejecuta la lógica del juego
-void Juego::logica( void ){
+void Juego_Logica( void ){
 	// Reinica la tasa de fotogramas
 	if( temporizadorFPS.obtenerTicks() >= 1000 ){
-		if( jMostrarTasaCuadros ){
+		if( mostrarFPS ){
 			Fuente_ActualizarTexto( to_string( contadorFPS ), fuenteTexto, fpsTexto );
 		}
 		temporizadorFPS.reiniciar();
@@ -158,25 +145,25 @@ void Juego::logica( void ){
 }
 
 // Realiza el renderizado
-void Juego::renderizar( void ){
+void Juego_Renderizar( void ){
 	// Limpia la pantalla
-	SDL_SetRenderDrawColor( jRender, 0xFF, 0xFF, 0xFF, 0xFF );
-	SDL_RenderClear( jRender );
+	SDL_SetRenderDrawColor( gRender, 0xFF, 0xFF, 0xFF, 0xFF );
+	SDL_RenderClear( gRender );
 		
 	// Dibuja los estados del juego
-	for( EstadoJuego *estado : jEstados ){
+	for( EstadoJuego *estado : estadosJuego ){
 		if( estado != nullptr ){
 			estado -> estadoRenderizado();
 		}
 	}
 
 	// Dibuja la tasa de fotogramas por segundo
-	if( jMostrarTasaCuadros ){
-		fpsTexto.renderTexture( fpsTexto.leerDimensionesTextura(), fpsTexto.leerDimensionesEspaciales() );
+	if( mostrarFPS ){
+		fpsTexto.renderTexture( fpsTexto.leerDimensionesTextura(), fpsTexto.leerDimensionesEspacio() );
 	}
 
 	// Actualiza la pantalla
-	SDL_RenderPresent( jRender );
+	SDL_RenderPresent( gRender );
 
 	// Incrementa el numero de fps
 	contadorFPS++;
@@ -186,43 +173,38 @@ void Juego::renderizar( void ){
 }
 
 // Dibuja un fondo negro transparente
-void Juego::fondoNegro( void ){
-	SDL_Rect rect = { 0, 0, jPantallaAncho, jPantallaAlto }; 
-	SDL_SetRenderDrawColor( jRender, 0x00, 0x00, 0x00, 0x88 );
-    SDL_RenderFillRect( jRender, &rect );
-}
-
-// Obtiene el contexto de renderizado
-SDL_Renderer *Juego::leerConextoRender( void ){
-	return jRender;
+void Juego_FondoNegro( void ){
+	SDL_Rect rect = { 0, 0, pantallaAncho, pantallaAlto }; 
+	SDL_SetRenderDrawColor( gRender, 0x00, 0x00, 0x00, 0x88 );
+    SDL_RenderFillRect( gRender, &rect );
 }
 
 // Actualiza la ventana
-void Juego::actualizarVentana( void ){
+void Juego_ActualizarVentana( void ){
 	// Obtiene el tamaño de la ventana
-	SDL_GetWindowSize( jVentana, &jPantallaAncho, &jPantallaAlto );
+	SDL_GetWindowSize( gVentana, &pantallaAncho, &pantallaAlto );
 
 	// Establece el nuevo tamaño de la ventana
-	SDL_SetWindowSize( jVentana, jPantallaAncho, jPantallaAlto );
+	SDL_SetWindowSize( gVentana, pantallaAncho, pantallaAlto );
 	
 	// Actualiza el tamaño del área de renderizado
-	SDL_RenderSetLogicalSize( jRender, jPantallaAncho, jPantallaAlto );
+	SDL_RenderSetLogicalSize( gRender, pantallaAncho, pantallaAlto );
 
 	// Establece en pantalla completa
-	SDL_SetWindowFullscreen( jVentana, jPantallaCompleta );
+	SDL_SetWindowFullscreen( gVentana, pantallaCompleta );
 
 	// Actualiza el tamaño de la unidad y las dimensiones del viewport
-	Objeto::actualizarMagnitudUnidad( jPantallaAlto );
-	escribirEspacioX( 0.f );
-	escribirEspacioY( 0.f );
-	escribirEspacioAlto( Objeto::UNIDAD_PANTALLA );
-	escribirEspacioAncho( jPantallaAncho / Objeto::leerMagnitudUnidad() );
+	Objeto::actualizarMagnitudUnidad( pantallaAlto );
+	espacioX = 0.f;
+	espacioY = 0.f;
+	espacioAlto = Objeto::UNIDAD_PANTALLA;
+	espacioAncho = pantallaAncho / Objeto::leerMagnitudUnidad();
 
 	// Actualiza el tamaño de la fuente
 	Fuente_ActualizarTamanio( fuenteTexto );
 
 	// Si hay un estado de juego establecido
-	for( EstadoJuego *estadoJuego : jEstados ){
+	for( EstadoJuego *estadoJuego : estadosJuego ){
 		if( estadoJuego != nullptr ){
 			estadoJuego -> actualizarViewport();
 		}
@@ -230,7 +212,7 @@ void Juego::actualizarVentana( void ){
 }
 
 // Finaliza el estado actual que se está ejecutando
-void Juego::finalizarEstado( void ){
+void Juego_FinalizarEstado( void ){
 	// Cree un nuevo pendiente
 	Pendiente *pendiente = new Pendiente;
 
@@ -245,10 +227,10 @@ void Juego::finalizarEstado( void ){
 }
 
 // Agrega un estado que se ejecutará sobre el estado actual del juego
-void Juego::apilarEstado( EstadoJuego *estado ){
+void Juego_ApilarEstado( EstadoJuego *estado ){
 	// Verifica que el estado que se desea apilar no es nulo
 	if( estado == nullptr ){
-		throw invalid_argument( leerValor( "apilacion_elemento_nulo" ) );
+		throw invalid_argument( valoresMensaje[ "apilacion_elemento_nulo" ] );
 	}
 
 	// Crea un pendiente nuevo
@@ -265,10 +247,10 @@ void Juego::apilarEstado( EstadoJuego *estado ){
 }
 
 // Establece un estado de juego que removerá todos los estados actuales
-void Juego::establecerEstado( EstadoJuego *estado ){
+void Juego_EstablecerEstado( EstadoJuego *estado ){
 	// Verifica que no se desea establecer un estado vacío
 	if( estado == nullptr ){
-		throw invalid_argument( leerValor( "establecimiento_elemento_nulo" ) );
+		throw invalid_argument( valoresMensaje[ "establecimiento_elemento_nulo" ] );
 	}
 
 	// Crea un pendiente
@@ -285,7 +267,7 @@ void Juego::establecerEstado( EstadoJuego *estado ){
 }
 
 // Actualiza el estado de juego
-void Juego::actualizarEstado( void ){
+void Juego_ActualizarEstado( void ){
 	// Sale si no hay cambios que hacer
 	if( estadosPendientes.empty() ){
 		return;
@@ -298,29 +280,29 @@ void Juego::actualizarEstado( void ){
 		// Apila el estado si así se indica
 		if( pendiente -> accion == ESTADO_APILAR ){
 			// Apila el estado pendiente
-			jEstados.push_back( pendiente -> estado );
+			estadosJuego.push_back( pendiente -> estado );
 		}
 		// Establece el estado si así se indica
 		else if( pendiente -> accion == ESTADO_ESTABLECER ){
 			// Mientras haya estados en la pila
-			while( !jEstados.empty() ){
+			while( !estadosJuego.empty() ){
 				// Retira el estado de la pila
-				estadoActual = jEstados.back();
+				estadoActual = estadosJuego.back();
 				delete estadoActual;
-				jEstados.pop_back();
+				estadosJuego.pop_back();
 			}
 
 			// Apila el nuevo estado
-			jEstados.push_back( pendiente -> estado );
+			estadosJuego.push_back( pendiente -> estado );
 		}
 		// Retira el estado actual si desea finalizar
 		else if( pendiente -> accion == ESTADO_FINALIZAR ){
 			// Si la pila no esta vacía
-			if( !jEstados.empty() ){
+			if( !estadosJuego.empty() ){
 				// Lo retira de la pila de estados
-				estadoActual = jEstados.back();
+				estadoActual = estadosJuego.back();
 				delete estadoActual;
-				jEstados.pop_back();
+				estadosJuego.pop_back();
 			}
 		}
 
@@ -331,82 +313,23 @@ void Juego::actualizarEstado( void ){
 	}
 
 	// Si la pila de estados se encuenta vacía
-	if( jEstados.empty() ){
+	if( estadosJuego.empty() ){
 		estadoActual = nullptr;
-		jSalir = true;
+		salir = true;
 		return;
 	}
 
 	// Establece el estado actual
-	estadoActual = jEstados.back();
+	estadoActual = estadosJuego.back();
 }
 
 // Indica que hay que slair
-void Juego::salir( bool salir ){
-	jSalir = salir;
-}
-
-// Indica que saldrá
-bool Juego::salir( void ) const{
-	return jSalir;
-}
-
-// Obtiene las dimensiones de la pantalla
-int Juego::leerVistaX( void ) const{
-	return jPantallaX;
-}
-
-int Juego::leerVistaY( void ) const{
-	return jPantallaY;
-}
-
-int Juego::leerVistaAncho( void ) const{
-	return jPantallaAncho;
-}
-
-int Juego::leerVistaAlto( void ) const{
-	return jPantallaAlto;
-}
-
-// Obtiene las dimensiones espaciales del juego
-void Juego::escribirEspacioX( double x ){
-	jEspacioX = x;
-}
-
-void Juego::escribirEspacioY( double y ){
-	jEspacioY = y;
-}
-void Juego::escribirEspacioAncho( double ancho ){
-	jEspacioAncho = ancho;
-}
-
-void Juego::escribirEspacioAlto( double alto ){
-	jEspacioAlto = alto;
-}
-
-double Juego::leerEspacioX( void ) const{
-	return jEspacioX;
-}
-
-double Juego::leerEspacioY( void ) const{
-	return jEspacioY;
-}
-
-double Juego::leerEspacioAncho( void ) const{
-	return jEspacioAncho;
-}
-
-double Juego::leerEspacioAlto( void ) const{
-	return jEspacioAlto;
-}
-
-// Obtiene el tamaño de la unidad (se utiliza magnitud porque tamaño tiene ñ)
-double Juego::leerMagnitudUnidad( void ) const{
-	return magnitudUnidad;
+void Juego_salir( bool salir ){
+	salir = salir;
 }
 
 // Para manejar las variables String
-void Juego::cargarValoresMensaje( string archivo ){
+void Juego_CargarValoresMensaje( string archivo ){
 	// Archivo donde guardará la información
 	Database database;
 
@@ -420,24 +343,33 @@ void Juego::cargarValoresMensaje( string archivo ){
 		// Para cada elemento de los resultados
 		for( auto elemento : results ){
 			// Agrega el elemento a la lista de valores string
-			establecerMensaje( (* elemento)[ "nombre" ], (* elemento)[ "valor" ] );
+			valoresMensaje.insert( pair< string, string >( (* elemento)[ "nombre" ], (* elemento)[ "valor" ] ) );
 		}
 	}
 }
 
-void Juego::establecerMensaje( string valor, string mensaje ){
-	valoresMensajes.insert( pair< string, string >( valor, mensaje ) );
-}
-
-string Juego::leerValor( string valorMensaje ){
-    return valoresMensajes[ valorMensaje ];
+void Juego_CargarMedia( void ){	
+	try{
+		objFondo.leerObjetoDesdeArchivo( "../recursos/imagenes/fondos/Space.png" ); 	// Fondo
+		objTablero.escribirDimensionesEspacio( 0.f, 0.2214, 2.73, 5.73 );				// Tamaño del tablero de la superficie
+		objMargen.leerObjetoDesdeArchivo( "../recursos/imagenes/bloques/margen.png" );	// Margen
+		objBloque.leerObjetoDesdeArchivo( "../recursos/imagenes/bloques/bloque.png" );	// Bloque
+		objBloque.escribirDimensionesEspacio( 0, 0, objTablero.leerEspacioAncho() / (float)BOARD_WIDTH, objTablero.leerEspacioAncho() / (float)BOARD_WIDTH );
+		objFiguras.leerObjetoDesdeArchivo( "../recursos/imagenes/bloques/figuras.png" ); // Cola de figuras
+		objFiguras.escribirDimensionesEspacio( 0, 0, ( 236.f * 6.13 ) / 1080, ( 141.f * 6.13 ) / 1080 );
+		objYa.leerObjetoDesdeArchivo( "../recursos/imagenes/texto/ya.png" ); // Textura objYa
+	}
+	catch( invalid_argument &ia ){
+		cout << ia.what() << endl;
+		salir = true;
+	}
 }
 
 void Fuente_ActualizarTamanio( Fuente &fuente )
 {
 	// Fuente
 	TTF_CloseFont( fuente.fuente );
-	fuente.fuente = TTF_OpenFont( fuente.archivo.c_str(), (int)( ( (float)fourSquares.leerVistaAlto() / 1080.f ) * fuente.magnitud ) );
+	fuente.fuente = TTF_OpenFont( fuente.archivo.c_str(), ( ( (float)pantallaAlto / 1080.f ) * (float)fuente.magnitud ) );
 	if( fuente.fuente == nullptr ){
 		cout << "Error al cargar la fuente. Error: " << TTF_GetError() << endl;
 	}
@@ -453,8 +385,5 @@ void Fuente_ActualizarTexto( string texto, Fuente &fuente, Objeto &objeto )
 
 	// Establece las dimensiones de textura y de espacio
 	objeto.escribirDimensionesTextura( 0, 0, objeto.getWidth(), objeto.getHeight() );
-	objeto.escribirDimensionesEspaciales( 0, 0, (float)objeto.getWidth() / Objeto::leerMagnitudUnidad(), (float)objeto.getHeight() / Objeto::leerMagnitudUnidad() );
+	objeto.escribirDimensionesEspacio( 0, 0, (float)objeto.getWidth() / Objeto::leerMagnitudUnidad(), (float)objeto.getHeight() / Objeto::leerMagnitudUnidad() );
 }
-
-Fuente fuenteTexto;
-Objeto fpsTexto;

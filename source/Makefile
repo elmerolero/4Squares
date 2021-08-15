@@ -1,7 +1,7 @@
 CC=g++
 LINKER_FLAGS= -mwindows -lmingw32 -lSDL2main -lsqlite3 -lSDL2 -lSDL2_image -lSDL2_ttf
 CFLAGS= -Iinclude/SDL2 -Ilib/sqlite3
-OBJETOS= juego.o utilidades.o database.o temporizador.o componentes.o objeto.o foursquares.o texture.o preparacion.o pausa.o derrota.o
+OBJETOS= globales.o juego.o utilidades.o database.o temporizador.o objeto.o foursquares.o texture.o preparacion.o pausa.o derrota.o
 ../build/aplicacion: main.cpp $(OBJETOS)
 	$(CC) estadojuego.h main.cpp $(CFLAGS) -g -o ../build/aplicacion $(OBJETOS) $(LINKER_FLAGS)
 
@@ -23,9 +23,6 @@ utilidades.o: utilidades.h utilidades.cpp
 texture.o: texture.h texture.cpp
 	$(CC) texture.h texture.cpp $(CFLAGS) -c
 
-componentes.o: componentes.h componentes.cpp
-	$(CC) componentes.h componentes.cpp $(CFLAGS) -c
-
 database.o: database.h database.cpp
 	$(CC) database.h database.cpp $(CFLAGS) -c
 
@@ -37,3 +34,6 @@ temporizador.o: temporizador.h temporizador.cpp
 
 objeto.o: objeto.h objeto.cpp
 	$(CC) objeto.h objeto.cpp $(CFLAGS) -c
+
+globales.o: globales.h globales.cpp
+	$(CC) globales.h globales.cpp $(CFLAGS) -c

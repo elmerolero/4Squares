@@ -81,8 +81,40 @@ const SDL_Rect shapeRects[ 7 ] = { {  0,  0, 236, 141 }, { 237,  0, 236, 141 }, 
 								   
 
 /* VARIABLES */
+struct Jugador{
+	Pieza pieza;					// Pieza con que tiene el jugador en juego
+	int guardada;					// Pieza que reservó el jugador
+
+	int tablero[ BOARD_HEIGHT ][ BOARD_WIDTH ]; // Tablero del jugador
+
+	int combo;
+	int comboMaximo;
+	int lineas;
+	int nivel;
+	int puntaje;
+	std::vector< int >lineasJugador;
+	int colaFiguras[ 4 ];
+
+	int nivelRespuesta;				// Indica a qué velocidad mover la pieza hacia los lados
+	Temporizador tiempoCambio;		// Tiempo en el que llega el momento de bajar la pieza
+	Temporizador tiempoAgregado;	// Tiempo extra para mover la pieza una vez que ha bajado
+	Temporizador tiempoBajada;		// Tiempo en el que es posible bajar la pieza
+	Temporizador tiempoLaterales;	// Tiempo en el que es posible mover la pieza hacia los lados
+	Temporizador tiempoAnimacion;	// Tiempo que anima la eliminación de líneas
+};
+
+struct Control{
+	SDL_Keycode cSoltarPieza;
+    SDL_Keycode cBajarPieza;
+    SDL_Keycode cMoverDerecha;
+    SDL_Keycode cMoverIzquierda;
+    SDL_Keycode cRotarDerecha;
+    SDL_Keycode cRotarIzquierda;
+    SDL_Keycode cGuardarPieza;
+    SDL_Keycode cLanzarAtaque;
+}
+
 // Variables del jugador
-extern Temporizador tiempoPartida;		 // Tiempo transcurrido en el juego
 extern int contadorCombo;				 // Combo realizado por el jugador
 extern int comboMaximo;					 // Combo máximo
 extern int contadorLineas;				 // Número de líneas
@@ -93,19 +125,16 @@ extern int colaFiguras[ 4 ];			 // Cola de figuras
 extern int columna;
 
 // Game's timer
+extern Temporizador tiempoPartida;		 // Tiempo transcurrido en el juego
+extern int nivelRespuestaLaterales;
 extern Temporizador tiempoAdicional;
 extern Temporizador indicadorTiempo;
-
-// 
-extern int nivelRespuestaLaterales;
 extern Temporizador tiempoEntradaBajada;
 extern Temporizador tiempoEntradaLaterales;
-
-// Board
-extern int tablero[ BOARD_HEIGHT ][ BOARD_WIDTH ];
-
-// For erasing line animation
 extern Temporizador tiempoAnimacion;
+
+// Tablero
+extern int tablero[ BOARD_HEIGHT ][ BOARD_WIDTH ];
 
 // Pieza
 extern Pieza piezaJugador;
@@ -115,22 +144,6 @@ extern bool permitirCambio;
 extern int pieceSaved;
 extern bool arribaPresionado;
 extern int pasosRealizados;
-
-// Objetos visibles del juego
-extern Objeto tetroBackground;	 // Fondo de pantalla
-extern Objeto tetroMargin;		 // Margen		
-extern Objeto tableroSurface; // Superficie del tablero
-extern Objeto tetroBlock;		 // Bloque
-extern Objeto gFigura;			 // Cola de figuras
-extern Objeto tetroShapes;		 // Figuras
-extern Objeto ya;				 // Textura con el texto ya
-
-extern Objeto puntaje; // Puntaje
-extern Objeto nivel;   // Nivel
-extern Objeto lineas;  // Lineas
-extern Objeto tiempo;  // Tiempos
-
-void FS_CargarElementos( void );
 
 // Funciones
 void FS_ActualizarLineas( int &lineasJugador, std::vector< int > &lineasRealizadas, Objeto &objeto );

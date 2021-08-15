@@ -26,17 +26,20 @@ class Objeto : public Texture
 		// Renderiza
 		void renderizar( void );
 
+		// Carga textura desde archivo
+		void leerObjetoDesdeArchivo( std::string ubicacion );
+
 		// Sets the relative position of the object
-		void escribirEspacialX( double x );
-		void escribirEspacialY( double y );
-		void escribirEspacialAncho( double w );
-		void escribirEspacialAlto( double h );
+		void escribirEspacioX( double x );
+		void escribirEspacioY( double y );
+		void escribirEspacioAncho( double w );
+		void escribirEspacioAlto( double h );
 		
 		// Gets the relative position of the object
-		double leerEspacialX( void ) const;
-		double leerEspacialY( void ) const;
-		double leerEspacialAncho( void ) const;
-		double leerEspacialAlto( void ) const;
+		double leerEspacioX( void ) const;
+		double leerEspacioY( void ) const;
+		double leerEspacioAncho( void ) const;
+		double leerEspacioAlto( void ) const;
 
 		// Permite leer las dimensiones absolutas del objeto
 		int leerAbsolutoX( void ) const;
@@ -55,9 +58,6 @@ class Objeto : public Texture
 		int leerTexturaY( void ) const;
 		int leerTexturaW( void ) const;
 		int leerTexturaH( void ) const;
-
-		// Carga las dimensiones del objeto desde un archivo
-		void leerDimensionesDesdeArchivo( std::string ubicacion );
 		
 		// Establece las dimensiones de la textura
 		void escribirDimensionesTextura( SDL_Rect rect );
@@ -66,15 +66,15 @@ class Objeto : public Texture
 		// Obtiene las dimensiones de la textura
 		SDL_Rect *leerDimensionesTextura( void );
 
-		// Establece las dimensiones espaciales dado un rect de doubles
-		void escribirDimensionesEspaciales( SDL_DRect rect );
-		void escribirDimensionesEspaciales( double x, double y, double ancho, double alto );
+		// Establece las dimensiones Espacioes dado un rect de doubles
+		void escribirDimensionesEspacio( SDL_DRect rect );
+		void escribirDimensionesEspacio( double x, double y, double ancho, double alto );
 
 		// Actualiza las dimensiones 
 		void actualizarDimensionesAbsolutas( void );
 
 		// Obtiene las dimensiones absolutas
-		SDL_Rect *leerDimensionesEspaciales( void );
+		SDL_Rect *leerDimensionesEspacio( void );
 		
 		static double leerMagnitudUnidad( void );
 		static void actualizarMagnitudUnidad( int pantallaAltura );
@@ -86,11 +86,11 @@ class Objeto : public Texture
 		// Dimensiones absolutas en la pantalla
 		SDL_Rect rectAbsoluto;
 
-		// Dimensiones espaciales
-		double espacialX;
-		double espacialY;
-		double espacialAncho;
-		double espacialAlto;
+		// Dimensiones Espacio
+		double espacioX;
+		double espacioY;
+		double espacioAncho;
+		double espacioAlto;
 
 		// Tamaño de la unidad de la pantalla
 		static double magnitudUnidad;

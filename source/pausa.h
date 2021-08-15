@@ -3,7 +3,7 @@
 
 #include "estadojuego.h"
 #include "preparacion.h"
-#include "componentes.h"
+#include "globales.h"
 #include "objeto.h"
 
 class Pausa : public EstadoJuego

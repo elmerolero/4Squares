@@ -1,7 +1,6 @@
 #include <cstdlib>
 #include <iostream>
 #include "juego.h"
-#include "componentes.h"
 #include "foursquares.h"
 #include "preparacion.h"
 
@@ -10,27 +9,27 @@ using namespace std;
 int main( int argc, char * args[] )
 {
 	// Inicializa el juego
-	fourSquares.iniciar( "Four Squares", "../recursos/datos/es-mx.dat" );
+	Juego_Iniciar( "Four Squares", "../recursos/datos/es-mx.dat" );
 
-	fourSquares.establecerEstado( new FourSquares() );
-	fourSquares.apilarEstado( new Preparacion() );
+	Juego_EstablecerEstado( new FourSquares() );
+	Juego_ApilarEstado( new Preparacion() );
 
 	// Inicializa el juego
-	while( !fourSquares.salir() ){
+	while( !salir ){
 		// Lee la entrada
-		fourSquares.entrada();
+		Juego_Entrada();
 
 		// Actualiza el estado
-		fourSquares.logica();
+		Juego_Logica();
 		
 		// Dibuja la pantalla
-		fourSquares.renderizar();
+		Juego_Renderizar();
 
 		// Revisa si hubo un cambio en el estado del juego
-		fourSquares.actualizarEstado();
+		Juego_ActualizarEstado();
 	}
 
-	fourSquares.cerrar();
+	Juego_Cerrar();
 	
 	return 0;
 }

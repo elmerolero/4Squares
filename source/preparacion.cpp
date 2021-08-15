@@ -1,16 +1,13 @@
 #include "preparacion.h"
-#include <iostream>
+#include "globales.h"
 #include "foursquares.h"
-#include "texture.h"
+#include <iostream>
 using namespace std;
 
 Preparacion::Preparacion(){
-    if( cuentaRegresiva.loadFileTexture( "../recursos/imagenes/texto/cuenta.png" ) ){
-        SDL_Rect trect = { 0, 0, 82, 157 };
-        SDL_DRect rrect = { 0, 1, ( (float)trect.w * 6.13 ) / 1080, ( (float)trect.h * 6.13 ) / 1080 };
-        cuentaRegresiva.escribirDimensionesEspaciales( rrect );
-	    cuentaRegresiva.escribirDimensionesTextura( trect );
-    }
+    cuentaRegresiva.leerObjetoDesdeArchivo( "../recursos/imagenes/texto/cuenta.png" );
+    cuentaRegresiva.escribirDimensionesTextura( 0, 0, 82, 157 );
+    cuentaRegresiva.escribirEspacioY( 1 );
 
 	tiempoPartida.pausar();
 	indicadorTiempo.pausar(); 
@@ -20,9 +17,9 @@ Preparacion::Preparacion(){
     temporizador.iniciar();
     contador = 0;
 
-    tetroBlock.show( false );
+    objBloque.show( false );
 
-    ya.show( false );
+    objYa.show( false );
     actualizarViewport();
 }
 
@@ -40,7 +37,7 @@ void Preparacion::estadoEventos( SDL_Event &gGameEvent ){
 
 void Preparacion::estadoLogica(){
      // Actualiza las dimensiones de la textura
-    cuentaRegresiva.escribirEspacialX( ( fourSquares.leerEspacioAncho() - cuentaRegresiva.leerEspacialAncho() ) / 2 );
+    cuentaRegresiva.escribirEspacioX( ( espacioAncho - cuentaRegresiva.leerEspacioAncho() ) / 2 );
     SDL_Rect trect = { contador * 82, 0, 82, 157 };
     cuentaRegresiva.escribirDimensionesTextura( trect );
 
@@ -50,14 +47,14 @@ void Preparacion::estadoLogica(){
 
         if( contador > 2 ){
             contador = 2;
-            ya.show( true );
-            tetroBlock.show( true );
+            objYa.show( true );
+            objBloque.show( true );
             tiempoPartida.reanudar();
 	        indicadorTiempo.reanudar(); 
 	        tiempoEntradaBajada.reanudar();
 	        tiempoEntradaLaterales.reanudar();
             tiempoAnimacion.iniciar();
-            fourSquares.finalizarEstado();
+            Juego_FinalizarEstado();
         }
         temporizador.reiniciar();
     }
@@ -65,10 +62,10 @@ void Preparacion::estadoLogica(){
 
 void Preparacion::estadoRenderizado(){
     // Dibuja un fondo negro
-    fourSquares.fondoNegro();
+    Juego_FondoNegro();
 
     // Dibuja la cuenta regresiva
-    cuentaRegresiva.renderTexture( cuentaRegresiva.leerDimensionesTextura(), cuentaRegresiva.leerDimensionesEspaciales() );
+    cuentaRegresiva.renderTexture( cuentaRegresiva.leerDimensionesTextura(), cuentaRegresiva.leerDimensionesEspacio() );
 }
 
 void Preparacion::actualizarViewport(){
