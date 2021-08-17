@@ -10,7 +10,7 @@ int main( int argc, char * args[] )
 {
 	// Inicializa el juego
 	Juego_Iniciar( "Four Squares", "../recursos/datos/es-mx.dat" );
-
+	Juego_CargarMedia();
 	Juego_EstablecerEstado( new FourSquares() );
 	Juego_ApilarEstado( new Preparacion() );
 

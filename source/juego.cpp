@@ -12,7 +12,7 @@ void Juego_Iniciar( string nombre, string mensajes ){
 
     // Inicializa SDL
 	cout << "\n" << valoresMensaje[ "inicializacion_sdl" ] << endl;
-	if( SDL_Init( SDL_INIT_VIDEO ) < 0 || (IMG_Init( IMG_INIT_PNG ) & IMG_INIT_PNG) != IMG_INIT_PNG || TTF_Init() < 0 ){
+	if( SDL_Init( SDL_INIT_VIDEO | SDL_INIT_JOYSTICK ) < 0 || (IMG_Init( IMG_INIT_PNG ) & IMG_INIT_PNG) != IMG_INIT_PNG || TTF_Init() < 0 ){
 		throw runtime_error( valoresMensaje[ "error_inicializacion_sdl" ] + SDL_GetError() + " IMG: " + IMG_GetError() );
 	}
 	
@@ -386,4 +386,16 @@ void Fuente_ActualizarTexto( string texto, Fuente &fuente, Objeto &objeto )
 	// Establece las dimensiones de textura y de espacio
 	objeto.escribirDimensionesTextura( 0, 0, objeto.getWidth(), objeto.getHeight() );
 	objeto.escribirDimensionesEspacio( 0, 0, (float)objeto.getWidth() / Objeto::leerMagnitudUnidad(), (float)objeto.getHeight() / Objeto::leerMagnitudUnidad() );
+}
+
+void Fuente_ActualizarTexto( string texto, Fuente &fuente, Objeto &objeto, double x, double y ){
+	// Fuente
+	SDL_Color color = { 255, 255, 255 };
+	if( !objeto.crearTexturaDesdeTextoSolido( texto.c_str(), color, fuente.fuente ) ){
+		throw runtime_error( "Ocurrió un error al crear la textura de texto." );
+	}
+
+	// Establece las dimensiones de textura y de espacio
+	objeto.escribirDimensionesTextura( 0, 0, objeto.getWidth(), objeto.getHeight() );
+	objeto.escribirDimensionesEspacio( x, y, (float)objeto.getWidth() / Objeto::leerMagnitudUnidad(), (float)objeto.getHeight() / Objeto::leerMagnitudUnidad() );
 }

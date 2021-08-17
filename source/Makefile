@@ -1,5 +1,5 @@
 CC=g++
-LINKER_FLAGS= -mwindows -lmingw32 -lSDL2main -lsqlite3 -lSDL2 -lSDL2_image -lSDL2_ttf
+LINKER_FLAGS= -lSDL2main -lsqlite3 -lSDL2 -lSDL2_image -lSDL2_ttf
 CFLAGS= -Iinclude/SDL2 -Ilib/sqlite3
 OBJETOS= globales.o juego.o utilidades.o database.o temporizador.o objeto.o foursquares.o texture.o preparacion.o pausa.o derrota.o
 ../build/aplicacion: main.cpp $(OBJETOS)

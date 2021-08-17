@@ -8,11 +8,45 @@
 #include <fstream>
 #include <vector>
 #include <ctime>
-using namespace std; 
+using namespace std;
+
+void FS_Iniciar( Jugador &jugador ){
+	// Inicializa la pieza en juego
+	Pieza_NuevaPieza( jugador.pieza, rand() % 7, jugador.tablero );
+	jugador.piezaReservada = 0;
+
+	// Inicializa el tablero
+	Tablero_Inicializar( jugador.tablero );
+
+	// Inicializa contadores a cero
+	jugador.lineas = 0;
+	jugador.nivel = 1;
+	jugador.puntaje = 0;
+	jugador.combo = 0;
+	jugador.comboMaximo = 0;
+
+	// Inicializa la cola de figuras del jugador
+	Cola_Inicializar( jugador.colaFiguras );
+
+	// Establece el nivel de respuesta a cero
+	jugador.nivelRespuesta = 0;
+	jugador.pasosRealizados = 0;
+	jugador.columnaActual = 0;
+	jugador.soltarPieza = false;
+	jugador.permiteReserva = true;
+	jugador.finalizo = false;
+
+	// Inicializa los temporizadores
+	jugador.tiempoCambio.iniciar();
+	jugador.tiempoAgregado.iniciar();
+	jugador.tiempoBajada.iniciar();
+	jugador.tiempoLaterales.iniciar();
+	jugador.tiempoAnimacion.iniciar();
+}
 
 FourSquares::FourSquares()
 {
-	// Inicializa la cola de figuras
+	/*// Inicializa la cola de figuras
 	Cola_Inicializar( colaFiguras );
 	
 	// Establece una nueva pieza
@@ -34,10 +68,302 @@ FourSquares::FourSquares()
 	tiempoPartida.iniciar();
 	nivelRespuestaLaterales = 0;
 	arribaPresionado = false;
-	permitirCambio = true;
+	permitirCambio = true;*/
+	numeroJugadores = 1;
+
+	/*controles[ 0 ].soltarPieza = SDLK_UP;
+	controles[ 0 ].bajarPieza = SDL_SCANCODE_DOWN;
+	controles[ 0 ].moverDerecha = SDL_SCANCODE_RIGHT;
+	controles[ 0 ].moverIzquierda = SDL_SCANCODE_LEFT;
+	controles[ 0 ].rotarDerecha = SDLK_x;
+	controles[ 0 ].rotarIzquierda = SDLK_z;
+	controles[ 0 ].reservarPieza = SDLK_LSHIFT;*/
+
+	// Intenta cargar un control de juego
+	cout << "Joysticks: " << SDL_NumJoysticks() << endl;
+	for( unsigned int index = 0; index < SDL_NumJoysticks(); ++index ){
+		if(SDL_IsGameController( index ) ){
+			joystickConectado = true;
+			cout << "Encontré un joystick." << endl;
+			// Abre el control
+			controles[ 0 ].control = SDL_GameControllerOpen( index );
+			controles[ 0 ].joystick = SDL_GameControllerGetJoystick( controles[ 0 ].control );
+			controles[ 0 ].id = SDL_JoystickInstanceID( controles[ 0 ].joystick );
+
+			SDL_JoystickEventState( 1 );
+		}
+	}
+
+	controles[ 0 ].soltarPieza = SDL_CONTROLLER_BUTTON_DPAD_UP;
+	controles[ 0 ].bajarPieza = SDL_CONTROLLER_BUTTON_DPAD_DOWN;
+	controles[ 0 ].moverDerecha = SDL_CONTROLLER_BUTTON_DPAD_RIGHT;
+	controles[ 0 ].moverIzquierda = SDL_CONTROLLER_BUTTON_DPAD_LEFT;
+	controles[ 0 ].rotarDerecha = SDL_CONTROLLER_BUTTON_A;
+	controles[ 0 ].rotarIzquierda = SDL_CONTROLLER_BUTTON_X;
+	controles[ 0 ].reservarPieza = SDL_CONTROLLER_BUTTON_B;
+	controles[ 0 ].pausarJuego = SDL_CONTROLLER_BUTTON_START;
+	
+
+	// Inicializa los parametros de los jugadores
+	for( size_t contador = 0; contador < numeroJugadores; ++contador ){
+		FS_Iniciar( jugadores[ contador ] );
+	}
 
 	// Actualiza el viewport
 	actualizarViewport();
+}
+
+void FS_LeerEventosTecladoJugador( Jugador &jugador, Control &control, SDL_Keycode codigo ){
+	if( !jugador.soltarPieza ){
+		if( codigo == control.soltarPieza ){
+			jugador.soltarPieza = true;
+		}
+		else if( codigo == control.pausarJuego ){
+			FS_PausarPartida();
+			Juego_ApilarEstado( new Pausa() );
+		}
+		else if( codigo == control.rotarDerecha && jugador.pieza.tipo != FIGURA_CUADRADO ){
+			Pieza_Alternar( jugador.pieza, jugador.tablero, 1 );
+			if( jugador.tiempoCambio.obtenerTicks() >= downSpeed[ contadorNivel - 1 ] ){
+				jugador.pasosRealizados++;
+				jugador.tiempoAgregado.reiniciar();
+			}
+		}
+		else if( codigo == control.rotarIzquierda && piezaJugador.tipo != FIGURA_CUADRADO ){
+			Pieza_Alternar( jugador.pieza, jugador.tablero, -1 );
+			if( jugador.tiempoCambio.obtenerTicks() >= downSpeed[ contadorNivel - 1 ] ){
+				jugador.pasosRealizados++;
+				jugador.tiempoAgregado.reiniciar();
+			}
+		}
+		else if( jugador.permiteReserva && ( codigo == control.reservarPieza ) ){
+			// Obtiene la pieza guardada
+			int pieza = jugador.piezaReservada ? jugador.piezaReservada - 1 : Cola_ObtenerSiguenteFigura( jugador.colaFiguras );
+			
+			// Guarda la pieza en juego
+			jugador.piezaReservada = jugador.pieza.tipo + 1;
+
+			// Establece los nuevos datos de la pieza
+			Pieza_NuevaPieza( jugador.pieza, pieza, jugador.tablero );
+
+			// Establece las banderas y reinicia el tiempo
+			jugador.permiteReserva = false;
+			jugador.pasosRealizados = 0;
+			jugador.tiempoAgregado.reiniciar();
+			jugador.tiempoAgregado.pausar();
+		}
+	}
+}
+
+void FS_LeerEntradadaTecladoJugador( Jugador &jugador, Control &control, const Uint8 *teclado ){
+	// Abajo
+	if( teclado[ control.bajarPieza ] && jugador.tiempoBajada.obtenerTicks() >= 50 ){
+		if( Tablero_PermiteMover( jugador.tablero, jugador.pieza, jugador.pieza.figura.x, jugador.pieza.figura.y + 1 ) ){
+			jugador.pieza.figura.y++;
+		}
+		
+		jugador.tiempoBajada.reiniciar();
+	}
+
+	// Izquierda
+	if( teclado[ control.moverIzquierda ] ){
+		if( jugador.tiempoLaterales.obtenerTicks() >= moveResponseTime[ jugador.nivelRespuesta ] ){
+			if( Tablero_PermiteMover( jugador.tablero, jugador.pieza, jugador.pieza.figura.x - 1, jugador.pieza.figura.y ) ){
+				jugador.pieza.figura.x--;
+			}
+
+			jugador.tiempoLaterales.reiniciar();
+			if( jugador.tiempoCambio.obtenerTicks() >= downSpeed[ contadorNivel - 1 ] ){
+				jugador.pasosRealizados++;
+				jugador.tiempoAgregado.reiniciar();
+			}
+
+			if( jugador.nivelRespuesta < 2 ){
+				jugador.nivelRespuesta++;
+			}
+		}
+
+		Pieza_ActualizarSombra( jugador.pieza, jugador.tablero );
+	}
+	// Derecha
+	else if( teclado[ control.moverDerecha ] ){
+		if( jugador.tiempoLaterales.obtenerTicks() >= moveResponseTime[ jugador.nivelRespuesta ] ){
+			if( Tablero_PermiteMover( jugador.tablero, jugador.pieza, jugador.pieza.figura.x + 1, jugador.pieza.figura.y ) ){
+				jugador.pieza.figura.x++;
+			}
+
+			jugador.tiempoLaterales.reiniciar();
+			if( indicadorTiempo.obtenerTicks() >= downSpeed[ contadorNivel - 1 ] ){
+				jugador.pasosRealizados++;
+				jugador.tiempoAgregado.reiniciar();
+			}
+
+			if( jugador.nivelRespuesta < 2 ){
+				jugador.nivelRespuesta++;
+			}
+			Pieza_ActualizarSombra( jugador.pieza, jugador.tablero );
+		}
+	}
+	else{
+		jugador.nivelRespuesta = 0;
+	}
+}
+
+void FS_LeerEntradaJoystickJugador( Jugador &jugador, Control &control ){
+	// Abajo
+	if( SDL_GameControllerGetButton( control.control, control.bajarPieza ) && jugador.tiempoBajada.obtenerTicks() >= 50 ){
+		if( Tablero_PermiteMover( jugador.tablero, jugador.pieza, jugador.pieza.figura.x, jugador.pieza.figura.y + 1 ) ){
+			jugador.pieza.figura.y++;
+		}
+		
+		jugador.tiempoBajada.reiniciar();
+	}
+
+	// Izquierda
+	if( SDL_GameControllerGetButton( control.control, control.moverIzquierda ) ){
+		if( jugador.tiempoLaterales.obtenerTicks() >= moveResponseTime[ jugador.nivelRespuesta ] ){
+			if( Tablero_PermiteMover( jugador.tablero, jugador.pieza, jugador.pieza.figura.x - 1, jugador.pieza.figura.y ) ){
+				jugador.pieza.figura.x--;
+			}
+
+			jugador.tiempoLaterales.reiniciar();
+			if( jugador.tiempoCambio.obtenerTicks() >= downSpeed[ contadorNivel - 1 ] ){
+				jugador.pasosRealizados++;
+				jugador.tiempoAgregado.reiniciar();
+			}
+
+			if( jugador.nivelRespuesta < 2 ){
+				jugador.nivelRespuesta++;
+			}
+		}
+
+		Pieza_ActualizarSombra( jugador.pieza, jugador.tablero );
+	}
+	// Derecha
+	else if( SDL_GameControllerGetButton( control.control, control.moverDerecha ) ){
+		if( jugador.tiempoLaterales.obtenerTicks() >= moveResponseTime[ jugador.nivelRespuesta ] ){
+			if( Tablero_PermiteMover( jugador.tablero, jugador.pieza, jugador.pieza.figura.x + 1, jugador.pieza.figura.y ) ){
+				jugador.pieza.figura.x++;
+			}
+
+			jugador.tiempoLaterales.reiniciar();
+			if( indicadorTiempo.obtenerTicks() >= downSpeed[ contadorNivel - 1 ] ){
+				jugador.pasosRealizados++;
+				jugador.tiempoAgregado.reiniciar();
+			}
+
+			if( jugador.nivelRespuesta < 2 ){
+				jugador.nivelRespuesta++;
+			}
+			Pieza_ActualizarSombra( jugador.pieza, jugador.tablero );
+		}
+	}
+	else{
+		jugador.nivelRespuesta = 0;
+	}
+}
+
+bool FS_ActualizarLineasJugador( Jugador &jugador ){
+	// 
+	if( !jugador.lineasRealizadas.empty() && jugador.tiempoAnimacion.obtenerTicks() > 20 ){
+		// Si no ha eliminado todas las columnas
+		if( jugador.columnaActual < BOARD_WIDTH ){
+			// Elimina los cuadros de la columna dada
+			for( size_t renglones = 0; renglones < jugador.lineasRealizadas.size(); ++renglones ){
+				int renglon = jugador.lineasRealizadas[ renglones ];
+				int columna = jugador.columnaActual;
+				jugador.tablero[ renglon  ][ columna ] = 0;
+			}
+
+			// Incrementa el número de columna
+			jugador.columnaActual++;
+
+			// Reinicia el tiempo
+			jugador.tiempoAnimacion.reiniciar();
+		}
+		else{
+			// Acomoda los elementos del tablero
+			Tablero_Acomodar( jugador.tablero, jugador.lineasRealizadas );
+
+			// Actualiza la sombra
+			Pieza_ActualizarSombra( jugador.pieza, jugador.tablero );
+
+			// Limpia las líneas del jugador
+			jugador.lineasRealizadas.clear();
+
+			// Reinicia
+			jugador.columnaActual = 0;
+		}
+	}
+
+	return jugador.lineasRealizadas.empty();
+}
+
+void FS_ActualizarEstadoJugador( Jugador &jugador ){
+	// Revisa si es momento de bajar la pieza
+	if( ( jugador.tiempoCambio.obtenerTicks() >= downSpeed[ jugador.nivel - 1 ] ) || jugador.soltarPieza ){
+		// Reinicia el tiempo
+		jugador.tiempoCambio.reiniciar();
+		
+		// ¿No hay colisión en el siguiente paso?
+		if( Tablero_PermiteMover( jugador.tablero, jugador.pieza, jugador.pieza.figura.x, jugador.pieza.figura.y + 1 ) ){
+			jugador.pieza.figura.y++;
+			return;
+		}
+
+		// Brinda tiempo adicional para acomodar la pieza (útil para niveles rápidos)
+		jugador.tiempoAgregado.reanudar();
+		if( jugador.tiempoAgregado.obtenerTicks() < 750 && jugador.pasosRealizados < PASOS_MAXIMOS && !jugador.soltarPieza ){
+			return;
+		}
+
+		// Guarda la pieza en el tablero dado
+		Pieza_Grabar( jugador.pieza, jugador.tablero );
+
+		// ¿El jugador ya se encuentra en el tope del tablero?
+		if( jugador.pieza.figura.y == 1 ){
+			jugador.tiempoCambio.pausar();
+			jugador.tiempoBajada.pausar();
+			jugador.tiempoLaterales.pausar();
+			jugador.finalizo = true;
+			return;
+		}
+		
+		// Obtiene las lineas a borrar
+		Tablero_ObtenerLineas( jugador.tablero, jugador.lineasRealizadas );
+
+		jugador.combo++;
+		if( jugador.combo > jugador.comboMaximo ){
+			jugador.comboMaximo = jugador.combo;
+		}
+				
+		if( jugador.lineasRealizadas.empty() ){
+			jugador.combo = 0;
+		}
+
+		// Actualiza el número de líneas realizadas
+		jugador.lineas += jugador.lineasRealizadas.size();
+
+		// Actualiza el nivel del jugador
+		jugador.nivel = ( jugador.lineas / 10 ) + 1;				// Nivel = numeroLineas / 10
+		jugador.nivel = jugador.nivel > 15 ? 15 : jugador.nivel;    // Asegura que nivel no rebase 15
+
+		// Actualiza el puntaje
+		jugador.puntaje = 50 * factorial( jugador.lineasRealizadas.size() );
+
+		// Obtiene la nueva pieza
+		Pieza_NuevaPieza( jugador.pieza, Cola_ObtenerSiguenteFigura( jugador.colaFiguras ), jugador.tablero );
+		jugador.permiteReserva = true;
+		jugador.soltarPieza = false;
+		jugador.pasosRealizados = 0;
+		jugador.tiempoAgregado.reiniciar();
+		jugador.tiempoAgregado.pausar();
+
+		// Actualiza la información del juego
+		Fuente_ActualizarTexto( to_string( jugador.lineas ), fuenteTexto, objLineas, objMargen.leerEspacioX() + 0.75f, 5.4 );
+		Fuente_ActualizarTexto( to_string( jugador.nivel ), fuenteTexto, objNivel, objMargen.leerEspacioX() + 0.75f, 4.4 );
+		Fuente_ActualizarTexto( to_string( jugador.puntaje ), fuenteTexto, objPuntaje, objMargen.leerEspacioX() + 0.75f, 2.33 );
+	}
 }
  
 FourSquares::~FourSquares()
@@ -49,6 +375,7 @@ FourSquares::~FourSquares()
 }
 
 void FourSquares::estadoEventos( SDL_Event &gGameEvent ){
+	/*
 	if( gGameEvent.type == SDL_KEYDOWN && !arribaPresionado ){
 		if( gGameEvent.key.keysym.sym == SDLK_UP ){
 			arribaPresionado = true;
@@ -102,16 +429,46 @@ void FourSquares::estadoEventos( SDL_Event &gGameEvent ){
 
 		}
 	}
+	*/
+
+	if( gGameEvent.type == SDL_CONTROLLERBUTTONDOWN && joystickConectado ){
+		for( size_t contador = 0; contador < numeroJugadores; ++contador ){
+			if( gGameEvent.cbutton.which == controles[ contador ].id ){
+				FS_LeerEventosTecladoJugador( jugadores[ contador ], controles[ contador ], gGameEvent.cbutton.button );
+			}
+		}
+	}
+	else if( gGameEvent.type == SDL_KEYDOWN ){
+		for( size_t contador = 0; contador < numeroJugadores; ++contador ){
+			FS_LeerEventosTecladoJugador( jugadores[ contador ], controles[ contador ], gGameEvent.key.keysym.sym );
+		}
+	}
 }
 
 void FourSquares::estadoEntrada(){
-	// Si el botón arriba está presionado o hay líneas realizadas
-	if( arribaPresionado || !lineasJugador.empty() ){
-		return;
-	}
-	
 	// Lee el estado del teclado
 	const Uint8 *keyboardState = SDL_GetKeyboardState( NULL );
+
+	for( size_t contador = 0; contador < numeroJugadores; ++contador ){
+		if( !jugadores[ contador ].soltarPieza || jugadores[ contador ].lineasRealizadas.empty() ){
+			if( joystickConectado ){
+				FS_LeerEntradaJoystickJugador( jugadores[ contador ], controles[ contador ] );
+			}
+			else{
+				// Para cada uno de los jugadores
+				for( size_t contador = 0; contador < numeroJugadores; ++contador ){
+					if( !jugadores[ contador ].soltarPieza || jugadores[ contador ].lineasRealizadas.empty() ){
+						FS_LeerEntradadaTecladoJugador( jugadores[ contador ], controles[ contador ], keyboardState );
+					}
+				}
+			}
+		}
+	}
+
+	// Si el botón arriba está presionado o hay líneas realizadas
+	/*if( arribaPresionado || !lineasJugador.empty() ){
+		return;
+	}
 
 	// Down
 	if( keyboardState[ SDL_SCANCODE_DOWN ] && tiempoEntradaBajada.obtenerTicks() >= 50 ){
@@ -160,12 +517,22 @@ void FourSquares::estadoEntrada(){
 	}
 	else{
 		nivelRespuestaLaterales = 0;
-	}
+	}*/
 }
 
 void FourSquares::estadoLogica()
 { 	
-	if( !lineasJugador.empty() ){
+	// Decide si mostrar o no el letrero ya
+	if( tiempoPartida.obtenerTicks() > 2000 ){
+		objYa.show( false );
+	}
+
+	for( size_t contador = 0; contador < numeroJugadores; ++contador ){
+		if( FS_ActualizarLineasJugador( jugadores[ contador ] ) ){
+			FS_ActualizarEstadoJugador( jugadores[ contador ] );
+		}
+	}
+	/*if( !lineasJugador.empty() ){
 		// 
 		if( tiempoAnimacion.obtenerTicks() > 20 ){
 			// Si no ha eliminado todas las columnas
@@ -200,10 +567,6 @@ void FourSquares::estadoLogica()
 
 		// Regresa
 		return;
-	}
-
-	if( tiempoPartida.obtenerTicks() > 2000 ){
-		objYa.show( false );
 	}
 
 	// Revisa si es momento de bajar la pieza
@@ -260,17 +623,26 @@ void FourSquares::estadoLogica()
 		pasosRealizados = 0;
 		tiempoAdicional.reiniciar();
 		tiempoAdicional.pausar();
-	}
+	}*/
 }
 
 void FourSquares::estadoRenderizado()
-{	
+{
 	// Dibuja el fondo
 	objFondo.renderTexture( objFondo.leerDimensionesTextura(), objFondo.leerDimensionesEspacio() );
 	objMargen.renderTexture( objMargen.leerDimensionesTextura(), objMargen.leerDimensionesEspacio() );
 	
+	Tablero_Dibujar( jugadores[ 0 ].tablero );
+	Pieza_Dibujar( jugadores[ 0 ].pieza, jugadores[ 0 ].pieza.sombra.x, jugadores[ 0 ].pieza.sombra.y, shadowColor[ jugadores[ 0 ].pieza.tipo ] );
+	Pieza_Dibujar( jugadores[ 0 ].pieza, jugadores[ 0 ].pieza.figura.x, jugadores[ 0 ].pieza.figura.y, shapeColor[ jugadores[ 0 ].pieza.tipo ] );
+	Cola_Dibujar( jugadores[ 0 ].colaFiguras );
+	FS_DibujarFigura( jugadores[ 0 ].piezaReservada - 1, ( objTablero.leerEspacioX() - 1.7f ), 0.7f );
+
+	FS_DibujarTiempo( tiempoPartida.obtenerTicks(), objTiempo, fuenteTexto, objTablero.leerEspacioX() + objTablero.leerEspacioAncho() + 0.6, 5.43f );
+	objTiempo.renderTexture( objTiempo.leerDimensionesTextura(), objTiempo.leerDimensionesEspacio() );
+
 	// Dibuja el tablero
-	Tablero_Dibujar( tablero );
+	/*Tablero_Dibujar( tablero );
 	
 	// Dibuja la sombra de la pieza
 	Pieza_Dibujar( piezaJugador, piezaJugador.sombra.x, piezaJugador.sombra.y, shadowColor[ piezaJugador.tipo ] );
@@ -298,7 +670,7 @@ void FourSquares::estadoRenderizado()
 
 	// Dibuja el tiempo
 	FS_DibujarTiempo( tiempoPartida.obtenerTicks(), objTiempo, fuenteTexto, objTablero.leerEspacioX() + objTablero.leerEspacioAncho() + 0.6, 5.43f );
-	objTiempo.renderTexture( objTiempo.leerDimensionesTextura(), objTiempo.leerDimensionesEspacio() );
+	objTiempo.renderTexture( objTiempo.leerDimensionesTextura(), objTiempo.leerDimensionesEspacio() );*/
 }
 
 /* FUNCTIONS */
@@ -666,7 +1038,32 @@ void FS_ReanudarPartida( void ){
 	objBloque.show( true );
 }
 
+unsigned int factorial( unsigned int numero ){
+	unsigned int contador = numero;
+
+	while( contador > 1 ){
+		contador = contador - 1;
+		numero = numero * contador;
+	}
+
+	return contador;
+}
+
 /* VARIABLES */
+
+int numeroJugadores;
+Jugador jugadores[ NUMERO_JUGADORES ];
+Control controles[ NUMERO_JUGADORES ];
+
+// Controles del jugador 1
+/*controles[ 0 ].soltarPieza = SDLK_UP;
+controles[ 0 ].bajarPieza = SDL_SCANCODE_DOWN;
+controles[ 0 ].moverDerecha = SDL_SCANCODE_RIGHT;
+controles[ 0 ].moverIzquierda = SDL_SCANCODE_LEFT;
+controles[ 0 ].rotarDerecha = SDLK_x;
+controles[ 0 ].rotarIzquierda = SDLK_z;
+controles[ 0 ].reservarPieza = SDLK_LSHIFT;
+*/
 // Tiempo del juego
 Temporizador tiempoPartida;
 

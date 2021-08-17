@@ -41,5 +41,6 @@ void Juego_CargarMedia( void );
 
 void Fuente_ActualizarTamanio( Fuente &fuente );
 void Fuente_ActualizarTexto( std::string texto, Fuente &fuente, Objeto &objeto );
+void Fuente_ActualizarTexto( std::string texto, Fuente &fuente, Objeto &objeto, double x, double y );
 
 #endif

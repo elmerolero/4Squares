@@ -32,8 +32,6 @@ struct Pieza{
 
 /* CONSTANTES */
 #define BOARD_SIZE		5.7
-#define BOARD_WIDTH 	10
-#define BOARD_HEIGHT	22
 
 // Initial piece's position
 #define INITIAL_POS_X	4
@@ -83,16 +81,16 @@ const SDL_Rect shapeRects[ 7 ] = { {  0,  0, 236, 141 }, { 237,  0, 236, 141 }, 
 /* VARIABLES */
 struct Jugador{
 	Pieza pieza;					// Pieza con que tiene el jugador en juego
-	int guardada;					// Pieza que reservó el jugador
+	int piezaReservada;					// Pieza que reservó el jugador
 
 	int tablero[ BOARD_HEIGHT ][ BOARD_WIDTH ]; // Tablero del jugador
 
-	int combo;
-	int comboMaximo;
 	int lineas;
 	int nivel;
 	int puntaje;
-	std::vector< int >lineasJugador;
+	int combo;
+	int comboMaximo;
+	std::vector< int >lineasRealizadas;
 	int colaFiguras[ 4 ];
 
 	int nivelRespuesta;				// Indica a qué velocidad mover la pieza hacia los lados
@@ -101,18 +99,47 @@ struct Jugador{
 	Temporizador tiempoBajada;		// Tiempo en el que es posible bajar la pieza
 	Temporizador tiempoLaterales;	// Tiempo en el que es posible mover la pieza hacia los lados
 	Temporizador tiempoAnimacion;	// Tiempo que anima la eliminación de líneas
+
+	// 
+	int columnaActual;				// Columna actual que se elimina
+
+	bool soltarPieza;				// Indica que el jugador soltó la pieza de golpe
+	bool permiteReserva;			// Indica que el jugador puede guardar o intercambiar la pieza en juego
+	int pasosRealizados;			// Indica el número de movimientos dados despues del sobrepasar el tiempo límite
+	bool finalizo;					// Indica que finalizó la partida
 };
 
 struct Control{
-	SDL_Keycode cSoltarPieza;
-    SDL_Keycode cBajarPieza;
-    SDL_Keycode cMoverDerecha;
-    SDL_Keycode cMoverIzquierda;
-    SDL_Keycode cRotarDerecha;
-    SDL_Keycode cRotarIzquierda;
-    SDL_Keycode cGuardarPieza;
-    SDL_Keycode cLanzarAtaque;
-}
+	SDL_GameController *control;
+	SDL_Joystick *joystick;
+	SDL_JoystickID id;
+	SDL_GameControllerButton soltarPieza;
+    SDL_GameControllerButton bajarPieza;
+    SDL_GameControllerButton moverDerecha;
+    SDL_GameControllerButton moverIzquierda;
+    SDL_GameControllerButton rotarDerecha;
+    SDL_GameControllerButton rotarIzquierda;
+    SDL_GameControllerButton reservarPieza;
+    SDL_GameControllerButton lanzarAtaque;
+	SDL_GameControllerButton pausarJuego;
+};
+
+struct Teclado{
+	SDL_Keycode soltarPieza;
+    SDL_Keycode bajarPieza;
+    SDL_Keycode moverDerecha;
+    SDL_Keycode moverIzquierda;
+    SDL_Keycode rotarDerecha;
+    SDL_Keycode rotarIzquierda;
+    SDL_Keycode reservarPieza;
+    SDL_Keycode lanzarAtaque;
+	SDL_Keycode pausarJuego;
+};
+
+// Permite un número máximo de cuatro jugadores
+extern int numeroJugadores;
+extern Jugador jugadores[ NUMERO_JUGADORES ];
+extern Control controles[ NUMERO_JUGADORES ];
 
 // Variables del jugador
 extern int contadorCombo;				 // Combo realizado por el jugador
@@ -172,5 +199,7 @@ void Tablero_EstablecerColorRenglon( int tablero[ BOARD_HEIGHT ][ BOARD_WIDTH ],
 void Cola_Inicializar( int colaFiguras[ 4 ] );
 int Cola_ObtenerSiguenteFigura( int colaFiguras[ 4 ] );
 void Cola_Dibujar( int colaFiguras[ 4 ] );
+
+unsigned int factorial( unsigned int numero );
 
 #endif

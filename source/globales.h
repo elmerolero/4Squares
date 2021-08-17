@@ -17,6 +17,11 @@ struct Fuente{
 	double magnitud;
 };
 
+// Constantes
+#define NUMERO_JUGADORES 4		// Número máximo de jugadores
+#define BOARD_WIDTH 	10      // Numero de columnas
+#define BOARD_HEIGHT	22      // Número de renglones
+
 // Componentes SDL
 extern SDL_Window *gVentana;           // Ventana
 extern SDL_Renderer *gRender;          // Contexto de renderizado
@@ -39,6 +44,9 @@ extern double espacioX;                // Posición espacial X de la pantalla
 extern double espacioY;                // Posición espacial Y de la pantalla
 extern double espacioAncho;            // Ancho espacial de la pantalla
 extern double espacioAlto;             // Alto espacial de la pantalla
+
+// 
+extern bool joystickConectado;
 
 // Estados del juego
 extern EstadoJuego *estadoActual;

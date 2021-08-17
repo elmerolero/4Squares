@@ -24,6 +24,9 @@ double espacioY;                // Posición espacial Y de la pantalla
 double espacioAncho;            // Ancho espacial de la pantalla
 double espacioAlto;             // Alto espacial de la pantalla
 
+// Banderas del juego
+bool joystickConectado;
+
 // Estados del juego
 EstadoJuego *estadoActual;
 deque< Pendiente * > estadosPendientes;
