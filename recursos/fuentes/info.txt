@@ -1,0 +1,5 @@
+Aquí solo incluiré fonts que sean necesarias para el correcto funcionamiento
+del juego y son requeridas por la interfaz en el código.
+
+Todas las fonts que uso son open source o gratuitas, y son de uso libre.
+Así que no temas en ese aspecto. Igual dejaré info de la fuente donde las obtuve por si a caso.

@@ -1,5 +1,18 @@
 {
     "files.associations": {
-        "iostream": "cpp"
-    }
+        "iostream": "cpp",
+        "array": "cpp",
+        "deque": "cpp",
+        "initializer_list": "cpp",
+        "list": "cpp",
+        "type_traits": "cpp",
+        "vector": "cpp",
+        "xhash": "cpp",
+        "xstring": "cpp",
+        "iosfwd": "cpp"
+    },
+
+    "C_Cpp.default.includePath":[
+        "C:/msys64/mingw64/include/"
+    ]
 }

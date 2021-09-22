@@ -1,0 +1,8 @@
+El 480p es experimental ya que como tal no puedo exportar directamente a 480p.
+Todo está reducido a escala -2.2 del 1080p, cercano al 480p.
+
+Debería encajar todo perfectamente si las coordenadas son las mismas (en teoría).
+Es la calidad más alta obtenible en esa resolución.
+
+Algunos textos se perdían en esta resolución así que los escalé un poco para que sean más legibles en esta resolución :)
+Suerte haciéndolo funcionar en esta resolución.

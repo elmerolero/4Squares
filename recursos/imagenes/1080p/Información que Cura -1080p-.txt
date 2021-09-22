@@ -1,0 +1,4 @@
+Esta es la escala en mente principal.
+
+Todo está del tamaño y ajustado para que encaje perfectamente en esta resolución (en teoría).
+Igual que el 480p, esta es la calidad más alta posible en esta resolución, recomiendo empezar a trabajar con esta en mente.
