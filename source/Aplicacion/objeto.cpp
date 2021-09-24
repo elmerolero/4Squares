@@ -8,11 +8,11 @@ using namespace std;
 double Objeto::magnitudUnidad = 0;
 
 const double Objeto::RELACION_ASPECTO = 1.77;
-const double Objeto::UNIDAD_PANTALLA = 6.13;
+const double Objeto::UNIDAD_PANTALLA = 10;
 
 // Actualiza el tamaño de la unidad
 void Objeto::actualizarMagnitudUnidad( int pantallaAltura ){
-	magnitudUnidad = pantallaAltura / 6.13;
+	magnitudUnidad = pantallaAltura / UNIDAD_PANTALLA;
 }
 
 double Objeto::leerMagnitudUnidad( void ){
@@ -42,7 +42,7 @@ void Objeto::leerObjetoDesdeArchivo( string ubicacion ){
 	
 	// Establece las coordenadas
 	escribirDimensionesTextura( 0, 0, getWidth(), getHeight() );
-	escribirDimensionesEspacio( 0, 0, ( (float)getWidth() * 6.13 ) / 1080, ( (float)getHeight() * 6.13 ) / 1080 );
+	escribirDimensionesEspacio( 0, 0, ( (float)getWidth() * UNIDAD_PANTALLA ) / 1080, ( (float)getHeight() * UNIDAD_PANTALLA ) / 1080 );
 }
 
 // Establece las dimensiones actuales en el espacio
@@ -81,7 +81,7 @@ void Objeto::escribirDimensionesTextura( int x, int y, int ancho, int alto ){
 	rectTextura.w = ancho;
 	rectTextura.h = alto;
 
-	escribirDimensionesEspacio( ( (float)x * 6.13 ) / 1080, ( (float)y * 6.13 ) / 1080, ( (float)ancho * 6.13 ) / 1080, ( (float)alto * 6.13 ) / 1080 );
+	escribirDimensionesEspacio( ( (float)x * UNIDAD_PANTALLA ) / 1080, ( (float)y * UNIDAD_PANTALLA ) / 1080, ( (float)ancho * UNIDAD_PANTALLA ) / 1080, ( (float)alto * UNIDAD_PANTALLA ) / 1080 );
 } 
 
 // Permite escribir las dimensiones espacioAes de manera individual

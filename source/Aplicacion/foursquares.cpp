@@ -150,9 +150,9 @@ void FS_ActualizarEstadoJugador( Jugador &jugador ){
 		jugador.tiempoAgregado.pausar();
 
 		// Actualiza la información del juego
-		Fuente_ActualizarTexto( to_string( jugador.lineas ), fuenteTexto, objLineas, objMargen.leerEspacioX() + 0.75f, 5.4 );
-		Fuente_ActualizarTexto( to_string( jugador.nivel ), fuenteTexto, objNivel, objMargen.leerEspacioX() + 0.75f, 4.4 );
-		Fuente_ActualizarTexto( to_string( jugador.puntaje ), fuenteTexto, objPuntaje, objMargen.leerEspacioX() + 0.75f, 2.33 );
+		Fuente_ActualizarTexto( to_string( jugadores[ 0 ].puntaje ), fuenteTexto, objPuntaje, objMargen.leerEspacioX() + 2.3f, 4.f );
+		Fuente_ActualizarTexto( to_string( jugadores[ 0 ].nivel ), fuenteTexto, objNivel, objMargen.leerEspacioX() + 2.3f, 7.55f );
+		Fuente_ActualizarTexto( to_string( jugadores[ 0 ].lineas ), fuenteTexto, objLineas, objMargen.leerEspacioX() + 2.3f, 8.45f );
 	}
 }
  
@@ -214,30 +214,18 @@ void FourSquares::estadoRenderizado()
 	// Dibuja el fondo
 	objFondo.renderTexture( objFondo.leerDimensionesTextura(), objFondo.leerDimensionesEspacio() );
 	objMargen.renderTexture( objMargen.leerDimensionesTextura(), objMargen.leerDimensionesEspacio() );
-	
+
+	// 	
 	Tablero_Dibujar( jugadores[ 0 ].tablero );
 	Pieza_Dibujar( jugadores[ 0 ].pieza, jugadores[ 0 ].pieza.sombra.x, jugadores[ 0 ].pieza.sombra.y, shadowColor[ jugadores[ 0 ].pieza.tipo ] );
 	Pieza_Dibujar( jugadores[ 0 ].pieza, jugadores[ 0 ].pieza.figura.x, jugadores[ 0 ].pieza.figura.y, shapeColor[ jugadores[ 0 ].pieza.tipo ] );
 	Cola_Dibujar( jugadores[ 0 ].colaFiguras );
-	FS_DibujarFigura( jugadores[ 0 ].piezaReservada - 1, ( objTablero.leerEspacioX() - 1.7f ), 0.7f );
-
-	FS_DibujarTiempo( tiempoPartida.obtenerTicks(), objTiempo, fuenteTexto, objTablero.leerEspacioX() + objTablero.leerEspacioAncho() + 0.6, 5.43f );
-	objTiempo.renderTexture( objTiempo.leerDimensionesTextura(), objTiempo.leerDimensionesEspacio() );
-
-	// Dibuja el tablero
-	/*Tablero_Dibujar( tablero );
-	
-	// Dibuja la sombra de la pieza
-	Pieza_Dibujar( piezaJugador, piezaJugador.sombra.x, piezaJugador.sombra.y, shadowColor[ piezaJugador.tipo ] );
-	
-	// Dibuja la pieza
-	Pieza_Dibujar( piezaJugador, piezaJugador.figura.x, piezaJugador.figura.y, shapeColor[ piezaJugador.tipo ] );
-
-	// Dibuja la cola de figuras
-	Cola_Dibujar( colaFiguras );
 
 	// Dibuja la pieza guardada
-	FS_DibujarFigura( pieceSaved - 1, ( objTablero.leerEspacioX() - 1.7f ), 0.7f );
+	FS_DibujarFigura( jugadores[ 0 ].piezaReservada - 1, ( objTablero.leerEspacioX() - 2.5f ), 0.9f );
+
+	FS_DibujarTiempo( tiempoPartida.obtenerTicks(), objTiempo, fuenteTexto, objTablero.leerEspacioX() + objTablero.leerEspacioAncho() + 1.25f, 8.6f );
+	objTiempo.renderTexture( objTiempo.leerDimensionesTextura(), objTiempo.leerDimensionesEspacio() );
 
 	// Dibuja el puntaje
 	objPuntaje.renderTexture( objPuntaje.leerDimensionesTextura(), objPuntaje.leerDimensionesEspacio() );
@@ -250,10 +238,6 @@ void FourSquares::estadoRenderizado()
 
 	// Dibuja el letrero de ¡objYa!
 	objYa.renderTexture( objYa.leerDimensionesTextura(), objYa.leerDimensionesEspacio() );
-
-	// Dibuja el tiempo
-	FS_DibujarTiempo( tiempoPartida.obtenerTicks(), objTiempo, fuenteTexto, objTablero.leerEspacioX() + objTablero.leerEspacioAncho() + 0.6, 5.43f );
-	objTiempo.renderTexture( objTiempo.leerDimensionesTextura(), objTiempo.leerDimensionesEspacio() );*/
 }
 
 /* FUNCTIONS */
@@ -265,8 +249,8 @@ void FourSquares::actualizarViewport(){
 	objFondo.escribirDimensionesEspacio( espacioX, espacioY, espacioAncho, espacioAlto );
 
 	// Board surface
-	objTablero.escribirEspacioX( ( espacioAncho - objTablero.leerEspacioAncho() ) / 2  );
-	objTablero.escribirEspacioY( ( ( espacioAlto - objTablero.leerEspacioAlto() ) / 2 ) - objBloque.leerEspacioAncho() );
+	objTablero.escribirEspacioX( ( espacioAncho - objTablero.leerEspacioAncho() ) / 2 );
+	objTablero.escribirEspacioY( ( ( espacioAlto - objTablero.leerEspacioAlto() ) / 2 ) );
 	
 	// Margen
 	objMargen.escribirEspacioX( ( espacioAncho - objMargen.leerEspacioAncho() ) / 2 );
@@ -277,15 +261,17 @@ void FourSquares::actualizarViewport(){
 	objFiguras.actualizarDimensionesAbsolutas();
 
 	//
-	objBloque.actualizarDimensionesAbsolutas();
+	double ladoBloque = ( objTablero.leerEspacioAncho() / BOARD_WIDTH );
+	objBloque.escribirDimensionesEspacio( 0.f, 0.f, ladoBloque, ladoBloque );
 
 	// 
 	objYa.escribirEspacioX( ( espacioAncho - objYa.leerEspacioAncho() ) / 2 );
 
 	// Texto renderizado
-	FS_ActualizarPuntaje( contadorPuntaje, lineasJugador, contadorNivel, contadorCombo, objPuntaje );
-	FS_ActualizarNivel( contadorNivel, contadorLineas, objNivel );
-	FS_ActualizarLineas( contadorLineas, lineasJugador, objLineas );
+	// Actualiza la textura del puntaje
+	Fuente_ActualizarTexto( to_string( jugadores[ 0 ].puntaje ), fuenteTexto, objPuntaje, objMargen.leerEspacioX() + 2.3f, 4.f );
+	Fuente_ActualizarTexto( to_string( jugadores[ 0 ].nivel ), fuenteTexto, objNivel, objMargen.leerEspacioX() + 2.3f, 7.55f );
+	Fuente_ActualizarTexto( to_string( jugadores[ 0 ].lineas ), fuenteTexto, objLineas, objMargen.leerEspacioX() + 2.3f, 8.45f );
 }
 
 void Pieza_NuevaPieza( Pieza &pieza, int figura, int tablero[ 21 ][ 10 ] ){
@@ -388,14 +374,15 @@ void Pieza_Grabar( Pieza &pieza, int tablero[ BOARD_HEIGHT ][ BOARD_WIDTH ] ){
 }
 
 // Dibuja la pieza
-void Pieza_Dibujar( Pieza &pieza, int posicionX, int posicionY, SDL_Color color )
-{
+void Pieza_Dibujar( Pieza &pieza, int posicionX, int posicionY, SDL_Color color ){
 	SDL_Rect auxRect = { 0, 0, objBloque.leerAbsolutoAncho(), objBloque.leerAbsolutoAncho() };
+	
 	int tempX = objTablero.leerAbsolutoX();
-	int tempY = objTablero.leerAbsolutoY();
+	int tempY = objTablero.leerAbsolutoY() - (objBloque.leerAbsolutoAncho() * 2);
 	
 	// Establece el color
-	objBloque.setColorMod( color );
+	objBloque.escribirTexturaW( 45 );
+	objBloque.escribirTexturaX( 45 * pieza.tipo );
 
 	// Dibuja la figura
 	for( int i = 0; i < 4; i++ ){
@@ -478,14 +465,16 @@ void Tablero_Dibujar( int tablero[ BOARD_HEIGHT ][ BOARD_WIDTH ] )
 	// Rect que 
 	SDL_Rect auxRect = { 0, 0, objBloque.leerAbsolutoAncho(), objBloque.leerAbsolutoAlto() };
 	int tempX = objTablero.leerAbsolutoX();
-	int tempY = objTablero.leerAbsolutoY();
+	int tempY = objTablero.leerAbsolutoY() - ( objBloque.leerAbsolutoAncho() * 2 );
 	
 	for( int renglones = 0; renglones < BOARD_HEIGHT; renglones++ ){
 		for( int columnas = 0; columnas < BOARD_WIDTH; columnas++ ){
 			if( tablero[ renglones ][ columnas ] ){
 				auxRect.x = tempX + ( auxRect.w * columnas );
 				auxRect.y = tempY + ( auxRect.w * renglones );
-				objBloque.setColorMod( shapeColor[ tablero[ renglones ][ columnas ] - 1 ] );
+				
+				objBloque.escribirTexturaW( 45 );
+				objBloque.escribirTexturaX( ( tablero[ renglones ][ columnas ] - 1 ) * 45 );
 				objBloque.renderTexture( objBloque.leerDimensionesTextura(), &auxRect );
 			}
 		}
@@ -501,82 +490,42 @@ void Tablero_EstablecerColorRenglon( int tablero[ BOARD_HEIGHT ][ BOARD_WIDTH ],
 }
 
 // Inicializa la cola de figuras dada
-void Cola_Inicializar( int colaFiguras[ 4 ] ){
-	for( size_t i = 0; i < 4; ++i ){
+void Cola_Inicializar( int colaFiguras[ LARGO_COLA ] ){
+	for( size_t i = 0; i < LARGO_COLA; ++i ){
 		colaFiguras[ i ] = rand() % 7;
 	}
 }
 
 // Obtiene la figura de una cola dada
-int Cola_ObtenerSiguenteFigura( int colaFiguras[ 4 ] ){
+int Cola_ObtenerSiguenteFigura( int colaFiguras[ LARGO_COLA ] ){
 	// Lee la figura a devolver
 	int figura = colaFiguras[ 0 ];
 
 	// Recorre las piezas
-	for( size_t contador = 1; contador < 4; ++contador ){
+	for( size_t contador = 1; contador < LARGO_COLA; ++contador ){
 		colaFiguras[ contador - 1 ] = colaFiguras[ contador ];
 	}
 
 	// Define la nueva figura
-	colaFiguras[ 3 ] = rand() % 7;
+	colaFiguras[ LARGO_COLA - 1 ] = rand() % 7;
 
 	return figura;
 }
 
 // Dibuja la cola de figuras
-void Cola_Dibujar( int colaFiguras[ 4 ] ){
-	for( int contador = 0; contador < 4; ++contador ){
+void Cola_Dibujar( int colaFiguras[ LARGO_COLA ] ){
+	for( int contador = 0; contador < LARGO_COLA; ++contador ){
 		int figura = colaFiguras[ contador ];
-		FS_DibujarFigura( figura,  objTablero.leerEspacioX() + objTablero.leerEspacioAncho() + 0.3, 0.68 + ( objFiguras.leerEspacioAlto() * contador ) + (0.12 * contador ) );
+		objFiguras.escribirEspacioX( objTablero.leerEspacioX() + objTablero.leerEspacioAncho() + 0.55 );
+		objFiguras.escribirEspacioY( 0.6 + ( objFiguras.leerEspacioAlto() * contador ) + ( 0.04 * contador ) );
+		objFiguras.renderTexture( &shapeRects[ figura ], objFiguras.leerDimensionesEspacio() );
 	}
 }
 
 void FS_DibujarFigura( int figura, double x, double y ){
 	objFiguras.escribirEspacioX( x );
 	objFiguras.escribirEspacioY( y );
-	objFiguras.setColorMod( shapeColor[ figura ] );
-	objFiguras.renderTexture( &shapeRects[ figura ], objFiguras.leerDimensionesEspacio() ); 
-}
-
-void FS_ActualizarLineas( int &lineasJugador, vector< int > &lineasRealizadas, Objeto &objeto ){
-	// Suma la cantidad de líneas realizadas
-	lineasJugador += lineasRealizadas.size();
-
-	// Actualiza la textura con el nuevo número de líneas
-	Fuente_ActualizarTexto( to_string( lineasJugador ), fuenteTexto, objeto );
-	objeto.escribirEspacioX( objMargen.leerEspacioX() + 0.75f );
-	objeto.escribirEspacioY( 5.4f );
-}
-
-void FS_ActualizarNivel( int &nivelJugador, int &lineasJugador, Objeto &objeto ){
-	// Determina el nivel del jugador 
-	nivelJugador = ( lineasJugador / 10 ) + 1;
-	if( nivelJugador > 15 ){
-		nivelJugador = 15;
-	}
-
-	Fuente_ActualizarTexto( to_string( nivelJugador ), fuenteTexto, objeto );
-	objeto.escribirEspacioX( objMargen.leerEspacioX() + 0.75f );
-	objeto.escribirEspacioY( 4.4f );
-}
-
-void FS_ActualizarPuntaje( int &puntaje, vector< int > &lineas, int nivel, int combo, Objeto &objeto )
-{
-	// Obtiene el nuevo puntaje
-	int nuevoPuntaje = ( lineas.empty() ? 0 : 50 );
-
-	// Actualiza el puntaje
-	for( size_t i = 1; i < lineas.size(); ++i ){
-		nuevoPuntaje = nuevoPuntaje * i * nivel; 
-	}
-	
-	// Multiplica el puntaje de acuerdo al combo
-	puntaje += nuevoPuntaje * combo;
-	
-	// Actualiza la textura del puntaje
-	Fuente_ActualizarTexto( to_string( puntaje ), fuenteTexto, objeto );
-	objeto.escribirEspacioX( objMargen.leerEspacioX() + 0.227 );
-	objeto.escribirEspacioY( 2.33 );
+	objFiguras.renderTexture( &shapeRects[ figura ], objFiguras.leerDimensionesEspacio() );
 }
 
 void FS_DibujarTiempo( Uint32 tiempo, Objeto &objeto, Fuente &fuente, double x, double y )

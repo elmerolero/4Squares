@@ -109,10 +109,6 @@ extern int pasosRealizados;
 // Funciones
 void Jugador_Iniciar( Jugador &jugador );
 
-
-void FS_ActualizarLineas( int &lineasJugador, std::vector< int > &lineasRealizadas, Objeto &objeto );
-void FS_ActualizarNivel( int &nivelJugador, int &lineasJugador, Objeto &objeto );
-void FS_ActualizarPuntaje( int &puntajeJugador, std::vector< int > &lineasRealizadas, int nivel, int combo, Objeto &objeto );
 void FS_DibujarFigura( int figura, double x, double y );
 void FS_DibujarTiempo( Uint32 tiempo, Objeto &objeto, Fuente &fuente, double x, double y );
 void FS_PausarPartida( void );

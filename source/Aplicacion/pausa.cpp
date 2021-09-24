@@ -8,13 +8,13 @@ Pausa::Pausa(): nombre( "pausa" )
     if( letreroPausa.loadFileTexture( "../recursos/imagenes/texto/pausa.png" ) ){
         // Establece sus dimensiones en pantalla
         SDL_Rect arect = { 0, 0, letreroPausa.getWidth(), letreroPausa.getHeight() };
-        SDL_DRect rrect = { 0, 1, ( (float)arect.w * 6.13 ) / (float)1080, ( (float)arect.h * 6.13 ) / (float)1080 };
+        SDL_DRect rrect = { 0, 1, ( (float)arect.w * 10 ) / (float)1080, ( (float)arect.h * 10 ) / (float)1080 };
         letreroPausa.escribirDimensionesTextura( arect );
         letreroPausa.escribirDimensionesEspacio( rrect );
     }
 
     if( opcionPausa.loadFileTexture( "../recursos/imagenes/otros/selector-pausa.png" ) ){
-        SDL_DRect rrect = { 0, 0, ( (float)opcionPausaRect[ 0 ].w * 6.13 ) / (float)1080, ( (float)opcionPausaRect[ 0 ].h * 6.13 ) / (float)1080 };
+        SDL_DRect rrect = { 0, 0, ( (float)opcionPausaRect[ 0 ].w * 10 ) / (float)1080, ( (float)opcionPausaRect[ 0 ].h * 10 ) / (float)1080 };
         opcionPausa.escribirDimensionesEspacio( rrect );
     }
 

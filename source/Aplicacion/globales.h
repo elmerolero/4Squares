@@ -16,6 +16,7 @@
 #define BOARD_WIDTH 	10      // Numero de columnas
 #define BOARD_HEIGHT	22      // Número de renglones
 #define JUGADOR_UNO      0		// Jugador 1
+#define LARGO_COLA	     5		// Largo de una cola de figuras para un jugador
 
 // Estructuras
 // Pieza
@@ -38,7 +39,7 @@ struct Jugador{
 	int combo;
 	int comboMaximo;
 	std::vector< int >lineasRealizadas;
-	int colaFiguras[ 4 ];
+	int colaFiguras[ LARGO_COLA ];
 
 	int nivelRespuesta;				// Indica a qué velocidad mover la pieza hacia los lados
 	Temporizador tiempoCambio;		// Tiempo en el que llega el momento de bajar la pieza

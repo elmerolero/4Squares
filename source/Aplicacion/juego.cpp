@@ -194,6 +194,18 @@ void Juego_Renderizar( void ){
 		fpsTexto.renderTexture( fpsTexto.leerDimensionesTextura(), fpsTexto.leerDimensionesEspacio() );
 	}
 
+	/*SDL_Rect malla = { 0, 0, Objeto::leerMagnitudUnidad(), Objeto::leerMagnitudUnidad() };
+	int ancho = floor( espacioAncho );
+	int alto = floor( espacioAlto );
+	for( size_t i = 0; i < ancho; i++ ){
+		for( size_t j = 0; j < alto; j++ ){
+			malla.x = malla.w * i;
+			malla.y = malla.w * j;
+			SDL_SetRenderDrawColor( gRender, 255, 255, 255, 255 );
+			SDL_RenderDrawRect( gRender, &malla );
+		}
+	}*/
+
 	// Actualiza la pantalla
 	SDL_RenderPresent( gRender );
 
@@ -367,13 +379,13 @@ void Juego_CargarValoresMensaje( string archivo ){
 void Juego_CargarMedia( void ){	
 	try{
 		objFondoInicio.leerObjetoDesdeArchivo( "../recursos/imagenes/Intro Screen.png" );
-		objFondo.leerObjetoDesdeArchivo( "../recursos/imagenes/fondos/Space.png" ); 	// Fondo
-		objTablero.escribirDimensionesEspacio( 0.f, 0.2214, 2.73, 5.73 );				// Tamaño del tablero de la superficie
-		objMargen.leerObjetoDesdeArchivo( "../recursos/imagenes/1080p/UI/HDUIVS01.png" );	// Margen
-		objBloque.leerObjetoDesdeArchivo( "../recursos/imagenes/bloques/bloque.png" );	// Bloque
+		objFondo.leerObjetoDesdeArchivo( "../recursos/imagenes/fondos/lasers.png" ); 	// Fondo
+		objTablero.escribirDimensionesEspacio( 0.f, 0.f, 4.178, 8.3 );
+		objMargen.leerObjetoDesdeArchivo( "../recursos/imagenes/1080p/UI/HDUISP01.png" );	// Margen
+		objBloque.leerObjetoDesdeArchivo( "../recursos/imagenes/bloques/bloques.png" );	// Bloque
 		objBloque.escribirDimensionesEspacio( 0, 0, objTablero.leerEspacioAncho() / (float)BOARD_WIDTH, objTablero.leerEspacioAncho() / (float)BOARD_WIDTH );
 		objFiguras.leerObjetoDesdeArchivo( "../recursos/imagenes/bloques/figuras.png" ); // Cola de figuras
-		objFiguras.escribirDimensionesEspacio( 0, 0, ( 236.f * 6.13 ) / 1080, ( 141.f * 6.13 ) / 1080 );
+		objFiguras.escribirDimensionesEspacio( 0, 0, ( 236.f * 10 ) / 1080, ( 141.f * 10 ) / 1080 );
 		objYa.leerObjetoDesdeArchivo( "../recursos/imagenes/texto/ya.png" ); // Textura objYa
 		objCuentaRegresiva.leerObjetoDesdeArchivo( "../recursos/imagenes/texto/cuenta.png" ); // Cuenta regresiva
     	objCuentaRegresiva.escribirDimensionesTextura( 0, 0, 82, 157 );
@@ -383,7 +395,7 @@ void Juego_CargarMedia( void ){
 		cout << ia.what() << endl;
 		salir = true;
 	}
-}
+} 
 
 void Fuente_ActualizarTamanio( Fuente &fuente )
 {
