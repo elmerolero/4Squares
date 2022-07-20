@@ -5,19 +5,6 @@ using namespace std;
 
 Pausa::Pausa(): nombre( "pausa" )
 {
-    if( letreroPausa.loadFileTexture( "../recursos/imagenes/texto/pausa.png" ) ){
-        // Establece sus dimensiones en pantalla
-        SDL_Rect arect = { 0, 0, letreroPausa.getWidth(), letreroPausa.getHeight() };
-        SDL_DRect rrect = { 0, 1, ( (float)arect.w * 10 ) / (float)1080, ( (float)arect.h * 10 ) / (float)1080 };
-        letreroPausa.escribirDimensionesTextura( arect );
-        letreroPausa.escribirDimensionesEspacio( rrect );
-    }
-
-    if( opcionPausa.loadFileTexture( "../recursos/imagenes/otros/selector-pausa.png" ) ){
-        SDL_DRect rrect = { 0, 0, ( (float)opcionPausaRect[ 0 ].w * 10 ) / (float)1080, ( (float)opcionPausaRect[ 0 ].h * 10 ) / (float)1080 };
-        opcionPausa.escribirDimensionesEspacio( rrect );
-    }
-
     // Opcion pausa por defecto es la primera opcion
     opcion = 1;
 
@@ -69,6 +56,46 @@ void Pausa::estadoEventos( SDL_Event &gGameEvent ){
             Pausa_SeleccionarOpcion();
         }
     }
+    else if( gGameEvent.type == SDL_MOUSEMOTION ){
+        // Lee las coordenadas del mouse
+        int mouseX = 0;
+        int mouseY = 0;
+
+        SDL_GetMouseState( &mouseX, &mouseY );
+
+        // Obtiene la mitad de la pantalla
+        double mediaY = espacioAlto / 2;
+
+        // Dibuja el las opciones disponibles
+        for( int i = 0; i < NUMERO_OPCIONES; i++ ){
+            int posicionX = floor( ( objOpciones.leerEspacioX() + 0.3f ) * Objeto::leerMagnitudUnidad() );
+            int posicionY = floor( ( ( objOpciones.leerEspacioAlto() + 0.3f ) * ( i ) + mediaY ) * Objeto::leerMagnitudUnidad() );
+            int posicionB = posicionX + floor( objOpciones.leerAbsolutoAncho() );
+            int posicionA = posicionY + floor( objOpciones.leerAbsolutoAlto() );
+            if( mouseX > posicionX && mouseX < posicionB && mouseY > posicionY && mouseY < posicionA ){
+                opcion = i + 1;
+            }
+        }
+    }
+    else if( gGameEvent.type == SDL_MOUSEBUTTONDOWN ){
+        // Lee las coordenadas del mouse
+        int mouseX = 0;
+        int mouseY = 0;
+
+        SDL_GetMouseState( &mouseX, &mouseY );
+
+        // Obtiene la mitad de la pantalla
+        double mediaY = espacioAlto / 2;
+
+        // Dibuja el las opciones disponibles
+        int posicionX = floor( ( objOpciones.leerEspacioX() + 0.3f ) * Objeto::leerMagnitudUnidad() );
+        int posicionY = floor( ( ( objOpciones.leerEspacioAlto() + 0.3f ) * ( opcion - 1 ) + mediaY ) * Objeto::leerMagnitudUnidad() );
+        int posicionB = posicionX + floor( objOpciones.leerAbsolutoAncho() );
+        int posicionA = posicionY + floor( objOpciones.leerAbsolutoAlto() );
+        if( mouseX > posicionX && mouseX < posicionB && mouseY > posicionY && mouseY < posicionA ){
+            Pausa_SeleccionarOpcion();
+        }
+    }
 }
 
 void Pausa::estadoLogica(){
@@ -80,7 +107,7 @@ void Pausa::estadoRenderizado(){
     Juego_FondoNegro();
 
     // Dibuja el letrero de pausa
-    letreroPausa.renderTexture( letreroPausa.leerDimensionesTextura(), letreroPausa.leerDimensionesEspacio() );
+    objPausa.renderTexture( objPausa.leerDimensionesTextura(), objPausa.leerDimensionesEspacio() );
 
     // Dibuja las opciones
     Pausa_DibujarOpciones();
@@ -89,12 +116,12 @@ void Pausa::estadoRenderizado(){
 void Pausa::actualizarViewport()
 {
     // Actualiza el letrero en pantalla
-    letreroPausa.escribirEspacioX( ( espacioAncho - letreroPausa.leerEspacioAncho() ) / 2 );
-    letreroPausa.actualizarDimensionesAbsolutas();
+    objPausa.escribirEspacioX( ( espacioAncho - objPausa.leerEspacioAncho() ) / 2 );
+    objPausa.actualizarDimensionesAbsolutas();
 
     // Actualiza la posicion de las opciones en pantalla 
-    opcionPausa.escribirEspacioX( ( espacioAncho - opcionPausa.leerEspacioAncho() ) / 2 );
-    opcionPausa.actualizarDimensionesAbsolutas();
+    objOpciones.escribirEspacioX( ( espacioAncho - objOpciones.leerEspacioAncho() ) / 2 );
+    objOpciones.actualizarDimensionesAbsolutas();
 }
 
 void Pausa_SeleccionarOpcion( void ){
@@ -121,18 +148,18 @@ void Pausa_DibujarOpciones( void ){
 
     // Dibuja el las opciones disponibles
     for( int i = 0; i < NUMERO_OPCIONES; i++ ){
-        double posicionY = ( opcionPausa.leerEspacioAlto() + .2 ) * ( i ) + mediaY;
-        opcionPausa.escribirEspacioY( posicionY );
-        opcionPausa.renderTexture( &opcionPausaRect[ 0 ], opcionPausa.leerDimensionesEspacio() );
+        double posicionY = ( objOpciones.leerEspacioAlto() + .3 ) * ( i ) + mediaY;
+        objOpciones.escribirEspacioY( posicionY );
+        objOpciones.renderTexture( &opcionPausaRect[ 0 ], objOpciones.leerDimensionesEspacio() );
 
         // ¿Es la opción seleccionada?
         if( opcion == i + 1 ){
-            opcionPausa.renderTexture( &opcionPausaRect[ 1 ], opcionPausa.leerDimensionesEspacio() );
+            objOpciones.renderTexture( &opcionPausaRect[ 1 ], objOpciones.leerDimensionesEspacio() );
         }
 
         SDL_Color color = { 255, 255, 255 };
         if( opcionTexto.crearTexturaDesdeTextoSolido( opciones[ i ], color, fuenteTexto.fuente ) ){
-            SDL_DRect rrect = { opcionPausa.leerEspacioX() + 0.1, posicionY + 0.07, (float)opcionTexto.getWidth() / Objeto::leerMagnitudUnidad(), (float)opcionTexto.getHeight() / Objeto::leerMagnitudUnidad() };
+            SDL_DRect rrect = { objOpciones.leerEspacioX() + 0.3, posicionY + 0.07, (float)opcionTexto.getWidth() / Objeto::leerMagnitudUnidad(), (float)opcionTexto.getHeight() / Objeto::leerMagnitudUnidad() };
             opcionTexto.escribirDimensionesTextura( 0, 0, opcionTexto.getWidth(), opcionTexto.getHeight() );
             opcionTexto.escribirDimensionesEspacio( rrect );
             opcionTexto.renderTexture( opcionTexto.leerDimensionesTextura(), opcionTexto.leerDimensionesEspacio() );
@@ -151,8 +178,5 @@ void Pausa::mostrarNombre( void ){
 int opcion;
 int indice;
 const char *opciones[] = { "Continuar", "Reiniciar", "Salir" };
-
-Objeto letreroPausa;
-Objeto opcionPausa;
 
 Objeto opcionTexto;

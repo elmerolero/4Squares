@@ -55,6 +55,10 @@ struct Jugador{
 	bool permiteReserva;			// Indica que el jugador puede guardar o intercambiar la pieza en juego
 	int pasosRealizados;			// Indica el número de movimientos dados despues del sobrepasar el tiempo límite
 	bool finalizo;					// Indica que finalizó la partida
+	bool ganador;					// Indica si ganó o perdió la partida
+
+	//
+	int contadorColumna;
 };
 
 struct Control{
@@ -117,6 +121,7 @@ extern double espacioAlto;             // Alto espacial de la pantalla
 // Permite un número máximo de cuatro jugadores
 extern bool joystickConectado;
 extern int numeroJugadores;
+extern int jugadoresRestantes;
 extern Jugador jugadores[ NUMERO_JUGADORES ];
 extern Teclado teclado;
 extern Control controles[ NUMERO_JUGADORES ];
@@ -150,5 +155,10 @@ extern Objeto objNivel;		// Nivel
 extern Objeto objLineas;	// Lineas
 extern Objeto objTiempo;	// Tiempos
 extern Objeto objCuentaRegresiva; // Cuenta regresiva
+extern Objeto objSeAcabo;
+extern Objeto objPausa;
+extern Objeto objOpciones;
+extern Objeto objCuadroInformativo;
+extern Objeto objInformacion;
 
 #endif

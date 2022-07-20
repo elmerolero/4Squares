@@ -20,7 +20,9 @@ double Objeto::leerMagnitudUnidad( void ){
 }
 
 // Constructor
-Objeto::Objeto(): espacioX( 0.f ), espacioY( 0.f ), espacioAncho( 0.f ), espacioAlto( 0.f ){
+Objeto::Objeto(): espacioX( 0.f ), espacioY( 0.f ), espacioAncho( 0.f ), espacioAlto( 0.f ), desplazamientoX( 0 ), desplazamientoY( 0 ){
+	desplazamientoX = 0;
+	desplazamientoY = 0;
 	rectTextura  = { 0, 0, 0, 0 };
 	rectAbsoluto = { 0, 0, 0, 0 };
 }
@@ -32,7 +34,7 @@ Objeto::~Objeto(){
 // Renderiza
 void Objeto::renderizar( void ){
 	// Llama a la clase base para renderizar la textura
-	Texture::renderTexture( leerDimensionesTextura(), leerDimensionesEspacio() );
+	renderTexture( leerDimensionesTextura(), leerDimensionesEspacio() );
 }
 
 // Lee carga una textura y establece las opciones de objeto
@@ -41,6 +43,8 @@ void Objeto::leerObjetoDesdeArchivo( string ubicacion ){
 	loadFileTexture( ubicacion.c_str() );
 	
 	// Establece las coordenadas
+	escribirDesplazamientoX( 0 );
+	escribirDesplazamientoY( 0 );
 	escribirDimensionesTextura( 0, 0, getWidth(), getHeight() );
 	escribirDimensionesEspacio( 0, 0, ( (float)getWidth() * UNIDAD_PANTALLA ) / 1080, ( (float)getHeight() * UNIDAD_PANTALLA ) / 1080 );
 }
@@ -179,6 +183,10 @@ int Objeto::leerTexturaH( void ) const{
 }
 
 SDL_Rect *Objeto::leerDimensionesTextura( void ){
+	// Establece la textura seleccionada se acuerdo al desplazamiento
+	rectTextura.x = desplazamientoX * rectTextura.w;
+	rectTextura.y = desplazamientoY * rectTextura.h;
+
 	return &rectTextura;
 }
 
@@ -192,4 +200,36 @@ void Objeto::actualizarDimensionesAbsolutas( void ){
 	rectAbsoluto.y = espacioY * magnitudUnidad;
 	rectAbsoluto.w = espacioAncho * magnitudUnidad;
 	rectAbsoluto.h = espacioAlto * magnitudUnidad;
+}
+
+void Objeto::escribirDesplazamientoX( int x ){
+	this -> desplazamientoX = x;
+}
+	
+void Objeto::escribirDesplazamientoY( int y ){
+	this -> desplazamientoY = y;	
+}
+
+int Objeto::leerDesplazamientoX() const{
+	return desplazamientoX;
+}
+
+int Objeto::leerDesplazamientoY() const{
+	return desplazamientoY;
+}
+
+void Objeto::escribirFotogramaAncho( int ancho ){
+	this -> rectTextura.w = ancho;
+}
+
+int Objeto::leerFotogramaAncho( void ) const{
+	return rectTextura.w;
+}
+
+void Objeto::escribirFotogramaAlto( int alto ){
+	this -> rectTextura.h = alto;
+}
+
+int Objeto::leerFotogramaAlto( void ) const{
+	return rectTextura.h;
 }

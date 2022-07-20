@@ -11,10 +11,8 @@ int main( int argc, char * args[] )
 {
 	// Inicializa el juego
 	Juego_Iniciar( "Four Squares", "../recursos/datos/es-mx.dat" );
-	Juego_CargarMedia();
-	//Juego_EstablecerEstado( new Inicio(), ESTADO_ESTABLECER );
-	Juego_EstablecerEstado( new FourSquares(), ESTADO_ESTABLECER );
-	Juego_EstablecerEstado( new Preparacion(), ESTADO_APILAR );
+	Juego_CargarMedia( "480p" );
+	Juego_EstablecerEstado( new Inicio(), ESTADO_ESTABLECER );
 	Juego_ActualizarEstado();
 
 	// Inicializa el juego

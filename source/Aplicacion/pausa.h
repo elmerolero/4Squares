@@ -40,10 +40,6 @@ const int OPCION_SALIR = 3;
 // Elementos para dibujar las opciones
 extern const char *opciones[];
 const SDL_Rect opcionPausaRect[] = { { 0, 0, 340, 85 }, { 0, 85, 340, 85 } };
-extern Objeto opcionPausa;
 extern Objeto opcionTexto;
-
-// Letrero que indica pausa
-extern Objeto letreroPausa;
 
 #endif

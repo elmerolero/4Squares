@@ -16,26 +16,26 @@ class Derrota : public EstadoJuego
         void estadoLogica();
         void estadoRenderizado();
         void actualizarViewport();
-};
 
-void actualizarTamanioTexto( std::string texto, Objeto &objeto, TTF_Font *fuente, int tamanioBase, int anchoTextura );
+        void escribirNombre( std::string nombre );
+        void mostrarNombre( void );
+
+    private:
+        std::string nombre;
+};
 
 extern bool ocultarElementos;
 
 extern int lineaSombreada;
 extern std::string datosPartida;
-extern TTF_Font *fuenteInformacion;
+
 
 extern int incremento;
 extern double incrementoRelativo;
 extern int anchoActual;
 extern double anchoRelativoActual;
-extern Objeto estadistico;
-
-extern Objeto tableroEstadistico;
 
 extern Temporizador tiempoEspera;
-extern Objeto seAcabo;
 
 extern Objeto continuar;
 
@@ -49,6 +49,6 @@ struct Opciones{
 extern Opciones finOpciones;
 
 void Opciones_Dibujar( Opciones &informacionOpciones, const char *opciones[], Objeto &opcionObjeto, Objeto &opcionTextoObjeto );
-std::string comparativo( int puntaje, int nivel, int lineas, int combo, Uint32 tiempo );
+
 
 #endif

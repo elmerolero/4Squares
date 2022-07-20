@@ -38,7 +38,7 @@ void Juego_CargarValoresMensaje( std::string archivo );
 void establecerMensaje( std::string valor, std::string mensaje );
 
 // Carga el contenido del juego
-void Juego_CargarMedia( void );
+void Juego_CargarMedia( std::string resolucion );
 
 void Fuente_ActualizarTamanio( Fuente &fuente );
 void Fuente_ActualizarTexto( std::string texto, Fuente &fuente, Objeto &objeto );

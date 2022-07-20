@@ -27,6 +27,7 @@ double espacioAlto;             // Alto espacial de la pantalla
 // Controles del juego (permite un número máximo de cuatro jugadores)
 bool joystickConectado;
 int numeroJugadores;
+int jugadoresRestantes;
 Jugador jugadores[ NUMERO_JUGADORES ];
 Teclado teclado;
 Control controles[ NUMERO_JUGADORES ];
@@ -40,7 +41,7 @@ vector< EstadoJuego * > estadosJuego;
 unordered_map< std::string, std::string > valoresMensaje;
 
 // Para el conteo de FPS's
-Temporizador temporizadorFPS;
+Temporizador temporizadorFPS; 
 int contadorFPS;
 
 // Objetos gráficos
@@ -48,15 +49,20 @@ Fuente fuenteTexto;
 Objeto fpsTexto;
 
 // Objetos visibles del juego
-Objeto objFondoInicio; // Fondo de inicio
-Objeto objFondo;	// Fondo de pantalla
-Objeto objMargen;   // Margen		
-Objeto objTablero;  // Superficie del tablero
-Objeto objBloque;   // Bloque
-Objeto objFiguras;      // Figuras
-Objeto objYa;          // Textura con el texto ya
-Objeto objPuntaje;     // Puntaje
-Objeto objNivel;       // Nivel
-Objeto objLineas;      // Lineas
-Objeto objTiempo;      // Tiempos
-Objeto objCuentaRegresiva; // Cuenta regresiva
+Objeto objFondoInicio;      // Fondo de inicio
+Objeto objFondo;            // Fondo de pantalla
+Objeto objMargen;           // Margen		
+Objeto objTablero;          // Superficie del tablero
+Objeto objBloque;           // Bloque
+Objeto objFiguras;          // Figuras
+Objeto objYa;               // Textura con el texto ya
+Objeto objPuntaje;          // Puntaje
+Objeto objNivel;            // Nivel
+Objeto objLineas;           // Lineas
+Objeto objTiempo;           // Tiempos
+Objeto objCuentaRegresiva;  // Cuenta regresiva
+Objeto objPausa;            // Objeto pausa
+Objeto objSeAcabo;          // Mensaje que indica que se acabó
+Objeto objOpciones;         // 
+Objeto objCuadroInformativo;
+Objeto objInformacion;

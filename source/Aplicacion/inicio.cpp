@@ -36,6 +36,8 @@ void Inicio::estadoLogica(){
         transparencia += 5;
         if( transparencia >= 255 ){
             transparencia -= 5;
+            Juego_EstablecerEstado( new FourSquares(), ESTADO_ESTABLECER );
+	        Juego_EstablecerEstado( new Preparacion(), ESTADO_APILAR );
         }
 
         tiempoAtenuacion.reiniciar();

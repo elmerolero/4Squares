@@ -79,6 +79,18 @@ class Objeto : public Texture
 		static double leerMagnitudUnidad( void );
 		static void actualizarMagnitudUnidad( int pantallaAltura );
 
+		void escribirDesplazamientoX( int x );
+		void escribirDesplazamientoY( int y );
+
+		int leerDesplazamientoX() const;
+		int leerDesplazamientoY() const;
+
+		void escribirFotogramaAncho( int ancho );
+		int leerFotogramaAncho( void ) const;
+
+		void escribirFotogramaAlto( int alto );
+		int leerFotogramaAlto( void ) const;
+
 	private:
 		// Dimensiones de la textura
 		SDL_Rect rectTextura;
@@ -91,6 +103,10 @@ class Objeto : public Texture
 		double espacioY;
 		double espacioAncho;
 		double espacioAlto;
+
+		// Desplazamiento
+		int desplazamientoX;
+		int desplazamientoY;
 
 		// Tamaño de la unidad de la pantalla
 		static double magnitudUnidad;

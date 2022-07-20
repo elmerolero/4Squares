@@ -376,20 +376,36 @@ void Juego_CargarValoresMensaje( string archivo ){
 	}
 }
 
-void Juego_CargarMedia( void ){	
-	try{
+void Juego_CargarMedia( std::string resolucion ){	
+	try{ 
 		objFondoInicio.leerObjetoDesdeArchivo( "../recursos/imagenes/Intro Screen.png" );
-		objFondo.leerObjetoDesdeArchivo( "../recursos/imagenes/fondos/lasers.png" ); 	// Fondo
+		objFondo.leerObjetoDesdeArchivo( "../recursos/imagenes/" + resolucion + "/Fondos/lasers.png" ); 	// Fondo
 		objTablero.escribirDimensionesEspacio( 0.f, 0.f, 4.178, 8.3 );
-		objMargen.leerObjetoDesdeArchivo( "../recursos/imagenes/1080p/UI/HDUISP01.png" );	// Margen
-		objBloque.leerObjetoDesdeArchivo( "../recursos/imagenes/bloques/bloques.png" );	// Bloque
+		objMargen.leerObjetoDesdeArchivo( "../recursos/imagenes/1080p/UI/UISP01.png" );	// Margen
+		objMargen.loadFileTexture( ("../recursos/imagenes/" + resolucion + "/UI/UISP01.png").c_str() );
+		objBloque.leerObjetoDesdeArchivo( "../recursos/imagenes/" + resolucion + "/Bloques/bloques.png" );	// Bloque
 		objBloque.escribirDimensionesEspacio( 0, 0, objTablero.leerEspacioAncho() / (float)BOARD_WIDTH, objTablero.leerEspacioAncho() / (float)BOARD_WIDTH );
-		objFiguras.leerObjetoDesdeArchivo( "../recursos/imagenes/bloques/figuras.png" ); // Cola de figuras
+		objBloque.escribirFotogramaAncho( objBloque.getWidth() / 8 );
+		objBloque.escribirFotogramaAlto( objBloque.leerFotogramaAncho() );
+		objFiguras.leerObjetoDesdeArchivo( "../recursos/imagenes/1080p/Bloques/figuras.png" ); // Cola de figuras
 		objFiguras.escribirDimensionesEspacio( 0, 0, ( 236.f * 10 ) / 1080, ( 141.f * 10 ) / 1080 );
-		objYa.leerObjetoDesdeArchivo( "../recursos/imagenes/texto/ya.png" ); // Textura objYa
-		objCuentaRegresiva.leerObjetoDesdeArchivo( "../recursos/imagenes/texto/cuenta.png" ); // Cuenta regresiva
+		objYa.leerObjetoDesdeArchivo( "../recursos/imagenes/1080p/Texto/ya.png" ); // Textura objYa
+		objYa.escribirEspacioY( 2.f );
+		objCuentaRegresiva.leerObjetoDesdeArchivo( "../recursos/imagenes/1080p/Texto/cuenta.png" ); // Cuenta regresiva
     	objCuentaRegresiva.escribirDimensionesTextura( 0, 0, 82, 157 );
-    	objCuentaRegresiva.escribirEspacioY( 1 );
+    	objCuentaRegresiva.escribirEspacioY( 2 );
+		objSeAcabo.leerObjetoDesdeArchivo( "../recursos/imagenes/1080p/Texto/se-acabo.png" );
+		objSeAcabo.escribirEspacioY( 1 );
+		objSeAcabo.show( false );
+		objCuadroInformativo.leerObjetoDesdeArchivo( "../recursos/imagenes/1080p/Otros/estadistico.png" );
+		objCuadroInformativo.escribirEspacioY( 2.5 );
+		objCuadroInformativo.show( false );
+		objInformacion.show( false );
+		objOpciones.leerObjetoDesdeArchivo( "../recursos/imagenes/1080p/Otros/selector-pausa.png" );
+		objOpciones.escribirTexturaH( objOpciones.leerTexturaH() / 2 );
+		objOpciones.escribirEspacioAlto( objOpciones.leerEspacioAlto() / 2 );
+		objPausa.leerObjetoDesdeArchivo( "../recursos/imagenes/1080p/Texto/pausa.png" );
+		objPausa.escribirEspacioY( 2 );
 	}
 	catch( invalid_argument &ia ){
 		cout << ia.what() << endl;

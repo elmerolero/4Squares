@@ -16,6 +16,9 @@ Preparacion::Preparacion(): nombre( "Preparacion" ){
     objBloque.show( false );
 
     objYa.show( false );
+    objCuentaRegresiva.escribirEspacioX( ( espacioAncho - objCuentaRegresiva.leerEspacioAncho() ) / 2 );
+    objCuentaRegresiva.escribirDesplazamientoX( contador );
+
     actualizarViewport();
 }
 
@@ -24,41 +27,40 @@ Preparacion::~Preparacion(){
 }
 
 void Preparacion::estadoEntrada(){
-    // No hay entradas que procesar
-}
-
-void Preparacion::estadoEventos( SDL_Event &gGameEvent ){
-    // No hay eventos que procesar
-}
-
-void Preparacion::estadoLogica(){
-    // Actualiza las dimensiones de la textura
-    objCuentaRegresiva.escribirTexturaX( contador * 82 );
-    objCuentaRegresiva.escribirEspacioX( ( espacioAncho - objCuentaRegresiva.leerEspacioAncho() ) / 2 );
-
+    // Espera un segundo
     if( temporizador.obtenerTicks() > 1000 ){
         // Incrementa el contador
         contador++;
 
-        if( contador > 2 ){
-            contador = 2;
-
-            // Inicializa los parametros de los jugadores
-            for( size_t contador = 0; contador < numeroJugadores; ++contador ){
-                Jugador_Iniciar( jugadores[ contador ] );
-	        }
-
-            objYa.show( true );
-            objBloque.show( true );
-            tiempoPartida.reanudar();
-	        /* indicadorTiempo.reanudar(); 
-	        tiempoEntradaBajada.reanudar();
-	        tiempoEntradaLaterales.reanudar();
-            tiempoAnimacion.iniciar(); */
-            Juego_EstablecerEstado( nullptr, ESTADO_FINALIZAR );
-        }
+        // Reinicia el temporizador
         temporizador.reiniciar();
     }
+}
+
+void Preparacion::estadoEventos( SDL_Event &gGameEvent ){
+    // No hay eventos
+}
+
+void Preparacion::estadoLogica(){
+    // Si el contador ya va en el último frame
+    if( contador > 2 ){
+        // Impide que el contador vaya más lejos
+        contador = 2;
+
+        // Inicializa los parametros de los jugadores
+        for( size_t contador = 0; contador < numeroJugadores; ++contador ){
+            Jugador_Iniciar( jugadores[ contador ] );
+        }
+
+        // Inicializa la partida
+        objYa.show( true );
+        objBloque.show( true );
+        tiempoPartida.reanudar();
+        Juego_EstablecerEstado( nullptr, ESTADO_FINALIZAR );
+    }
+
+    // Actualiza el frame en el que va
+    objCuentaRegresiva.escribirDesplazamientoX( contador );
 }
 
 void Preparacion::estadoRenderizado(){

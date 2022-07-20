@@ -21,13 +21,13 @@ SDL_DRect obtenerRectRelativo( Texture &textura ){
     // Establece las dimensiones
     rectRelativo.x = 0;
     rectRelativo.y = 0;
-    rectRelativo.w = ( (float)textura.getWidth() * 6.13 ) / 1080;
-    rectRelativo.h = ( (float)textura.getHeight() * 6.13 ) / 1080;
+    rectRelativo.w = ( (float)textura.getWidth() * 10 ) / 1080;
+    rectRelativo.h = ( (float)textura.getHeight() * 10 ) / 1080;
 
     // Devuelve la referencia
     return rectRelativo;
 }
 
 double unidadesRelativas( int dato ){
-    return ( (float)dato * 6.13 ) / 1080;
+    return ( (float)dato * 10 ) / 1080;
 }

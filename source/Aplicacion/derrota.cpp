@@ -1,10 +1,10 @@
 #include "derrota.h"
 #include "foursquares.h"
 #include "preparacion.h"
+#include "globales.h"
 #include <iostream>
 #include <sstream>
 #include "utilidades.h"
-#include "database.h"
 using namespace std;
 
 const char *finListaOpciones[] = { "Reintentar", "Salir" };
@@ -17,21 +17,20 @@ Derrota::Derrota(){
     lineaSombreada = BOARD_HEIGHT;
 
     // Crea el string con la información a mostrar sobre la partida
-    datosPartida = comparativo( contadorPuntaje, contadorNivel, contadorLineas, comboMaximo, tiempoPartida.obtenerTicks() );
-    estadistico.show( false );
-
-    tableroEstadistico.loadFileTexture( "../recursos/imagenes/otros/estadistico.png" );
-    tableroEstadistico.escribirDimensionesEspacio( obtenerRectRelativo( tableroEstadistico ) );
-    tableroEstadistico.escribirDimensionesTextura( obtenerRectTextura( tableroEstadistico ) );
-    tableroEstadistico.show( false );
-
-    // Carga el letrero de "Se acabó"
-    if( seAcabo.loadFileTexture( "../recursos/imagenes/texto/se-acabo.png" ) ){
-        seAcabo.escribirDimensionesTextura( obtenerRectTextura( seAcabo ) );
-        seAcabo.escribirDimensionesEspacio( obtenerRectRelativo( seAcabo ) );
-        seAcabo.escribirEspacioY( 0.5 );
-        seAcabo.show( false );
+    if( numeroJugadores == 1 ){
+        informacionPartida = comparativo( jugadores[ JUGADOR_UNO ].puntaje, jugadores[ JUGADOR_UNO ].nivel, jugadores[ JUGADOR_UNO ].lineas, jugadores[ JUGADOR_UNO ].comboMaximo, tiempoPartida.obtenerTicks() );
     }
+    objInformacion.show( false );
+
+    objCuadroInformativo.show( true );
+    objInformacion.show( true );
+    //informacionPartida = comparativo( jugador.puntaje, jugador.nivel, jugador.lineas, jugador.comboMaximo, tiempoPartida.obtenerTicks() );
+    actualizarTamanioTexto( informacionPartida, objInformacion, fuenteInformacion, 30, 800 );
+    objInformacion.escribirDimensionesEspacio( obtenerRectRelativo( objInformacion ) );
+    objInformacion.escribirDimensionesTextura( obtenerRectTextura( objInformacion ) );
+    objInformacion.escribirEspacioX( ( espacioAncho - objInformacion.leerEspacioAncho() ) / 2.f );
+    objInformacion.escribirEspacioY( ( ( espacioAlto - objInformacion.leerEspacioAlto() ) / 2.f ) );
+    objInformacion.actualizarDimensionesAbsolutas();
 
     // Carga la textura de opciones
     if( continuar.loadFileTexture( "../recursos/imagenes/otros/selector-pausa.png" ) ){
@@ -48,6 +47,8 @@ Derrota::Derrota(){
 
     // Actualiza la vista
     actualizarViewport();
+
+    tiempoEspera.iniciar();
 }
 
 void Derrota::estadoEntrada(){
@@ -57,14 +58,15 @@ void Derrota::estadoEntrada(){
 void Derrota::estadoEventos(  SDL_Event &gGameEvent ){
     if( gGameEvent.type == SDL_KEYDOWN ){
 		if( gGameEvent.key.keysym.sym == SDLK_RETURN ){
-			if( continuar.show() && tableroEstadistico.show() ){
+			if( continuar.show() && objCuadroInformativo.show() ){
                 // Oculta todo y ejecuta el siguiente menú
-                tableroEstadistico.show( false );
-                estadistico.show( false );
+                objCuadroInformativo.show( false );
+                objInformacion.show( false );
                 ocultarElementos = true;
             }
             else if( ocultarElementos ){
                 if( finOpciones.seleccionada == 1 ){
+                    objSeAcabo.show( false );
                     Juego_EstablecerEstado( new FourSquares(), ESTADO_ESTABLECER );
                     Juego_EstablecerEstado( new Preparacion(), ESTADO_APILAR );
                 }
@@ -96,19 +98,6 @@ void Derrota::estadoEventos(  SDL_Event &gGameEvent ){
 }
 
 void Derrota::estadoLogica(){
-    //
-    if( lineaSombreada > 0 ){
-        Tablero_EstablecerColorRenglon( tablero, --lineaSombreada, DERROTA );
-        SDL_Delay( 50 );
-        return;
-    }
-
-    // Muestra la textura de "Se acabo" y empieza a contar el tiempo
-    if( !seAcabo.show() ){
-        seAcabo.show( true );
-        tiempoEspera.iniciar();
-    }
-
     // Espera dos segundos
     if( tiempoEspera.obtenerTicks() < 1000 ){
         return;
@@ -116,16 +105,16 @@ void Derrota::estadoLogica(){
 
     if( !ocultarElementos ){
         // Muestra las estadísticas
-        estadistico.show( true );
-        tableroEstadistico.show( true );
+        objInformacion.show( true );
+        objCuadroInformativo.show( true );
 
         // Si el ancho actual es menor que el ancho de la textura
-        if( anchoActual < estadistico.getWidth() ){
+        if( anchoActual < objInformacion.getWidth() ){
             // Actualiza el ancho del rectángulo
-            estadistico.escribirTexturaX( ( estadistico.getWidth() - anchoActual ) / 2 );
-            estadistico.escribirTexturaW( anchoActual );
-            estadistico.escribirEspacioX( estadistico.leerEspacioX() + ( estadistico.leerEspacioAncho() - anchoRelativoActual ) / 2 );
-            estadistico.escribirEspacioAncho( unidadesRelativas( estadistico.leerTexturaW() ) );
+            objInformacion.escribirTexturaX( ( objInformacion.getWidth() - anchoActual ) / 2 );
+            objInformacion.escribirTexturaW( anchoActual );
+            objInformacion.escribirEspacioX( objInformacion.leerEspacioX() + ( objInformacion.leerEspacioAncho() - anchoRelativoActual ) / 2 );
+            objInformacion.escribirEspacioAncho( unidadesRelativas( objInformacion.leerTexturaW() ) );
 
             // Incrementa el contador
             anchoActual += incremento;
@@ -142,15 +131,12 @@ void Derrota::estadoRenderizado(){
     // Dibuja el fondo
     Juego_FondoNegro();
 
-    // Letrero "Se acabó"
-    seAcabo.renderTexture( seAcabo.leerDimensionesTextura(), seAcabo.leerDimensionesEspacio() );
-
     if( !ocultarElementos ){
         // Tamaño del tablero
-        tableroEstadistico.renderTexture( tableroEstadistico.leerDimensionesTextura(), tableroEstadistico.leerDimensionesEspacio() );
+        objCuadroInformativo.renderTexture( objCuadroInformativo.leerDimensionesTextura(), objCuadroInformativo.leerDimensionesEspacio() );
 
         // Tamaño de la información
-        estadistico.renderTexture( estadistico.leerDimensionesTextura(), estadistico.leerDimensionesEspacio() );
+        objInformacion.renderTexture( objInformacion.leerDimensionesTextura(), objInformacion.leerDimensionesEspacio() );
 
         // El botón continuar
         continuar.renderTexture( continuar.leerDimensionesTextura(), continuar.leerDimensionesEspacio() );
@@ -166,19 +152,15 @@ void Derrota::estadoRenderizado(){
 }
 
 void Derrota::actualizarViewport(){
-    // Letrero de se acabó
-    seAcabo.escribirEspacioX( ( espacioAncho - seAcabo.leerEspacioAncho() ) / 2  );
-    seAcabo.actualizarDimensionesAbsolutas();
-
     // Tablero
-    tableroEstadistico.escribirEspacioX( ( espacioAncho - tableroEstadistico.leerEspacioAncho() ) / 2  );
-    tableroEstadistico.escribirEspacioY( ( espacioAlto - tableroEstadistico.leerEspacioAlto() ) / 2  );
-    tableroEstadistico.actualizarDimensionesAbsolutas();
+    objCuadroInformativo.escribirEspacioX( ( espacioAncho - objCuadroInformativo.leerEspacioAncho() ) / 2  );
+    objCuadroInformativo.escribirEspacioY( ( espacioAlto - objCuadroInformativo.leerEspacioAlto() ) / 2  );
+    objCuadroInformativo.actualizarDimensionesAbsolutas();
 
     // Texto
-    actualizarTamanioTexto( datosPartida, estadistico, fuenteInformacion, 30, 800 );
-    estadistico.escribirEspacioX( ( espacioAncho - estadistico.leerEspacioAncho() ) / 2 );
-    estadistico.escribirEspacioY( ( ( espacioAlto - estadistico.leerEspacioAlto() ) / 2 ) + .15 );
+    actualizarTamanioTexto( datosPartida, objInformacion, fuenteInformacion, 30, 800 );
+    objInformacion.escribirEspacioX( ( espacioAncho - objInformacion.leerEspacioAncho() ) / 2 );
+    objInformacion.escribirEspacioY( ( ( espacioAlto - objInformacion.leerEspacioAlto() ) / 2 ) + .15 );
 
     // Boton continuar
     continuar.escribirEspacioX( ( espacioAncho - continuar.leerEspacioAncho() ) / 2 );
@@ -191,91 +173,26 @@ void Derrota::actualizarViewport(){
     textoContinuar.escribirEspacioY( continuar.leerEspacioY() + 0.07 );
 }
 
-void actualizarTamanioTexto( string texto, Objeto &objeto, TTF_Font *fuente, int tamanioBase, int anchoTextura ){
-    // Cierra la fuente anterior
-    if( fuente != nullptr ){
-        TTF_CloseFont( fuente );
-    }
-
-    // Vuelve a abrir otras fuentes
-    fuente = TTF_OpenFont( "../recursos/fuentes/Aaargh.ttf", tamanioBase );
-    SDL_Color color = { 255, 255, 255 };
-    objeto.crearTexturaDesdeTextoBlended( texto.c_str(), color, fuente, anchoTextura );
-    objeto.escribirDimensionesTextura( obtenerRectTextura( objeto ) );
-    objeto.escribirDimensionesEspacio( obtenerRectRelativo( objeto ) );
+void Derrota::escribirNombre( std::string nombre ){
+    this -> nombre = nombre;
 }
 
-string comparativo( int puntaje, int nivel, int lineas, int combo, Uint32 tiempo )
-{
-    // Base de datos de donde abrirá el archivo
-    Database database;
-
-    // Mejores logros
-    int auxiliar = 0;
-    int puntajeMaximo = 0;
-    int lineasMaximas = 0;
-    Uint32 mejorTiempo = 0;
-    int lineasLogradas = 0;
-    int comboMaximo = 0;
-
-    // Realiza la consulta a la base de datos
-    database.open( databaseFile );
-    database.query( "select * from records" );
-    database.close();
-
-    // ¿Hay resultados?
-    if( results.size() > 0 ){
-        puntajeMaximo = stoi( ( *results.at( 0 ) )[ "puntaje_maximo" ] );
-        lineasMaximas = stoi( ( *results.at( 0 ) )[ "lineas_maximas" ] );
-        mejorTiempo = stoi( ( *results.at( 0 ) )[ "mejor_tiempo" ] );
-        lineasLogradas = stoi( ( *results.at( 0 ) )[ "lineas_logradas" ] ); 
-        comboMaximo = stoi( ( *results.at( 0 ) )[ "combo_maximo" ] );
-    }
-
-    // Realiza la comparación
-    lineasMaximas = ( lineasMaximas > lineas ? lineasMaximas : lineas );
-    comboMaximo = ( comboMaximo > combo ? comboMaximo : combo );
-
-    // Contruye el comparativo
-    stringstream informacion;
-    if( puntajeMaximo < puntaje ){
-        puntajeMaximo = puntaje;
-        informacion << ' ' << setw( 36 ) << "¡Nuevo récord!" << endl;
-    }
-
-    informacion << "Puntaje:" << setw( 15 ) << "Nivel:" << setw( 29 ) << "Puntaje máximo:" << "\n"
-				<< setfill( '0' ) << setw( 7 ) << puntaje << setfill( ' ' ) << setw( 10 ) << nivel << setfill( ' ' ) << setw( 17 ) << " " << setfill( '0' ) << setw( 7 ) << puntajeMaximo << setfill( ' ' ) << "\n\n"
-				<< "Tiempo:" << setw( 21 ) << "Mejor combo:" << setw( 21 ) << "Máximo líneas:" << '\n' << setfill( '0' )
-				<< (tiempo / 60000) % 60 << "'" << setw( 2 ) << (tiempo / 1000) % 60 << "'" << setw( 2 ) << (tiempo % 1000) / 10 << setfill( ' ' ) << setw( 13 ) << comboMaximo << setw( 23 ) << lineasMaximas << '\n' << '\n'
-				<< "Líneas:\n" << setw( 3 ) << setfill( '0' ) << lineas << setfill( ' ' ) << endl;
-
-    database.open( databaseFile );
-    if( results.empty() ){
-        database.query( "insert into records values( 1, " + to_string( puntajeMaximo ) + ", " + to_string( lineasMaximas ) + ", " + to_string( mejorTiempo ) + ", " + to_string( lineasLogradas ) + "," + to_string( comboMaximo ) + ")" );
-    }
-    else{
-        database.query( "update records set puntaje_maximo = " + to_string( puntajeMaximo ) + ", lineas_maximas = " + to_string( lineasMaximas ) + ", mejor_tiempo = " + to_string( mejorTiempo ) + ", lineas_logradas = " + to_string( lineasLogradas ) + ", combo_maximo = " + to_string( comboMaximo ) + " where codigo = 1" );
-    }
-    database.close();
-
-    return informacion.str();
+void Derrota::mostrarNombre( void ){
+    cout << nombre << endl;
 }
 
 int lineaSombreada;
 string datosPartida;
-Objeto tableroEstadistico;
-TTF_Font *fuenteInformacion;
+
 
 // Datos del juego
 int incremento;
 double incrementoRelativo;
 int anchoActual;
 double anchoRelativoActual;
-Objeto estadistico;
 
 // Letrero de se acabó
 Temporizador tiempoEspera;
-Objeto seAcabo;
 
 // 
 Objeto continuar;

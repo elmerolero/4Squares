@@ -1,5 +1,8 @@
 #include "foursquares.h"
+#include "database.h"
 #include "globales.h"
+#include "utilidades.h"
+#include "derrota.h"
 #include "pausa.h"
 #include <iostream>
 #include <sstream>
@@ -35,6 +38,7 @@ void Jugador_Iniciar( Jugador &jugador ){
 	jugador.soltarPieza = false;
 	jugador.permiteReserva = true;
 	jugador.finalizo = false;
+	jugador.contadorColumna = BOARD_HEIGHT - 1;
 
 	// Inicializa los temporizadores
 	jugador.tiempoCambio.iniciar();
@@ -46,6 +50,7 @@ void Jugador_Iniciar( Jugador &jugador ){
 
 FourSquares::FourSquares(): nombre( "Gameplay" )
 {
+	jugadoresRestantes = 1;
 	numeroJugadores = 1;
 
 	// Actualiza el viewport
@@ -112,10 +117,13 @@ void FS_ActualizarEstadoJugador( Jugador &jugador ){
 
 		// ¿El jugador ya se encuentra en el tope del tablero?
 		if( jugador.pieza.figura.y == 1 ){
-			jugador.tiempoCambio.pausar();
 			jugador.tiempoBajada.pausar();
 			jugador.tiempoLaterales.pausar();
 			jugador.finalizo = true;
+			jugadoresRestantes--;
+			if( jugadoresRestantes <= 1 ){
+				tiempoPartida.pausar();
+			}
 			return;
 		}
 		
@@ -155,6 +163,24 @@ void FS_ActualizarEstadoJugador( Jugador &jugador ){
 		Fuente_ActualizarTexto( to_string( jugadores[ 0 ].lineas ), fuenteTexto, objLineas, objMargen.leerEspacioX() + 2.3f, 8.45f );
 	}
 }
+
+void FS_FinalizarJugador( Jugador &jugador ){
+	if( !jugador.ganador ){
+		//
+		if( jugador.contadorColumna > 0 && jugador.tiempoCambio.obtenerTicks() > 50 ){
+			Tablero_EstablecerColorRenglon( jugador.tablero, jugador.contadorColumna--, DERROTA );
+			jugador.tiempoCambio.reiniciar();
+		}
+
+		if( jugadoresRestantes <= 1 && jugador.contadorColumna == 0 ){
+			tiempoPartida.pausar();
+			objSeAcabo.show( true );
+			if( jugador.tiempoCambio.obtenerTicks() > 1000 ){
+				Juego_EstablecerEstado( new Derrota(), ESTADO_APILAR );
+			}
+		}
+	}
+}
  
 FourSquares::~FourSquares()
 {
@@ -167,12 +193,12 @@ FourSquares::~FourSquares()
 void FourSquares::estadoEventos( SDL_Event &gGameEvent ){
 	if( gGameEvent.type == SDL_JOYBUTTONDOWN && joystickConectado ){
 		for( size_t contador = 0; contador < numeroJugadores; ++contador ){
-			if( gGameEvent.cbutton.which == controles[ contador ].id ){	
+			if( gGameEvent.cbutton.which == controles[ contador ].id && !jugadores[ contador ].finalizo ){	
 				FS_LeerEventosControlJugador( jugadores[ contador ], controles[ contador ], gGameEvent.cbutton.button );
 			}
 		}
 	}
-	else if( gGameEvent.type == SDL_KEYDOWN && !jugadores[ JUGADOR_UNO ].soltarPieza ){
+	else if( gGameEvent.type == SDL_KEYDOWN && !jugadores[ JUGADOR_UNO ].soltarPieza && !jugadores[ JUGADOR_UNO ].finalizo ){
 		FS_LeerEventosTecladoJugador( jugadores[ JUGADOR_UNO ], teclado, gGameEvent.key.keysym.sym );
 	}
 }
@@ -183,13 +209,13 @@ void FourSquares::estadoEntrada(){
 	
 	if( joystickConectado ){
 		for( size_t contador = 0; contador < numeroJugadores; ++contador ){
-			if( !jugadores[ contador ].soltarPieza || jugadores[ contador ].lineasRealizadas.empty() ){
+			if( !jugadores[ contador ].soltarPieza && jugadores[ contador ].lineasRealizadas.empty() && !jugadores[ contador ].finalizo ){
 				FS_LeerEntradaControlJugador( jugadores[ contador ], controles[ contador ] );
 			}
 		}
 	}
 	else{
-		if( !jugadores[ JUGADOR_UNO ].soltarPieza || jugadores[ JUGADOR_UNO ].lineasRealizadas.empty() ){
+		if( !jugadores[ JUGADOR_UNO ].soltarPieza && jugadores[ JUGADOR_UNO ].lineasRealizadas.empty() && !jugadores[ JUGADOR_UNO ].finalizo ){
 			FS_LeerEntradaTecladoJugador( jugadores[ JUGADOR_UNO ], teclado, keyboardState );
 		}
 	}
@@ -203,8 +229,11 @@ void FourSquares::estadoLogica()
 	}
 
 	for( size_t contador = 0; contador < numeroJugadores; ++contador ){
-		if( FS_ActualizarLineasJugador( jugadores[ contador ] ) ){
+		if( FS_ActualizarLineasJugador( jugadores[ contador ] ) && !jugadores[ contador ].finalizo ){
 			FS_ActualizarEstadoJugador( jugadores[ contador ] );
+		}
+		else if( jugadores[ contador ].finalizo ){
+			FS_FinalizarJugador( jugadores[ contador ] );
 		}
 	}
 }
@@ -238,6 +267,9 @@ void FourSquares::estadoRenderizado()
 
 	// Dibuja el letrero de ¡objYa!
 	objYa.renderTexture( objYa.leerDimensionesTextura(), objYa.leerDimensionesEspacio() );
+
+	// Dibuja el letrero "Se acabó"
+	objSeAcabo.renderTexture( objSeAcabo.leerDimensionesTextura(), objSeAcabo.leerDimensionesEspacio() );
 }
 
 /* FUNCTIONS */
@@ -266,6 +298,17 @@ void FourSquares::actualizarViewport(){
 
 	// 
 	objYa.escribirEspacioX( ( espacioAncho - objYa.leerEspacioAncho() ) / 2 );
+
+	// 
+	objSeAcabo.escribirEspacioX( ( espacioAncho - objSeAcabo.leerEspacioAncho() ) / 2 );
+	objSeAcabo.actualizarDimensionesAbsolutas();
+	objCuadroInformativo.escribirEspacioX( ( espacioAncho - objCuadroInformativo.leerEspacioAncho() ) / 2 );
+	objCuadroInformativo.actualizarDimensionesAbsolutas();
+
+	actualizarTamanioTexto( informacionPartida, objInformacion, fuenteInformacion, 30, 800 );
+	objInformacion.escribirEspacioX( ( espacioAncho - objInformacion.leerEspacioAncho() ) / 2 );
+    objInformacion.escribirEspacioY( ( ( espacioAlto - objInformacion.leerEspacioAlto() ) / 2 ) );
+	objInformacion.actualizarDimensionesAbsolutas();
 
 	// Texto renderizado
 	// Actualiza la textura del puntaje
@@ -381,8 +424,7 @@ void Pieza_Dibujar( Pieza &pieza, int posicionX, int posicionY, SDL_Color color 
 	int tempY = objTablero.leerAbsolutoY() - (objBloque.leerAbsolutoAncho() * 2);
 	
 	// Establece el color
-	objBloque.escribirTexturaW( 45 );
-	objBloque.escribirTexturaX( 45 * pieza.tipo );
+	objBloque.escribirDesplazamientoX( pieza.tipo );
 
 	// Dibuja la figura
 	for( int i = 0; i < 4; i++ ){
@@ -460,8 +502,7 @@ void Tablero_Acomodar( int tablero[ BOARD_HEIGHT ][ BOARD_WIDTH ], vector< int >
 }
 
 // Dibuja el tablero
-void Tablero_Dibujar( int tablero[ BOARD_HEIGHT ][ BOARD_WIDTH ] )
-{
+void Tablero_Dibujar( int tablero[ BOARD_HEIGHT ][ BOARD_WIDTH ] ){
 	// Rect que 
 	SDL_Rect auxRect = { 0, 0, objBloque.leerAbsolutoAncho(), objBloque.leerAbsolutoAlto() };
 	int tempX = objTablero.leerAbsolutoX();
@@ -473,8 +514,7 @@ void Tablero_Dibujar( int tablero[ BOARD_HEIGHT ][ BOARD_WIDTH ] )
 				auxRect.x = tempX + ( auxRect.w * columnas );
 				auxRect.y = tempY + ( auxRect.w * renglones );
 				
-				objBloque.escribirTexturaW( 45 );
-				objBloque.escribirTexturaX( ( tablero[ renglones ][ columnas ] - 1 ) * 45 );
+				objBloque.escribirDesplazamientoX( tablero[ renglones ][ columnas ] - 1 );
 				objBloque.renderTexture( objBloque.leerDimensionesTextura(), &auxRect );
 			}
 		}
@@ -821,3 +861,74 @@ int contadorNivel;
 int contadorPuntaje;
 
 int columna;
+
+string comparativo( int puntaje, int nivel, int lineas, int combo, Uint32 tiempo )
+{
+    // Base de datos de donde abrirá el archivo
+    Database database;
+
+    // Mejores logros
+    int auxiliar = 0;
+    int puntajeMaximo = 0;
+    int lineasMaximas = 0;
+    Uint32 mejorTiempo = 0;
+    int lineasLogradas = 0;
+    int comboMaximo = 0;
+
+    // Realiza la consulta a la base de datos
+    database.open( databaseFile );
+    database.query( "select * from records" );
+    database.close();
+
+    // ¿Hay resultados?
+    if( results.size() > 0 ){
+        puntajeMaximo = stoi( ( *results.at( 0 ) )[ "puntaje_maximo" ] );
+        lineasMaximas = stoi( ( *results.at( 0 ) )[ "lineas_maximas" ] );
+        mejorTiempo = stoi( ( *results.at( 0 ) )[ "mejor_tiempo" ] );
+        lineasLogradas = stoi( ( *results.at( 0 ) )[ "lineas_logradas" ] ); 
+        comboMaximo = stoi( ( *results.at( 0 ) )[ "combo_maximo" ] );
+    }
+
+    // Realiza la comparación
+    lineasMaximas = ( lineasMaximas > lineas ? lineasMaximas : lineas );
+    comboMaximo = ( comboMaximo > combo ? comboMaximo : combo );
+
+    // Contruye el comparativo
+    stringstream informacion;
+    if( puntajeMaximo < puntaje ){
+        puntajeMaximo = puntaje;
+        informacion << ' ' << setw( 36 ) << "¡Nuevo récord!" << endl;
+    }
+
+    informacion << "Puntaje:" << setw( 15 ) << "Nivel:" << setw( 29 ) << "Puntaje máximo:" << "\n"
+				<< setfill( '0' ) << setw( 7 ) << puntaje << setfill( ' ' ) << setw( 10 ) << nivel << setfill( ' ' ) << setw( 17 ) << " " << setfill( '0' ) << setw( 7 ) << puntajeMaximo << setfill( ' ' ) << "\n\n"
+				<< "Tiempo:" << setw( 21 ) << "Mejor combo:" << setw( 21 ) << "Máximo líneas:" << '\n' << setfill( '0' )
+				<< (tiempo / 60000) % 60 << "'" << setw( 2 ) << (tiempo / 1000) % 60 << "'" << setw( 2 ) << (tiempo % 1000) / 10 << setfill( ' ' ) << setw( 13 ) << comboMaximo << setw( 23 ) << lineasMaximas << '\n' << '\n'
+				<< "Líneas:\n" << setw( 3 ) << setfill( '0' ) << lineas << setfill( ' ' ) << endl;
+
+    database.open( databaseFile );
+    if( results.empty() ){
+        database.query( "insert into records values( 1, " + to_string( puntajeMaximo ) + ", " + to_string( lineasMaximas ) + ", " + to_string( mejorTiempo ) + ", " + to_string( lineasLogradas ) + "," + to_string( comboMaximo ) + ")" );
+    }
+    else{
+        database.query( "update records set puntaje_maximo = " + to_string( puntajeMaximo ) + ", lineas_maximas = " + to_string( lineasMaximas ) + ", mejor_tiempo = " + to_string( mejorTiempo ) + ", lineas_logradas = " + to_string( lineasLogradas ) + ", combo_maximo = " + to_string( comboMaximo ) + " where codigo = 1" );
+    }
+    database.close();
+
+    return informacion.str();
+}
+
+void actualizarTamanioTexto( string texto, Objeto &objeto, TTF_Font *fuente, int tamanioBase, int anchoTextura ){
+    // Cierra la fuente anterior
+    if( fuente != nullptr ){
+        TTF_CloseFont( fuente );
+    }
+
+    // Vuelve a abrir otras fuentes
+    fuente = TTF_OpenFont( "../recursos/fuentes/Aaargh.ttf", tamanioBase );
+    SDL_Color color = { 255, 255, 255 };
+    objeto.crearTexturaDesdeTextoBlended( texto.c_str(), color, fuente, anchoTextura );
+}
+
+std::string informacionPartida;
+TTF_Font *fuenteInformacion;

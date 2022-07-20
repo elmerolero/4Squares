@@ -4,7 +4,6 @@
 #include "temporizador.h"
 #include "objeto.h"
 #include "juego.h"
-#include "derrota.h"
 #include <vector>
 
 // Estado del juego
@@ -26,6 +25,9 @@ class FourSquares : public EstadoJuego
 	private:
 		std::string nombre;
 };
+
+extern TTF_Font *fuenteInformacion;
+extern std::string informacionPartida;
 
 /* CONSTANTES */
 #define BOARD_SIZE		5.7
@@ -139,5 +141,8 @@ void FS_LeerEventosControlJugador( Jugador &jugador, Control &control, Uint8 cod
 void FS_LeerEntradaControlJugador( Jugador &jugador, Control &control );
 
 unsigned int factorial( unsigned int numero );
+
+std::string comparativo( int puntaje, int nivel, int lineas, int combo, Uint32 tiempo );
+void actualizarTamanioTexto( std::string texto, Objeto &objeto, TTF_Font *fuente, int tamanioBase, int anchoTextura );
 
 #endif
