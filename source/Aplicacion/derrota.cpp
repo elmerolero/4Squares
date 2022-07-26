@@ -8,8 +8,15 @@
 using namespace std;
 
 const char *finListaOpciones[] = { "Reintentar", "Salir" };
+int derrotaOpcion;
+int derrotaIndice;
+
+const int DERROTA_OPCIONES = 2;
+const int DERROTA_REINICIAR = 0;
+const int DERROTA_SALIR = 1;
 
 Derrota::Derrota(){
+    derrotaOpcion = DERROTA_REINICIAR;
     anchoActual = 0;
     anchoRelativoActual = 0.f;
     incremento = 4;
@@ -35,7 +42,8 @@ Derrota::Derrota(){
     // Carga la textura de opciones
     if( continuar.loadFileTexture( "../recursos/imagenes/otros/selector-pausa.png" ) ){
         continuar.escribirDimensionesTextura( obtenerRectTextura( continuar ) );
-        continuar.escribirDimensionesEspacio( obtenerRectRelativo( continuar ) );
+        continuar.escribirDimensionesEspacio( 
+            obtenerRectRelativo( continuar ) );
         continuar.escribirTexturaH( continuar.leerTexturaH() / 2 );
         continuar.escribirEspacioAlto( continuar.leerEspacioAlto() / 2 );
         continuar.escribirEspacioY( ( espacioAlto / 5.f ) * 4.f );
@@ -65,12 +73,12 @@ void Derrota::estadoEventos(  SDL_Event &gGameEvent ){
                 ocultarElementos = true;
             }
             else if( ocultarElementos ){
-                if( finOpciones.seleccionada == 1 ){
+                if( derrotaOpcion == DERROTA_REINICIAR ){
                     objSeAcabo.show( false );
                     Juego_EstablecerEstado( new FourSquares(), ESTADO_ESTABLECER );
                     Juego_EstablecerEstado( new Preparacion(), ESTADO_APILAR );
                 }
-                if( finOpciones.seleccionada == 2 ){
+                if( derrotaOpcion == DERROTA_SALIR ){
                     salir = true;
                 }
             }
@@ -152,6 +160,8 @@ void Derrota::estadoRenderizado(){
 }
 
 void Derrota::actualizarViewport(){
+    incrementoRelativo = unidadesRelativas( incremento );
+
     // Tablero
     objCuadroInformativo.escribirEspacioX( ( espacioAncho - objCuadroInformativo.leerEspacioAncho() ) / 2  );
     objCuadroInformativo.escribirEspacioY( ( espacioAlto - objCuadroInformativo.leerEspacioAlto() ) / 2  );
@@ -171,6 +181,7 @@ void Derrota::actualizarViewport(){
     Fuente_ActualizarTexto( "Continuar", fuenteTexto, textoContinuar );
     textoContinuar.escribirEspacioX( continuar.leerEspacioX() + 0.1 );
     textoContinuar.escribirEspacioY( continuar.leerEspacioY() + 0.07 );
+    textoContinuar.actualizarDimensionesAbsolutas();
 }
 
 void Derrota::escribirNombre( std::string nombre ){

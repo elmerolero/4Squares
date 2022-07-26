@@ -10,6 +10,8 @@
 #include <vector>
 #include <deque>
 
+extern Uint32 previous_frame_time;
+
 // Inicializa el juego con el nombre dado
 void Juego_Iniciar( std::string nombre, std::string mensaje );
 

@@ -129,14 +129,17 @@ void FS_ActualizarEstadoJugador( Jugador &jugador ){
 		
 		// Obtiene las lineas a borrar
 		Tablero_ObtenerLineas( jugador.tablero, jugador.lineasRealizadas );
-
-		jugador.combo++;
-		if( jugador.combo > jugador.comboMaximo ){
-			jugador.comboMaximo = jugador.combo;
-		}
-				
+		
+		// Incrementa el combo
 		if( jugador.lineasRealizadas.empty() ){
 			jugador.combo = 0;
+		}
+		else{
+			// Incrementea combo
+			jugador.combo++;
+			if( jugador.combo > jugador.comboMaximo ){
+				jugador.comboMaximo = jugador.combo;
+			}
 		}
 
 		// Actualiza el número de líneas realizadas
@@ -147,7 +150,9 @@ void FS_ActualizarEstadoJugador( Jugador &jugador ){
 		jugador.nivel = jugador.nivel > 15 ? 15 : jugador.nivel;    // Asegura que nivel no rebase 15
 
 		// Actualiza el puntaje
-		jugador.puntaje = 50 * factorial( jugador.lineasRealizadas.size() );
+		if( jugador.lineasRealizadas.size() > 0 ){ 
+			jugador.puntaje += 50 * factorial( jugador.lineasRealizadas.size() ) * jugador.combo;
+		}
 
 		// Obtiene la nueva pieza
 		Pieza_NuevaPieza( jugador.pieza, Cola_ObtenerSiguenteFigura( jugador.colaFiguras ), jugador.tablero );
@@ -158,7 +163,7 @@ void FS_ActualizarEstadoJugador( Jugador &jugador ){
 		jugador.tiempoAgregado.pausar();
 
 		// Actualiza la información del juego
-		Fuente_ActualizarTexto( to_string( jugadores[ 0 ].puntaje ), fuenteTexto, objPuntaje, objMargen.leerEspacioX() + 2.3f, 4.f );
+		Fuente_ActualizarTexto( to_string( jugadores[ 0 ].puntaje ), fuenteTexto, objPuntaje, objMargen.leerEspacioX() + 0.9f, 2.56f );
 		Fuente_ActualizarTexto( to_string( jugadores[ 0 ].nivel ), fuenteTexto, objNivel, objMargen.leerEspacioX() + 2.3f, 7.55f );
 		Fuente_ActualizarTexto( to_string( jugadores[ 0 ].lineas ), fuenteTexto, objLineas, objMargen.leerEspacioX() + 2.3f, 8.45f );
 	}
@@ -182,24 +187,19 @@ void FS_FinalizarJugador( Jugador &jugador ){
 	}
 }
  
-FourSquares::~FourSquares()
-{
-	objBloque.destroyTexture();
-	objFiguras.destroyTexture();
-	objMargen.destroyTexture();
-	objFondo.destroyTexture();
+FourSquares::~FourSquares(){
 }
 
 void FourSquares::estadoEventos( SDL_Event &gGameEvent ){
 	if( gGameEvent.type == SDL_JOYBUTTONDOWN && joystickConectado ){
 		for( size_t contador = 0; contador < numeroJugadores; ++contador ){
 			if( gGameEvent.cbutton.which == controles[ contador ].id && !jugadores[ contador ].finalizo ){	
-				FS_LeerEventosControlJugador( jugadores[ contador ], controles[ contador ], gGameEvent.cbutton.button );
+				FS_LeerEventosControlJugador( jugadores[ contador ], controles[ contador ], gGameEvent.cbutton.button, contador );
 			}
 		}
 	}
 	else if( gGameEvent.type == SDL_KEYDOWN && !jugadores[ JUGADOR_UNO ].soltarPieza && !jugadores[ JUGADOR_UNO ].finalizo ){
-		FS_LeerEventosTecladoJugador( jugadores[ JUGADOR_UNO ], teclado, gGameEvent.key.keysym.sym );
+		FS_LeerEventosTecladoJugador( jugadores[ JUGADOR_UNO ], teclado, gGameEvent.key.keysym.sym, 0 );
 	}
 }
 
@@ -238,8 +238,7 @@ void FourSquares::estadoLogica()
 	}
 }
 
-void FourSquares::estadoRenderizado()
-{
+void FourSquares::estadoRenderizado(){
 	// Dibuja el fondo
 	objFondo.renderTexture( objFondo.leerDimensionesTextura(), objFondo.leerDimensionesEspacio() );
 	objMargen.renderTexture( objMargen.leerDimensionesTextura(), objMargen.leerDimensionesEspacio() );
@@ -312,7 +311,7 @@ void FourSquares::actualizarViewport(){
 
 	// Texto renderizado
 	// Actualiza la textura del puntaje
-	Fuente_ActualizarTexto( to_string( jugadores[ 0 ].puntaje ), fuenteTexto, objPuntaje, objMargen.leerEspacioX() + 2.3f, 4.f );
+	Fuente_ActualizarTexto( to_string( jugadores[ 0 ].puntaje ), fuenteTexto, objPuntaje, objMargen.leerEspacioX() + 0.9f, 2.56f );
 	Fuente_ActualizarTexto( to_string( jugadores[ 0 ].nivel ), fuenteTexto, objNivel, objMargen.leerEspacioX() + 2.3f, 7.55f );
 	Fuente_ActualizarTexto( to_string( jugadores[ 0 ].lineas ), fuenteTexto, objLineas, objMargen.leerEspacioX() + 2.3f, 8.45f );
 }
@@ -584,7 +583,14 @@ void FS_DibujarTiempo( Uint32 tiempo, Objeto &objeto, Fuente &fuente, double x, 
 	objeto.escribirDimensionesEspacio( x, y, (float)objeto.getWidth() / Objeto::leerMagnitudUnidad(), (float)objeto.getHeight() / Objeto::leerMagnitudUnidad() );
 }
 
-void FS_PausarPartida(){
+void FS_PausarPartida( unsigned int jugador ){
+	for( size_t contador = 0; contador < numeroJugadores; ++contador ){
+		jugadores[ contador ].tiempoCambio.pausar();
+		jugadores[ contador ].tiempoAgregado.pausar();
+		jugadores[ contador ].tiempoLaterales.pausar();
+		jugadores[ contador ].tiempoBajada.pausar();
+	}
+
 	// Pausa el tiempo
 	indicadorTiempo.pausar();
 	tiempoPartida.pausar();
@@ -597,6 +603,14 @@ void FS_PausarPartida(){
 }
 
 void FS_ReanudarPartida( void ){
+
+	for( size_t contador = 0; contador < numeroJugadores; ++contador ){
+		jugadores[ contador ].tiempoCambio.reanudar();
+		jugadores[ contador ].tiempoAgregado.reanudar();
+		jugadores[ contador ].tiempoLaterales.reanudar();
+		jugadores[ contador ].tiempoBajada.reanudar();
+	}
+	
 	// Reanuda el tiempo
 	tiempoPartida.reanudar();
 	tiempoAdicional.reanudar();
@@ -608,13 +622,13 @@ void FS_ReanudarPartida( void ){
 	objBloque.show( true );
 }
 
-void FS_LeerEventosTecladoJugador( Jugador &jugador, Teclado &control, SDL_Keycode codigo ){
+void FS_LeerEventosTecladoJugador( Jugador &jugador, Teclado &control, SDL_Keycode codigo, unsigned int numeroJugador ){
 	if( codigo == control.soltarPieza ){
 		jugador.soltarPieza = true;
 	}
 	else if( codigo == control.pausarJuego ){
-		FS_PausarPartida();
-		Juego_EstablecerEstado( new Pausa(), ESTADO_APILAR );
+		FS_PausarPartida( numeroJugador );
+		Juego_EstablecerEstado( new Pausa( numeroJugador ), ESTADO_APILAR );
 	}
 	else if( codigo == control.rotarDerecha && jugador.pieza.tipo != FIGURA_CUADRADO ){
 		Pieza_Alternar( jugador.pieza, jugador.tablero, 1 );
@@ -702,15 +716,15 @@ void FS_LeerEntradaTecladoJugador( Jugador &jugador, Teclado &control, const Uin
 	}
 }
 
-void FS_LeerEventosControlJugador( Jugador &jugador, Control &control, Uint8 codigo ){
+void FS_LeerEventosControlJugador( Jugador &jugador, Control &control, Uint8 codigo, unsigned int numeroJugador ){
 	if( !jugador.soltarPieza ){
 		if( codigo == control.soltarPieza ){
 			jugador.soltarPieza = true;
 		}
 		else if( codigo == control.pausarJuego ){
 			indice = control.id;
-			FS_PausarPartida();
-			Juego_EstablecerEstado( new Pausa(), ESTADO_APILAR );
+			FS_PausarPartida( numeroJugador );
+			Juego_EstablecerEstado( new Pausa( numeroJugador ), ESTADO_APILAR );
 		}
 		else if( codigo == control.rotarDerecha && jugador.pieza.tipo != FIGURA_CUADRADO ){
 			Pieza_Alternar( jugador.pieza, jugador.tablero, 1 );
@@ -800,14 +814,14 @@ void FS_LeerEntradaControlJugador( Jugador &jugador, Control &control ){
 }
 
 unsigned int factorial( unsigned int numero ){
-	unsigned int contador = numero;
+	unsigned int contador = numero < 1 ? 1 : numero;
 
 	while( contador > 1 ){
 		contador = contador - 1;
 		numero = numero * contador;
 	}
 
-	return contador;
+	return numero;
 }
 
 void FourSquares::escribirNombre( std::string nombre ){

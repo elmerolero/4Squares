@@ -2,8 +2,8 @@
 using namespace std;
 
 // Componentes SDL
-SDL_Window *gVentana;           // Ventana
-SDL_Renderer *gRender;          // Contexto de renderizado
+SDL_Window *gVentana = NULL;           // Ventana
+SDL_Renderer *gRender = NULL;          // Contexto de renderizado
 SDL_DisplayMode gVistaInfo;     // Modo de la pantalla
 SDL_Event gEvento;              // Evento del juego
 

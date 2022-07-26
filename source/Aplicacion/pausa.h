@@ -10,7 +10,7 @@
 class Pausa : public EstadoJuego
 {
     public:
-        Pausa();
+        Pausa( unsigned int jugador );
         void estadoEntrada();
         void estadoEventos( SDL_Event &gGameEvent );
         void estadoLogica();
@@ -20,6 +20,7 @@ class Pausa : public EstadoJuego
 		void mostrarNombre( void );
 
     private:   
+        unsigned int jugador;
         std::string nombre;
 };
 

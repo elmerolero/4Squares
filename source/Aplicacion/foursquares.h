@@ -113,7 +113,7 @@ void Jugador_Iniciar( Jugador &jugador );
 
 void FS_DibujarFigura( int figura, double x, double y );
 void FS_DibujarTiempo( Uint32 tiempo, Objeto &objeto, Fuente &fuente, double x, double y );
-void FS_PausarPartida( void );
+void FS_PausarPartida( unsigned int jugador );
 void FS_ReanudarPartida( void );
 
 void Pieza_NuevaPieza( Pieza &pieza, int figura, int tablero[ 21 ][ 10 ] );
@@ -135,9 +135,9 @@ void Cola_Inicializar( int colaFiguras[ 4 ] );
 int Cola_ObtenerSiguenteFigura( int colaFiguras[ 4 ] );
 void Cola_Dibujar( int colaFiguras[ 4 ] );
 
-void FS_LeerEventosTecladoJugador( Jugador &jugador, Teclado &control, SDL_Keycode codigo );
+void FS_LeerEventosTecladoJugador( Jugador &jugador, Teclado &control, SDL_Keycode codigo, unsigned int numeroJugador );
 void FS_LeerEntradaTecladoJugador( Jugador &jugador, Teclado &control, const Uint8 *teclado );
-void FS_LeerEventosControlJugador( Jugador &jugador, Control &control, Uint8 codigo );
+void FS_LeerEventosControlJugador( Jugador &jugador, Control &control, Uint8 codigo, unsigned int numeroJugador );
 void FS_LeerEntradaControlJugador( Jugador &jugador, Control &control );
 
 unsigned int factorial( unsigned int numero );

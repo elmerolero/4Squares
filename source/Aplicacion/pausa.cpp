@@ -3,7 +3,7 @@
 #include <iostream>
 using namespace std;
 
-Pausa::Pausa(): nombre( "pausa" )
+Pausa::Pausa( unsigned int jugador ): nombre( "pausa" ), jugador( jugador )
 {
     // Opcion pausa por defecto es la primera opcion
     opcion = 1;

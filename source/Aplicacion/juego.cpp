@@ -6,6 +6,10 @@
 #include "texture.h"
 using namespace std;
 
+#define FPS 120
+#define FRAME_TARGET_TIME ( 1000 / FPS )
+Uint32 previous_frame_time = 0;
+
 void Juego_Iniciar( string nombre, string mensajes ){
 	// Carga las traducciones
 	Juego_CargarValoresMensaje( mensajes );
@@ -108,13 +112,6 @@ void Juego_Cerrar( void ){
 
 	// Elimina los estados en ejecución
 	Juego_LimpiarEstados();
-
-	// Libera los recursos del juego
-	SDL_DestroyRenderer( gRender );
-	SDL_DestroyWindow( gVentana );
-	SDL_Quit();
-	gRender = NULL;
-	gVentana = NULL;
 }
 
 // Lee la entrada del juego
@@ -161,6 +158,13 @@ void Juego_Entrada( void ){
 
 // Ejecuta la lógica del juego
 void Juego_Logica( void ){
+	// Espera una cantidad de milisegundos
+	Uint32 time_to_wait = FRAME_TARGET_TIME - ( SDL_GetTicks() - previous_frame_time  );
+    if( time_to_wait > 0 && time_to_wait < FRAME_TARGET_TIME ){
+        SDL_Delay( time_to_wait );
+    }
+	previous_frame_time = SDL_GetTicks();
+
 	// Reinica la tasa de fotogramas
 	if( temporizadorFPS.obtenerTicks() >= 1000 ){
 		if( mostrarFPS ){
@@ -379,11 +383,11 @@ void Juego_CargarValoresMensaje( string archivo ){
 void Juego_CargarMedia( std::string resolucion ){	
 	try{ 
 		objFondoInicio.leerObjetoDesdeArchivo( "../recursos/imagenes/Intro Screen.png" );
-		objFondo.leerObjetoDesdeArchivo( "../recursos/imagenes/" + resolucion + "/Fondos/lasers.png" ); 	// Fondo
+		objFondo.leerObjetoDesdeArchivo( "../recursos/imagenes/1080p/Fondos/Noche.png" ); 	// Fondo
 		objTablero.escribirDimensionesEspacio( 0.f, 0.f, 4.178, 8.3 );
 		objMargen.leerObjetoDesdeArchivo( "../recursos/imagenes/1080p/UI/UISP01.png" );	// Margen
-		objMargen.loadFileTexture( ("../recursos/imagenes/" + resolucion + "/UI/UISP01.png").c_str() );
-		objBloque.leerObjetoDesdeArchivo( "../recursos/imagenes/" + resolucion + "/Bloques/bloques.png" );	// Bloque
+		objMargen.loadFileTexture( "../recursos/imagenes/1080p/UI/UISP01.png" );
+		objBloque.leerObjetoDesdeArchivo( "../recursos/imagenes/1080p/Bloques/bloques.png" );	// Bloque
 		objBloque.escribirDimensionesEspacio( 0, 0, objTablero.leerEspacioAncho() / (float)BOARD_WIDTH, objTablero.leerEspacioAncho() / (float)BOARD_WIDTH );
 		objBloque.escribirFotogramaAncho( objBloque.getWidth() / 8 );
 		objBloque.escribirFotogramaAlto( objBloque.leerFotogramaAncho() );
